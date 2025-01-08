@@ -1,0 +1,11 @@
+streamlit
+phidata
+altair<5
+google-generativeai
+openai
+duckduckgo-search
+requests
+PyMuPDF
+ebooklib
+beautifulsoup4
+python-docx
