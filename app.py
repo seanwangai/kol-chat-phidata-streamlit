@@ -11,26 +11,27 @@ def initialize_dropbox():
     # 获取 URL 参数
     page = st.query_params.get("page", None)
 
-    # 根据页面参数选择不同的 URL
-    dropbox_url_key = "DROPBOX_DATA_URL_KOL" if page == "kol" else "DROPBOX_DATA_URL"
+    # 根据页面参数选择不同的 URL 和目标目录
+    if page == "kol":
+        dropbox_url_key = "DROPBOX_DATA_URL_KOL"
+        target_dir = Path("data_kol")
+    else:
+        dropbox_url_key = "DROPBOX_DATA_URL"
+        target_dir = Path("data")
 
     if dropbox_url_key in st.secrets:
         try:
-            # 创建 data 目录
-            data_dir = Path("data")
-            data_dir.mkdir(parents=True, exist_ok=True)
-            print(f"创建数据目录: {data_dir}")
+            # 创建目标目录
+            target_dir.mkdir(parents=True, exist_ok=True)
+            print(f"创建数据目录: {target_dir}")
 
             # 修改URL为直接下载链接
             url = st.secrets[dropbox_url_key]
-            # 移除现有的 dl 参数
-            url = url.split('&dl=')[0]
-            # 添加新的 dl 参数
-            url += '&dl=1'
+            url = url.split('&dl=')[0] + '&dl=1'
             print(f"使用下载链接: {url}")
 
             # 确保临时文件路径存在
-            temp_zip = data_dir / "temp_download.zip"
+            temp_zip = target_dir / "temp_download.zip"
             print(f"准备下载到: {temp_zip}")
 
             try:
@@ -46,17 +47,16 @@ def initialize_dropbox():
 
                 print(f"下载完成，文件大小: {temp_zip.stat().st_size} bytes")
 
-                # 验证文件是否存在和是否为有效的zip文件
+                # 验证文件
                 if not temp_zip.exists():
                     raise FileNotFoundError(f"下载的文件未找到: {temp_zip}")
-
                 if not zipfile.is_zipfile(temp_zip):
                     raise ValueError(f"下载的文件不是有效的ZIP文件: {temp_zip}")
 
-                # 清空 data 目录
+                # 清空目标目录
                 print("清理现有文件...")
-                for item in data_dir.iterdir():
-                    if item != temp_zip:  # 保留刚下载的zip文件
+                for item in target_dir.iterdir():
+                    if item != temp_zip:
                         if item.is_file():
                             item.unlink()
                         elif item.is_dir():
@@ -66,40 +66,26 @@ def initialize_dropbox():
                 # 解压文件
                 print("开始解压文件...")
                 with zipfile.ZipFile(temp_zip, 'r') as zip_ref:
-                    # 显示zip文件内容
-                    print("ZIP文件内容:")
-                    for file_info in zip_ref.filelist:
-                        print(f"- {file_info.filename}")
-                    zip_ref.extractall(data_dir)
+                    zip_ref.extractall(target_dir)
                 print("解压完成")
 
                 # 删除临时ZIP文件
-                if temp_zip.exists():
-                    temp_zip.unlink()
-                    print("已删除临时ZIP文件")
+                temp_zip.unlink()
+                print("已删除临时ZIP文件")
 
                 # 验证解压结果
                 expert_count = len(
-                    [f for f in data_dir.iterdir() if f.is_dir()])
+                    [f for f in target_dir.iterdir() if f.is_dir()])
                 print(f"发现 {expert_count} 个专家目录")
 
                 return True
 
-            except requests.exceptions.RequestException as e:
-                print(f"下载失败: {str(e)}")
-                return False
-            except zipfile.BadZipFile as e:
-                print(f"ZIP文件损坏: {str(e)}")
-                return False
             except Exception as e:
                 print(f"处理文件时出错: {str(e)}")
                 return False
 
         except Exception as e:
             print(f"初始化失败: {str(e)}")
-            import traceback
-            print("详细错误信息:")
-            print(traceback.format_exc())
             return False
 
     print(f"警告: 未找到 {dropbox_url_key} 配置信息")
@@ -113,12 +99,20 @@ st.set_page_config(
     layout="wide"
 )
 
-# 初始化 Dropbox 数据
+# 初始化会话状态
 if 'dropbox_initialized' not in st.session_state:
-    st.session_state.dropbox_initialized = initialize_dropbox()
+    # 检查是否已有数据
+    page = st.query_params.get("page", None)
+    data_dir = Path("data_kol") if page == "kol" else Path("data")
 
-# 如果初始化失败且data目录不存在，显示错误信息
-if not st.session_state.dropbox_initialized and not Path("data").exists():
+    if data_dir.exists() and any(data_dir.iterdir()):
+        print(f"{data_dir} 目录已存在且有内容，跳过下载")
+        st.session_state.dropbox_initialized = True
+    else:
+        st.session_state.dropbox_initialized = initialize_dropbox()
+
+# 如果初始化失败且目录不存在，显示错误信息
+if not st.session_state.dropbox_initialized and not (Path("data").exists() or Path("data_kol").exists()):
     st.error("无法初始化专家数据。请确保data目录存在或Dropbox配置正确。")
     st.stop()
 
@@ -176,6 +170,23 @@ with st.sidebar:
                     st.session_state.selected_experts.remove(agent_name)
         with col2:
             st.markdown(f"{avatar} {agent_name}")
+
+    # 添加分隔线
+    st.markdown("---")
+
+    # 添加更新按钮
+    if st.button("🔄 更新专家列表", type="primary"):
+        with st.spinner("正在更新专家资料..."):
+            if initialize_dropbox():
+                # 重新创建agents
+                st.session_state.agents = create_agents(
+                    st.session_state.current_model)
+                st.session_state.selected_experts = list(
+                    st.session_state.agents.keys())
+                st.success("专家资料更新成功！")
+                st.rerun()
+            else:
+                st.error("更新失败，请检查网络连接或配置。")
 
 # 初始化会话状态
 if "messages" not in st.session_state:

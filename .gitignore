@@ -38,6 +38,7 @@ ENV/
 
 # Project specific
 data/
+data_kol/
 temp_download.zip
 *.zip
 

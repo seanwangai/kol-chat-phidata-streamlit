@@ -82,13 +82,15 @@ def create_agent(expert_folder: Path, model_type: str) -> Agent:
     )
 
 
-def get_response(agent: Agent, message: str, image=None, max_retries: int = 1) -> str:
+def get_response(agent: Agent, message: str, image=None, max_retries: int = 3) -> str:
     """获取 Agent 的响应，支持图片输入"""
     for attempt in range(max_retries + 1):
         try:
             # 在每次请求前更新agent的API key
             if isinstance(agent.model, GeminiOpenAIChat):
                 agent.model.api_key = get_next_api_key()
+                # 只打印前10个字符
+                print(f"使用 API Key: {agent.model.api_key[:10]}...")
                 if image:
                     # 如果有图片，使用 vision 方法
                     response = agent.run(message, images=[image])
@@ -98,39 +100,48 @@ def get_response(agent: Agent, message: str, image=None, max_retries: int = 1) -
                 response = agent.run(message)
             return response.content
         except Exception as e:
-            print(f"第 {attempt + 1} 次尝试失败: {str(e)}")
+            error_str = str(e)
+            print(f"第 {attempt + 1} 次尝试失败: {error_str}")
+
+            # 检查是否是配额超限错误
+            if "429" in error_str and "RESOURCE_EXHAUSTED" in error_str:
+                print("检测到配额超限错误，正在切换到新的 API Key...")
+                if attempt < max_retries:
+                    continue
+
+            # 其他错误或已达到最大重试次数
             if attempt < max_retries:
                 print("正在重试...")
                 continue
             else:
                 print("已达到最大重试次数")
-                return f"抱歉，我现在遇到了一些技术问题。请稍后再试。"
+                return f"抱歉，我现在遇到了技术问题（{error_str}）。请稍后再试。"
 
 
 def create_agents(model_type: str = "gemini-2.0-flash-exp") -> Dict[str, tuple]:
-    """根据data文件夹中的专家目录创建agents，并为每个专家分配头像"""
+    """根据目录创建agents，并为每个专家分配头像"""
     print("\n开始创建专家系统...")
 
     agents = {}
-    data_dir = Path("data")
-    used_avatars = set()  # 记录已使用的头像
+    # 根据页面参数选择目录
+    page = st.query_params.get("page", None)
+    data_dir = Path("data_kol") if page == "kol" else Path("data")
+
+    used_avatars = set()
 
     if not data_dir.exists():
-        print("警告: data目录不存在")
+        print(f"警告: {data_dir} 目录不存在")
         return agents
 
-    # 获取并排序文件夹列表，确保创建顺序一致
+    # 获取并排序文件夹列表
     expert_folders = sorted(list(data_dir.iterdir()))
 
     for expert_folder in expert_folders:
         if expert_folder.is_dir():
             try:
-                # 创建该专家的agent
                 agent = create_agent(expert_folder, model_type)
-
-                # 为专家随机分配一个未使用的头像
                 available_avatars = list(set(AVATARS) - used_avatars)
-                if not available_avatars:  # 如果所有头像都用完了，重新使用全部头像
+                if not available_avatars:
                     available_avatars = AVATARS
                 avatar = random.choice(available_avatars)
                 used_avatars.add(avatar)
@@ -147,7 +158,8 @@ def create_agents(model_type: str = "gemini-2.0-flash-exp") -> Dict[str, tuple]:
 
 def get_expert_names() -> list:
     """获取所有专家名称"""
-    data_dir = Path("data")
+    page = st.query_params.get("page", None)
+    data_dir = Path("data_kol") if page == "kol" else Path("data")
     return [folder.name for folder in data_dir.iterdir() if folder.is_dir()]
 
 
