@@ -151,14 +151,21 @@ def create_research_agent(competitor_count: int) -> Agent:
 例如，如果输入是 "AMAT"，你应该只返回类似这样的内容：
 ["LRCX", "KLAC", "TSMC"]"""
 
+    model = GeminiOpenAIChat(
+        id=st.session_state.current_model,
+        api_key=get_next_api_key(),
+    ) if st.session_state.current_model != "deepseek" else DeepSeekChat(
+        api_key=st.secrets["DEEPSEEK_API_KEY"],
+    )
+
+    # 使用 messages 而不是 system_prompt
+    messages = [
+        {"role": "system", "content": system_prompt}
+    ]
+
     return Agent(
-        model=GeminiOpenAIChat(
-            id=st.session_state.current_model,
-            api_key=get_next_api_key(),
-        ) if st.session_state.current_model != "deepseek" else DeepSeekChat(
-            api_key=st.secrets["DEEPSEEK_API_KEY"],
-        ),
-        system_prompt=system_prompt,
+        model=model,
+        messages=messages,  # 使用 messages 替代 system_prompt
         markdown=True
     )
 
@@ -177,15 +184,22 @@ def create_transcript_agent(transcript: str, company: str, year: int, quarter: i
 4. 最後給一個結論
 """
 
+    model = GeminiOpenAIChat(
+        id=st.session_state.current_model,
+        api_key=get_next_api_key(),
+    ) if st.session_state.current_model != "deepseek" else DeepSeekChat(
+        api_key=st.secrets["DEEPSEEK_API_KEY"],
+    )
+
+    # 使用 messages 而不是 system_prompt
+    messages = [
+        {"role": "system", "content": system_prompt}
+    ]
+
     return {
         'agent': Agent(
-            model=GeminiOpenAIChat(
-                id=st.session_state.current_model,  # 使用当前选择的模型
-                api_key=get_next_api_key(),
-            ) if st.session_state.current_model != "deepseek" else DeepSeekChat(
-                api_key=st.secrets["DEEPSEEK_API_KEY"],
-            ),
-            system_prompt=system_prompt,
+            model=model,
+            messages=messages,  # 使用 messages 替代 system_prompt
             markdown=True
         ),
         'company': company,
