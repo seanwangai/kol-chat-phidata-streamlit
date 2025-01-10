@@ -151,24 +151,26 @@ def create_research_agent(competitor_count: int) -> Agent:
 例如，如果输入是 "AMAT"，你应该只返回类似这样的内容：
 ["LRCX", "KLAC", "TSMC"]"""
 
-    model = GeminiOpenAIChat(
-        id=st.session_state.current_model,
-        api_key=get_next_api_key(),
-    ) if st.session_state.current_model != "deepseek" else DeepSeekChat(
-        api_key=st.secrets["DEEPSEEK_API_KEY"],
-    )
+    print("\n=== 创建研究 Agent ===")
+    print(f"使用模型: {st.session_state.current_model}")
+    print(f"System Prompt: {system_prompt}")
 
-    # 使用基础的消息列表格式
-    messages = [{
-        "role": "assistant" if st.session_state.current_model != "deepseek" else "system",
-        "content": system_prompt
-    }]
-
-    return Agent(
-        model=model,
-        messages=messages,
+    agent = Agent(
+        model=GeminiOpenAIChat(
+            id=st.session_state.current_model,
+            api_key=get_next_api_key(),
+        ) if st.session_state.current_model != "deepseek" else DeepSeekChat(
+            api_key=st.secrets["DEEPSEEK_API_KEY"],
+        ),
+        system_prompt=system_prompt,
         markdown=True
     )
+
+    # 打印 agent 的配置
+    print("\nAgent 配置:")
+    print(f"Model Type: {type(agent.model).__name__}")
+    print(f"System Prompt: {agent.system_prompt}")
+    return agent
 
 
 def create_transcript_agent(transcript: str, company: str, year: int, quarter: int) -> dict:
@@ -185,25 +187,28 @@ def create_transcript_agent(transcript: str, company: str, year: int, quarter: i
 4. 最後給一個結論
 """
 
-    model = GeminiOpenAIChat(
-        id=st.session_state.current_model,
-        api_key=get_next_api_key(),
-    ) if st.session_state.current_model != "deepseek" else DeepSeekChat(
-        api_key=st.secrets["DEEPSEEK_API_KEY"],
+    print(f"\n=== 创建 {company} {year}Q{quarter} Transcript Agent ===")
+    print(f"使用模型: {st.session_state.current_model}")
+    print(f"System Prompt: {system_prompt[:200]}...")  # 只打印前200个字符
+
+    agent = Agent(
+        model=GeminiOpenAIChat(
+            id=st.session_state.current_model,
+            api_key=get_next_api_key(),
+        ) if st.session_state.current_model != "deepseek" else DeepSeekChat(
+            api_key=st.secrets["DEEPSEEK_API_KEY"],
+        ),
+        system_prompt=system_prompt,
+        markdown=True
     )
 
-    # 使用基础的消息列表格式
-    messages = [{
-        "role": "assistant" if st.session_state.current_model != "deepseek" else "system",
-        "content": system_prompt
-    }]
+    # 打印 agent 的配置
+    print("\nAgent 配置:")
+    print(f"Model Type: {type(agent.model).__name__}")
+    print(f"System Prompt Length: {len(agent.system_prompt)}")
 
     return {
-        'agent': Agent(
-            model=model,
-            messages=messages,
-            markdown=True
-        ),
+        'agent': agent,
         'company': company,
         'year': year,
         'quarter': quarter
@@ -464,6 +469,9 @@ if st.session_state.transcript_agents:
         # 处理新的用户输入
         user_input = st.chat_input("请输入您的问题...")
         if user_input:
+            print("\n=== 处理用户输入 ===")
+            print(f"用户输入: {user_input}")
+
             # 添加用户消息
             st.session_state.earnings_chat_messages.append({
                 "role": "user",
@@ -476,37 +484,37 @@ if st.session_state.transcript_agents:
 
             # 使用已创建的 agents 回答问题
             with st.chat_message("assistant", avatar="🤖"):
-                # 获取所有唯一的年份和季度组合，按时间倒序排序
-                year_quarters = sorted(set((agent['year'], agent['quarter'])
-                                       for agent in st.session_state.transcript_agents),
-                                       reverse=True)
-
-                # 对于每个季度
                 for year, quarter in year_quarters:
-                    st.markdown(f"## {year} Q{quarter}")
-
-                    # 找到这个季度的所有公司的 agents
+                    print(f"\n处理 {year}Q{quarter} 的回答")
                     quarter_agents = [
                         agent for agent in st.session_state.transcript_agents
                         if agent['year'] == year and agent['quarter'] == quarter
                     ]
 
-                    # 按公司名称排序
-                    quarter_agents.sort(key=lambda x: x['company'])
-
-                    # 获取每个公司这个季度的回答
                     for agent_info in quarter_agents:
                         try:
-                            # 添加 loading 状态，默认展开
+                            print(
+                                f"\n正在使用 {agent_info['company']} 的 agent 生成回答")
                             with st.status(f"🤔 {agent_info['company']} 正在分析...", expanded=True) as status:
+                                # 打印请求信息
+                                print(f"Agent 类型: {
+                                      type(agent_info['agent'].model).__name__}")
+                                print(f"System Prompt 长度: {
+                                      len(agent_info['agent'].system_prompt)}")
+
                                 response = agent_info['agent'].run(user_input)
+                                # 只打印前100个字符
+                                print(f"获得响应: {response.content[:100]}...")
+
                                 status.update(
                                     label=f"✅ {agent_info['company']} 分析完成", state="complete")
                                 st.markdown(f"### {agent_info['company']}")
                                 st.markdown(response.content)
-                                st.markdown("---")  # 每个回答后添加分隔线
+                                st.markdown("---")
                         except Exception as e:
-                            continue  # 如果获取失败，直接跳过
+                            print(f"错误: {str(e)}")
+                            print(f"错误类型: {type(e)}")
+                            continue
 
                 # 保存助手消息
                 st.session_state.earnings_chat_messages.append({
