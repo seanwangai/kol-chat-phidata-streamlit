@@ -158,14 +158,15 @@ def create_research_agent(competitor_count: int) -> Agent:
         api_key=st.secrets["DEEPSEEK_API_KEY"],
     )
 
-    # 使用 messages 而不是 system_prompt
-    messages = [
-        {"role": "system", "content": system_prompt}
-    ]
+    # 使用基础的消息列表格式
+    messages = [{
+        "role": "assistant" if st.session_state.current_model != "deepseek" else "system",
+        "content": system_prompt
+    }]
 
     return Agent(
         model=model,
-        messages=messages,  # 使用 messages 替代 system_prompt
+        messages=messages,
         markdown=True
     )
 
@@ -191,15 +192,16 @@ def create_transcript_agent(transcript: str, company: str, year: int, quarter: i
         api_key=st.secrets["DEEPSEEK_API_KEY"],
     )
 
-    # 使用 messages 而不是 system_prompt
-    messages = [
-        {"role": "system", "content": system_prompt}
-    ]
+    # 使用基础的消息列表格式
+    messages = [{
+        "role": "assistant" if st.session_state.current_model != "deepseek" else "system",
+        "content": system_prompt
+    }]
 
     return {
         'agent': Agent(
             model=model,
-            messages=messages,  # 使用 messages 替代 system_prompt
+            messages=messages,
             markdown=True
         ),
         'company': company,
