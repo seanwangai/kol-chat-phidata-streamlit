@@ -532,71 +532,82 @@ if st.session_state.transcript_agents:
             "content": user_input
         })
 
-        # 显示用户消息
-        with st.chat_message("user", avatar="🧑‍💻"):
-            st.markdown(user_input)
+        # 获取所有唯一的年份和季度组合，按时间倒序排序
+        year_quarters = sorted(set((agent['year'], agent['quarter'])
+                                   for agent in st.session_state.transcript_agents),
+                               reverse=True)
 
-        # 创建一个消息容器
-        response_container = st.container()
+        # 收集所有回答
+        all_responses = []
 
-        with response_container:
-            with st.chat_message("assistant", avatar="🤖"):
-                # 获取所有唯一的年份和季度组合，按时间倒序排序
-                year_quarters = sorted(set((agent['year'], agent['quarter'])
-                                       for agent in st.session_state.transcript_agents),
-                                       reverse=True)
+        # 对于每个季度
+        for year, quarter in year_quarters:
+            # 添加季度标题
+            all_responses.append(f"## 📅 {year} Q{quarter} 分析\n")
 
-                # 收集所有回答
-                all_responses = []
+            # 找到这个季度的所有公司的 agents
+            quarter_agents = [
+                agent for agent in st.session_state.transcript_agents
+                if agent['year'] == year and agent['quarter'] == quarter
+            ]
 
-                # 对于每个季度
-                for year, quarter in year_quarters:
-                    # 添加季度标题
-                    st.markdown(f"## 📅 {year} Q{quarter} 分析")
-                    all_responses.append(f"## 📅 {year} Q{quarter} 分析\n")
+            # 按公司名称排序
+            quarter_agents.sort(key=lambda x: x['company'])
 
-                    # 找到这个季度的所有公司的 agents
-                    quarter_agents = [
-                        agent for agent in st.session_state.transcript_agents
-                        if agent['year'] == year and agent['quarter'] == quarter
-                    ]
+            # 获取每个公司这个季度的回答
+            for agent_info in quarter_agents:
+                try:
+                    with st.status(f"🤔 {agent_info['company']} - {year}Q{quarter} 正在分析...", expanded=False) as status:
+                        response = agent_info['agent'].run(user_input)
+                        status.update(label=f"✅ {
+                                      agent_info['company']} - {year}Q{quarter} 分析完成", state="complete", expanded=False)
 
-                    # 按公司名称排序
-                    quarter_agents.sort(key=lambda x: x['company'])
+                        # 添加公司回答
+                        response_text = f"### 🏢 {
+                            agent_info['company']} - {year}Q{quarter}\n{response.content}\n---\n"
+                        all_responses.append(response_text)
 
-                    # 获取每个公司这个季度的回答
-                    for agent_info in quarter_agents:
-                        try:
-                            with st.status(f"🤔 {agent_info['company']} - {year}Q{quarter} 正在分析...", expanded=False) as status:
-                                response = agent_info['agent'].run(user_input)
-                                status.update(label=f"✅ {
-                                              agent_info['company']} - {year}Q{quarter} 分析完成", state="complete", expanded=True)
+                        # 立即添加到会话状态
+                        temp_response = {
+                            "role": "assistant",
+                            "content": response_text,
+                            "is_partial": True  # 标记为部分回答
+                        }
+                        st.session_state.earnings_chat_messages.append(
+                            temp_response)
 
-                                # 立即显示这个公司的回答
-                                st.markdown(
-                                    f"### 🏢 {agent_info['company']} - {year}Q{quarter}")
-                                st.markdown(response.content)
-                                st.markdown("---")
+                        # 重新显示所有消息
+                        for msg in st.session_state.earnings_chat_messages:
+                            with st.chat_message(msg["role"], avatar="🧑‍💻" if msg["role"] == "user" else "🤖"):
+                                st.markdown(msg["content"])
 
-                                # 同时保存到完整回答中
-                                all_responses.append(
-                                    f"### 🏢 {agent_info['company']} - {year}Q{quarter}\n")
-                                all_responses.append(f"{response.content}\n")
-                                all_responses.append("---\n")
-                        except Exception as e:
-                            print(f"错误: {str(e)}")
-                            print(f"错误类型: {type(e)}")
-                            continue
+                except Exception as e:
+                    print(f"错误: {str(e)}")
+                    print(f"错误类型: {type(e)}")
+                    continue
 
-                    # 在每个季度的分析后添加额外的分隔
-                    all_responses.append("---\n")
+            # 在每个季度的分析后添加额外的分隔
+            all_responses.append("---\n")
 
-                # 将所有回答合并为一个字符串并保存到会话状态
-                complete_response = "\n".join(all_responses)
-                st.session_state.earnings_chat_messages.append({
-                    "role": "assistant",
-                    "content": complete_response
-                })
+        # 将所有回答合并为一个字符串
+        complete_response = "\n".join(all_responses)
+
+        # 移除所有部分回答
+        st.session_state.earnings_chat_messages = [
+            msg for msg in st.session_state.earnings_chat_messages
+            if not msg.get("is_partial", False)
+        ]
+
+        # 添加完整回答
+        st.session_state.earnings_chat_messages.append({
+            "role": "assistant",
+            "content": complete_response
+        })
+
+        # 重新显示所有消息
+        for msg in st.session_state.earnings_chat_messages:
+            with st.chat_message(msg["role"], avatar="🧑‍💻" if msg["role"] == "user" else "🤖"):
+                st.markdown(msg["content"])
 
     # 添加底部边距，避免输入框遮挡内容
     st.markdown("<div style='margin-bottom: 100px'></div>",
