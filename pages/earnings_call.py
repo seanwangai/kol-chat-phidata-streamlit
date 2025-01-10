@@ -32,6 +32,32 @@ MODELS = {
     "deepseek": "DeepSeek"
 }
 
+# 初始化所有必要的 session state 变量
+
+
+def init_session_state():
+    """初始化所有必要的 session state 变量"""
+    if "transcript_agents" not in st.session_state:
+        st.session_state.transcript_agents = []
+    if "earnings_chat_messages" not in st.session_state:
+        st.session_state.earnings_chat_messages = []
+    if "api_status" not in st.session_state:
+        st.session_state.api_status = []
+    if "transcripts_data" not in st.session_state:
+        st.session_state.transcripts_data = {}
+    if "current_model" not in st.session_state:
+        st.session_state.current_model = "gemini-exp-1206"
+    if "company_quarters_info" not in st.session_state:
+        st.session_state.company_quarters_info = []
+    if "competitor_count" not in st.session_state:
+        st.session_state.competitor_count = 3
+    if "api_key_cycle" not in st.session_state:
+        st.session_state.api_key_cycle = cycle(st.secrets["GOOGLE_API_KEYS"])
+
+
+# 确保在页面开始时就初始化所有状态
+init_session_state()
+
 
 def process_transcript_text(text: str) -> str:
     """处理财报文本，转换为 Markdown 格式，并为说话人添加 emoji"""
@@ -132,21 +158,19 @@ DEFAULT_SELECTED = [
 
 def get_next_api_key():
     """获取下一个 API key"""
-    if "api_key_cycle" not in st.session_state:
-        st.session_state.api_key_cycle = cycle(st.secrets["GOOGLE_API_KEYS"])
     return next(st.session_state.api_key_cycle)
 
 
-def create_research_agent(competitor_count: int) -> Agent:
+def create_research_agent(ticker: str, competitor_count: int) -> Agent:
     """创建研究 Agent"""
-    system_prompt = f"""你是一个专业的股票研究助手。当用户给你一个股票代码时，你需要列出{competitor_count}个与该公司最相关的竞争对手或同行业公司的股票代码。
+    system_prompt = f"""你是一个专业的股票研究助手。你需要列出与 {ticker} 公司相關的 {competitor_count} 個竞争对手或同行业公司的股票代码。
 
 请注意：
 1. 只返回股票代码列表，是美股 ticker
 2. 确保返回的是实际存在的股票代码
-3. 格式必须是 Python list
+3. 格式必须是 list，就算只有1個還是要return list
 4. 只返回代码，不要有任何解释或其他文字
-5. 必须返回{competitor_count}个代码
+5. 必须返回 {competitor_count} 个代码
 
 例如，如果输入是 "AMAT"，你应该只返回类似这样的内容：
 ["LRCX", "KLAC", "TSMC"]"""
@@ -262,26 +286,27 @@ class EarningsCallFetcher:
 # 创建实例
 fetcher = EarningsCallFetcher(API_KEY)
 
-# 初始化会话状态
-if "transcript_agents" not in st.session_state:
-    st.session_state.transcript_agents = []
-if "earnings_chat_messages" not in st.session_state:
-    st.session_state.earnings_chat_messages = []
-if "api_status" not in st.session_state:
-    st.session_state.api_status = []
-if "transcripts_data" not in st.session_state:
-    st.session_state.transcripts_data = {}  # 存储财报原文
-if "current_model" not in st.session_state:
-    st.session_state.current_model = "gemini-2.0-flash-exp"
-if "company_quarters_info" not in st.session_state:
-    st.session_state.company_quarters_info = []  # 存储公司季度信息
-
 # 侧边栏配置
 with st.sidebar:
     st.header("⚙️ 设置")
 
     # 股票代码输入和获取按钮
-    ticker = st.text_input("股票代码", placeholder="例如：MSFT").upper()
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        ticker = st.text_input("股票代码", placeholder="例如：MSFT",
+                               key="ticker_input", on_change=None).upper()
+
+    # 季度选择
+    st.subheader("📅 选择季度")
+    selected_quarters = []
+    for year, quarter in AVAILABLE_QUARTERS:
+        # 检查是否在默认选中列表中
+        default_value = (year, quarter) in DEFAULT_SELECTED
+        if st.checkbox(f"{year} Q{quarter}", value=default_value, key=f"quarter_{year}_{quarter}"):
+            selected_quarters.append((year, quarter))
+
+    if not selected_quarters:
+        st.warning("请至少选择一个季度")
 
     # 竞争对手数量选择
     competitor_count = st.number_input(
@@ -293,16 +318,28 @@ with st.sidebar:
         help="选择要分析的相关公司数量"
     )
 
-    if st.button("获取逐字稿", type="primary", use_container_width=True):
-        # 清空所有状态
-        st.session_state.transcript_agents = []
-        st.session_state.earnings_chat_messages = []
-        st.session_state.api_status = []
-        st.session_state.transcripts_data = {}
-        st.session_state.company_quarters_info = []
-        # 保存当前的竞争对手数量
-        st.session_state.competitor_count = competitor_count
-        st.rerun()
+    # 获取按钮
+    get_data = st.button("获取逐字稿", type="primary", use_container_width=True)
+
+    # 当点击获取按钮时
+    if get_data:
+        # 验证输入
+        if not ticker:
+            st.error("请输入股票代码")
+        elif not selected_quarters:
+            st.error("请至少选择一个季度")
+        else:
+            # 清空所有状态
+            st.session_state.transcript_agents = []
+            st.session_state.earnings_chat_messages = []
+            st.session_state.api_status = []
+            st.session_state.transcripts_data = {}
+            st.session_state.company_quarters_info = []
+            # 保存当前的竞争对手数量
+            st.session_state.competitor_count = competitor_count
+            # 设置标志表示需要获取数据
+            st.session_state.should_fetch_data = True
+            st.rerun()
 
     st.markdown("---")
 
@@ -324,18 +361,6 @@ with st.sidebar:
             st.session_state.company_quarters_info = []
             st.info("已切换模型，请重新输入股票代码获取财报。")
 
-    # 季度选择
-    st.subheader("📅 选择季度")
-    selected_quarters = []
-    for year, quarter in AVAILABLE_QUARTERS:
-        # 检查是否在默认选中列表中
-        default_value = (year, quarter) in DEFAULT_SELECTED
-        if st.checkbox(f"{year} Q{quarter}", value=default_value, key=f"quarter_{year}_{quarter}"):
-            selected_quarters.append((year, quarter))
-
-    if not selected_quarters:
-        st.warning("请至少选择一个季度")
-
 # 主页面
 st.title("🎙️ Earnings Call Transcripts")
 
@@ -347,74 +372,107 @@ with api_status_container:
     for status_msg in st.session_state.api_status:
         st.markdown(status_msg)
 
-# 处理股票代码输入和 agent 创建
-if ticker and selected_quarters:
-    if not st.session_state.transcript_agents:
-        # 清空之前的状态记录
-        st.session_state.api_status = []
+# 初始化 should_fetch_data
+if 'should_fetch_data' not in st.session_state:
+    st.session_state.should_fetch_data = False
 
-        # 创建研究 agent 并获取相关公司
-        with st.spinner("🔍 正在分析相关公司..."):
+# 处理股票代码输入和 agent 创建
+if ticker and selected_quarters and st.session_state.should_fetch_data:
+    # 重置获取数据标志
+    st.session_state.should_fetch_data = False
+
+    # 清空之前的状态记录
+    st.session_state.api_status = []
+
+    # 创建研究 agent 并获取相关公司
+    with st.spinner("🔍 正在分析相关公司..."):
+        try:
+            # 使用保存的竞争对手数量
+            current_competitor_count = getattr(
+                st.session_state, 'competitor_count', competitor_count)
+            agent = create_research_agent(ticker, current_competitor_count)
+            response = agent.run(f"给我 {ticker} 的相关公司股票代码")
+
+            # 打印原始响应内容以便调试
+            print('原始响应:', response.content)
+
             try:
-                # 使用保存的竞争对手数量
-                current_competitor_count = getattr(
-                    st.session_state, 'competitor_count', competitor_count)
-                agent = create_research_agent(current_competitor_count)
-                response = agent.run(f"给我 {ticker} 的相关公司股票代码")
-                related_tickers = eval(response.content)
+                # 清理响应内容，确保是有效的 Python 列表格式
+                content = response.content.strip()
+                # 如果内容被反引号包围，去除它们
+                if content.startswith('```') and content.endswith('```'):
+                    content = content[3:-3].strip()
+                # 如果内容包含 python 或 json 标记，去除它
+                if content.startswith('python') or content.startswith('json'):
+                    content = content.split('\n', 1)[1].strip()
+
+                # 尝试解析列表
+                related_tickers = eval(content)
+
+                # 验证结果是否为列表且包含字符串
+                if not isinstance(related_tickers, list) or not all(isinstance(x, str) for x in related_tickers):
+                    raise ValueError("返回格式不正确")
+
+                print('处理后的相关公司:', related_tickers)
                 all_tickers = [ticker] + related_tickers
             except Exception as e:
-                st.error(f"❌ 分析相关公司时出错: {str(e)}")
+                print(f"解析响应时出错: {str(e)}")
+                print(f"原始响应内容: {response.content}")
+                st.error(f"❌ 解析相关公司时出错，将只分析输入的公司")
                 all_tickers = [ticker]
 
-        # 获取并创建所有公司的 transcript agents
-        with st.spinner("📝 正在获取财报记录..."):
-            for current_ticker in all_tickers:
-                transcripts = fetcher.get_sequential_transcripts(
-                    current_ticker, selected_quarters)
-                if transcripts:  # 只处理有数据的公司
-                    for year, quarter, transcript_data in transcripts:
-                        # 为每个季度创建一个 agent
-                        agent_info = create_transcript_agent(
-                            transcript_data['transcript'],
-                            current_ticker,
-                            year,
-                            quarter
-                        )
-                        st.session_state.transcript_agents.append(agent_info)
+        except Exception as e:
+            st.error(f"❌ 分析相关公司时出错: {str(e)}")
+            all_tickers = [ticker]
 
-                        # 保存财报原文
-                        transcript_key = f"{current_ticker}_{year}Q{quarter}"
-                        raw_text = transcript_data['transcript']
-                        st.session_state.transcripts_data[transcript_key] = raw_text
+    # 获取并创建所有公司的 transcript agents
+    with st.spinner("📝 正在获取财报记录..."):
+        for current_ticker in all_tickers:
+            transcripts = fetcher.get_sequential_transcripts(
+                current_ticker, selected_quarters)
+            if transcripts:  # 只处理有数据的公司
+                for year, quarter, transcript_data in transcripts:
+                    # 为每个季度创建一个 agent
+                    agent_info = create_transcript_agent(
+                        transcript_data['transcript'],
+                        current_ticker,
+                        year,
+                        quarter
+                    )
+                    st.session_state.transcript_agents.append(agent_info)
 
-            if st.session_state.transcript_agents:
-                # 整理每个公司的季度信息
-                company_quarters = {}
-                for agent_info in st.session_state.transcript_agents:
-                    company = agent_info['company']
-                    year = agent_info['year']
-                    quarter = agent_info['quarter']
-                    if company not in company_quarters:
-                        company_quarters[company] = []
-                    company_quarters[company].append(f"{year}Q{quarter}")
+                    # 保存财报原文
+                    transcript_key = f"{current_ticker}_{year}Q{quarter}"
+                    raw_text = transcript_data['transcript']
+                    st.session_state.transcripts_data[transcript_key] = raw_text
 
-                # 显示成功信息
-                st.success(
-                    f"✅ 已获取 {len(st.session_state.transcript_agents)} 份财报记录")
+        if st.session_state.transcript_agents:
+            # 整理每个公司的季度信息
+            company_quarters = {}
+            for agent_info in st.session_state.transcript_agents:
+                company = agent_info['company']
+                year = agent_info['year']
+                quarter = agent_info['quarter']
+                if company not in company_quarters:
+                    company_quarters[company] = []
+                company_quarters[company].append(f"{year}Q{quarter}")
 
-                # 保存和显示每个公司的季度详情
-                company_details = []
-                for company, quarters in company_quarters.items():
-                    quarters.sort()  # 按时间顺序排序
-                    company_details.append(
-                        f"- {company}: {', '.join(quarters)}")
+            # 显示成功信息
+            st.success(
+                f"✅ 已获取 {len(st.session_state.transcript_agents)} 份财报记录")
 
-                # 保存到 session_state
-                st.session_state.company_quarters_info = company_details
-                st.markdown("\n".join(company_details))
-            else:
-                st.warning("⚠️ 未找到任何可用的财报记录")
+            # 保存和显示每个公司的季度详情
+            company_details = []
+            for company, quarters in company_quarters.items():
+                quarters.sort()  # 按时间顺序排序
+                company_details.append(
+                    f"- {company}: {', '.join(quarters)}")
+
+            # 保存到 session_state
+            st.session_state.company_quarters_info = company_details
+            st.markdown("\n".join(company_details))
+        else:
+            st.warning("⚠️ 未找到任何可用的财报记录")
 
 # 只有在有 agents 时才显示问答区域
 if st.session_state.transcript_agents:
@@ -458,68 +516,86 @@ if st.session_state.transcript_agents:
         st.markdown("\n".join(st.session_state.company_quarters_info))
         st.markdown("---")
 
-    # 显示聊天历史和处理用户输入
-    chat_container = st.container()
-    with chat_container:
-        # 显示历史消息
-        for message in st.session_state.earnings_chat_messages:
-            with st.chat_message(message["role"], avatar="🧑‍💻" if message["role"] == "user" else "🤖"):
-                st.markdown(message["content"])
+    # 显示聊天历史
+    for message in st.session_state.earnings_chat_messages:
+        with st.chat_message(message["role"], avatar="🧑‍💻" if message["role"] == "user" else "🤖"):
+            st.markdown(message["content"])
 
-        # 处理新的用户输入
-        user_input = st.chat_input("请输入您的问题...")
-        if user_input:
-            print("\n=== 处理用户输入 ===")
-            print(f"用户输入: {user_input}")
+    # 用户输入
+    user_input = st.chat_input("请输入您的问题...")
 
-            # 添加用户消息
-            st.session_state.earnings_chat_messages.append({
-                "role": "user",
-                "content": user_input
-            })
+    # 处理新的用户输入
+    if user_input:
+        # 添加用户消息
+        st.session_state.earnings_chat_messages.append({
+            "role": "user",
+            "content": user_input
+        })
 
-            # 显示用户消息
-            with st.chat_message("user", avatar="🧑‍💻"):
-                st.markdown(user_input)
+        # 显示用户消息
+        with st.chat_message("user", avatar="🧑‍💻"):
+            st.markdown(user_input)
 
-            # 使用已创建的 agents 回答问题
+        # 创建一个消息容器
+        response_container = st.container()
+
+        with response_container:
             with st.chat_message("assistant", avatar="🤖"):
+                # 获取所有唯一的年份和季度组合，按时间倒序排序
+                year_quarters = sorted(set((agent['year'], agent['quarter'])
+                                       for agent in st.session_state.transcript_agents),
+                                       reverse=True)
+
+                # 收集所有回答
+                all_responses = []
+
+                # 对于每个季度
                 for year, quarter in year_quarters:
-                    print(f"\n处理 {year}Q{quarter} 的回答")
+                    # 添加季度标题
+                    st.markdown(f"## 📅 {year} Q{quarter} 分析")
+                    all_responses.append(f"## 📅 {year} Q{quarter} 分析\n")
+
+                    # 找到这个季度的所有公司的 agents
                     quarter_agents = [
                         agent for agent in st.session_state.transcript_agents
                         if agent['year'] == year and agent['quarter'] == quarter
                     ]
 
+                    # 按公司名称排序
+                    quarter_agents.sort(key=lambda x: x['company'])
+
+                    # 获取每个公司这个季度的回答
                     for agent_info in quarter_agents:
                         try:
-                            print(
-                                f"\n正在使用 {agent_info['company']} 的 agent 生成回答")
-                            with st.status(f"🤔 {agent_info['company']} 正在分析...", expanded=True) as status:
-                                # 打印请求信息
-                                print(f"Agent 类型: {
-                                      type(agent_info['agent'].model).__name__}")
-                                print(f"System Prompt 长度: {
-                                      len(agent_info['agent'].system_prompt)}")
-
+                            with st.status(f"🤔 {agent_info['company']} - {year}Q{quarter} 正在分析...", expanded=False) as status:
                                 response = agent_info['agent'].run(user_input)
-                                # 只打印前100个字符
-                                print(f"获得响应: {response.content[:100]}...")
+                                status.update(label=f"✅ {
+                                              agent_info['company']} - {year}Q{quarter} 分析完成", state="complete", expanded=True)
 
-                                status.update(
-                                    label=f"✅ {agent_info['company']} 分析完成", state="complete")
-                                st.markdown(f"### {agent_info['company']}")
+                                # 立即显示这个公司的回答
+                                st.markdown(
+                                    f"### 🏢 {agent_info['company']} - {year}Q{quarter}")
                                 st.markdown(response.content)
                                 st.markdown("---")
+
+                                # 同时保存到完整回答中
+                                all_responses.append(
+                                    f"### 🏢 {agent_info['company']} - {year}Q{quarter}\n")
+                                all_responses.append(f"{response.content}\n")
+                                all_responses.append("---\n")
                         except Exception as e:
                             print(f"错误: {str(e)}")
                             print(f"错误类型: {type(e)}")
                             continue
 
-                # 保存助手消息
+                    # 在每个季度的分析后添加额外的分隔
+                    all_responses.append("---\n")
+
+                # 将所有回答合并为一个字符串并保存到会话状态
+                complete_response = "\n".join(all_responses)
                 st.session_state.earnings_chat_messages.append({
                     "role": "assistant",
-                    "content": "以上是所有财报的分析结果"
+                    "content": complete_response
                 })
 
     # 添加底部边距，避免输入框遮挡内容
