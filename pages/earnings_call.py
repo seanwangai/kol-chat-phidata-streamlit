@@ -137,22 +137,23 @@ def get_next_api_key():
     return next(st.session_state.api_key_cycle)
 
 
-def create_research_agent() -> Agent:
+def create_research_agent(competitor_count: int) -> Agent:
     """创建研究 Agent"""
-    system_prompt = """你是一个专业的股票研究助手。当用户给你一个股票代码时，你需要列出2个与该公司最相关的竞争对手或同行业公司的股票代码。
-    
+    system_prompt = f"""你是一个专业的股票研究助手。当用户给你一个股票代码时，你需要列出{competitor_count}个与该公司最相关的竞争对手或同行业公司的股票代码。
+
 请注意：
 1. 只返回股票代码列表，是美股 ticker
 2. 确保返回的是实际存在的股票代码
 3. 格式必须是 Python list
 4. 只返回代码，不要有任何解释或其他文字
+5. 必须返回{competitor_count}个代码
 
 例如，如果输入是 "AMAT"，你应该只返回类似这样的内容：
-["LRCX", "KLAC", "TSMC", "ASML"]"""
+["LRCX", "KLAC", "TSMC"]"""
 
     return Agent(
         model=GeminiOpenAIChat(
-            id=st.session_state.current_model,  # 使用当前选择的模型
+            id=st.session_state.current_model,
             api_key=get_next_api_key(),
         ) if st.session_state.current_model != "deepseek" else DeepSeekChat(
             api_key=st.secrets["DEEPSEEK_API_KEY"],
@@ -258,6 +259,32 @@ if "company_quarters_info" not in st.session_state:
 with st.sidebar:
     st.header("⚙️ 设置")
 
+    # 股票代码输入和获取按钮
+    ticker = st.text_input("股票代码", placeholder="例如：MSFT").upper()
+
+    # 竞争对手数量选择
+    competitor_count = st.number_input(
+        "选择竞争对手数量",
+        min_value=1,
+        max_value=10,
+        value=3,
+        step=1,
+        help="选择要分析的相关公司数量"
+    )
+
+    if st.button("获取逐字稿", type="primary", use_container_width=True):
+        # 清空所有状态
+        st.session_state.transcript_agents = []
+        st.session_state.earnings_chat_messages = []
+        st.session_state.api_status = []
+        st.session_state.transcripts_data = {}
+        st.session_state.company_quarters_info = []
+        # 保存当前的竞争对手数量
+        st.session_state.competitor_count = competitor_count
+        st.rerun()
+
+    st.markdown("---")
+
     # 模型选择
     selected_model = st.selectbox(
         "选择模型",
@@ -269,20 +296,12 @@ with st.sidebar:
     # 如果模型改变，更新会话状态
     if selected_model != st.session_state.current_model:
         st.session_state.current_model = selected_model
-        # 清空现有的 agents 和对话历史
-        st.session_state.transcript_agents = []
-        st.session_state.earnings_chat_messages = []
-        st.rerun()
-
-    # 竞争对手数量选择
-    competitor_count = st.number_input(
-        "选择竞争对手数量",
-        min_value=1,
-        max_value=10,
-        value=3,
-        step=1,
-        help="选择要分析的相关公司数量"
-    )
+        # 只有在已经有 agents 时才清空
+        if st.session_state.transcript_agents:
+            st.session_state.transcript_agents = []
+            st.session_state.earnings_chat_messages = []
+            st.session_state.company_quarters_info = []
+            st.info("已切换模型，请重新输入股票代码获取财报。")
 
     # 季度选择
     st.subheader("📅 选择季度")
@@ -300,12 +319,7 @@ with st.sidebar:
 st.title("🎙️ Earnings Call Transcripts")
 
 # 创建容器
-header_container = st.container()  # 用于显示标题和股票输入
 api_status_container = st.container()  # 用于显示 API 状态
-
-# 在顶部容器中显示股票输入
-with header_container:
-    ticker = st.text_input("请输入股票代码：", placeholder="例如：MSFT").upper()
 
 # 显示 API 状态记录
 with api_status_container:
@@ -321,9 +335,11 @@ if ticker and selected_quarters:
         # 创建研究 agent 并获取相关公司
         with st.spinner("🔍 正在分析相关公司..."):
             try:
-                agent = create_research_agent()
-                response = agent.run(
-                    f"给我 {ticker} 的{competitor_count}个相关公司股票代码")
+                # 使用保存的竞争对手数量
+                current_competitor_count = getattr(
+                    st.session_state, 'competitor_count', competitor_count)
+                agent = create_research_agent(current_competitor_count)
+                response = agent.run(f"给我 {ticker} 的相关公司股票代码")
                 related_tickers = eval(response.content)
                 all_tickers = [ticker] + related_tickers
             except Exception as e:
