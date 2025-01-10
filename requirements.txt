@@ -1,11 +1,11 @@
-streamlit
-phidata
+streamlit==1.41.1
+phidata==2.7.6
 altair<5
-google-generativeai
-openai
+google-generativeai==0.8.3
+openai==1.59.3
 duckduckgo-search
-requests
+requests==2.32.3
 PyMuPDF
 ebooklib
-beautifulsoup4
+beautifulsoup4==4.12.3
 python-docx
