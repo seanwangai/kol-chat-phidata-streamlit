@@ -99,9 +99,18 @@ st.set_page_config(
     layout="wide"
 )
 
-# 初始化会话状态
+# 初始化所有会话状态
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "current_model" not in st.session_state:
+    st.session_state.current_model = "gemini-2.0-flash-exp"
+if "selected_experts" not in st.session_state:
+    st.session_state.selected_experts = []
+if "agents" not in st.session_state:
+    st.session_state.agents = {}
+
+# 检查数据目录
 if 'dropbox_initialized' not in st.session_state:
-    # 检查是否已有数据
     page = st.query_params.get("page", None)
     data_dir = Path("data_kol") if page == "kol" else Path("data")
 
@@ -116,7 +125,7 @@ if not st.session_state.dropbox_initialized and not (Path("data").exists() or Pa
     st.error("无法初始化专家数据。请确保data目录存在或Dropbox配置正确。")
     st.stop()
 
-# 右侧边栏 (移到前面)
+# 右侧边栏
 with st.sidebar:
     st.header("⚙️ 系统设置")
 
@@ -124,20 +133,32 @@ with st.sidebar:
     model_type = st.selectbox(
         "选择模型",
         [
-            "gemini-2.0-flash-exp",     # 新的默认选项
+            "gemini-2.0-flash-exp",
             "gemini-exp-1206",
             "gemini-2.0-flash-thinking-exp-1219",
             "deepseek"
         ],
         key="model_type",
-        index=0  # 设置默认选项为第一个（现在是 gemini-2.0-flash-exp）
+        index=list([
+            "gemini-2.0-flash-exp",
+            "gemini-exp-1206",
+            "gemini-2.0-flash-thinking-exp-1219",
+            "deepseek"
+        ]).index(st.session_state.current_model)
     )
 
     # 当模型改变时重新创建agents
-    if "current_model" not in st.session_state or st.session_state.current_model != model_type:
-        st.session_state.agents = create_agents(model_type)
+    if st.session_state.current_model != model_type:
         st.session_state.current_model = model_type
-        st.session_state.messages = []  # 清空对话历史
+        st.session_state.messages = []
+        st.session_state.agents = create_agents(model_type)
+        st.session_state.selected_experts = list(
+            st.session_state.agents.keys())
+        st.rerun()
+
+    # 如果还没有创建agents，现在创建
+    if not st.session_state.agents:
+        st.session_state.agents = create_agents(model_type)
         st.session_state.selected_experts = list(
             st.session_state.agents.keys())
 
