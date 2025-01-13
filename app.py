@@ -237,7 +237,7 @@ if model_type.startswith("gemini"):
 chat_container = st.container()
 with chat_container:
     # 显示聊天历史
-    for i, message in enumerate(st.session_state.messages):
+    for message in st.session_state.messages:
         if message["role"] == "user":
             # 显示用户消息
             with st.chat_message("user", avatar="🧑‍💻"):
@@ -246,29 +246,12 @@ with chat_container:
                     st.image(message["image"], caption="用户上传的图片",
                              use_container_width=True)
         else:
-            # 如果下一条是用户消息或者是最后一条消息，则显示所有agent的回复
-            if i == len(st.session_state.messages) - 1 or st.session_state.messages[i + 1]["role"] == "user":
-                # 获取当前用户消息的所有agent回复
-                agent_responses = [
-                    msg for msg in st.session_state.messages[i:i+len(st.session_state.agents)]
-                    if msg["role"] == "assistant"
-                ]
+            # 显示专家回答
+            st.markdown(f"### {message.get('agent_name', '专家')}")
+            with st.chat_message("assistant", avatar=message.get('avatar', '🤖')):
+                st.markdown(message["content"])
 
-                # 垂直显示所有回复
-                if agent_responses:
-                    for response in agent_responses:
-                        st.markdown(f"### {response['agent_name']}")
-                        with st.chat_message("assistant", avatar=response['avatar']):
-                            st.markdown(response["content"])
-
-    # 显示当前正在生成的回复
-    if st.session_state.is_processing and st.session_state.current_response:
-        response = st.session_state.current_response
-        st.markdown(f"### {response.get('agent_name', '未知专家')}")
-        with st.chat_message("assistant", avatar=response.get('avatar', '🤖')):
-            st.markdown(response.get('content', '正在生成回答...'))
-
-# 用户输入区域
+# 用户输入
 user_input = st.chat_input("请输入您的问题...")
 
 if user_input and not st.session_state.is_processing:
@@ -276,9 +259,6 @@ if user_input and not st.session_state.is_processing:
         # 设置处理状态
         st.session_state.is_processing = True
         st.session_state.error_count = 0
-
-        # 添加停止按钮
-        stop_button = st.button("🛑 停止生成", type="primary")
 
         # 添加用户消息
         message_data = {
@@ -302,32 +282,15 @@ if user_input and not st.session_state.is_processing:
 
         # 获取选中专家的响应
         for agent_name, (agent, avatar) in st.session_state.agents.items():
-            if stop_button:
-                st.session_state.is_processing = False
-                st.warning("已停止生成")
-                st.rerun()
-
             if agent_name in st.session_state.selected_experts:
-                with st.status(f"{avatar} {agent_name} 正在思考...", expanded=True) as status:
-                    st.markdown(f"### {agent_name}")
+                with st.status(f"{avatar} {agent_name} 正在思考...", expanded=False) as status:
                     with st.chat_message("assistant", avatar=avatar):
                         try:
-                            # 更新当前响应状态
-                            st.session_state.current_response = {
-                                "role": "assistant",
-                                "content": "正在生成回答...",
-                                "agent_name": agent_name,
-                                "avatar": avatar
-                            }
-
                             response = get_response(
                                 agent, user_input, uploaded_image)
-
-                            # 更新响应内容
-                            st.session_state.current_response["content"] = response
                             st.markdown(response)
-                            status.update(label=f"{avatar} {
-                                          agent_name} 已回答", state="complete")
+                            status.update(
+                                label=f"✅ {agent_name} 已回答", state="complete", expanded=True)
 
                             response_data = {
                                 "role": "assistant",
@@ -339,42 +302,47 @@ if user_input and not st.session_state.is_processing:
                             expert_responses.append(response_data)
 
                         except Exception as e:
-                            st.session_state.error_count += 1
-                            if stop_button:
-                                break
-                            error_msg = f"生成回答时出错 (尝试 {
-                                st.session_state.error_count}/3): {str(e)}"
+                            error_msg = f"生成回答时出错: {str(e)}"
                             st.error(error_msg)
-                            if st.session_state.error_count >= 3:
-                                st.error("已达到最大重试次数，请稍后再试")
-                                break
+                            st.session_state.messages.append({
+                                "role": "assistant",
+                                "content": f"❌ {error_msg}",
+                                "agent_name": agent_name,
+                                "avatar": avatar
+                            })
+                            st.session_state.error_count += 1
 
         # 如果有多个专家回答，生成总结
         if len(expert_responses) > 1:
-            with st.status("🤔 正在生成总结...", expanded=True) as status:
-                st.markdown("### 💡 专家观点总结")
-                with st.chat_message("assistant", avatar="🎯"):
-                    try:
-                        # 创建总结agent
-                        summary_agent = create_summary_agent(model_type)
-                        summary = get_summary_response(
-                            summary_agent, expert_responses)
-                        st.markdown(summary)
-                        status.update(label="✨ 总结完成", state="complete")
+            with st.status("🤔 正在生成总结...", expanded=False) as status:
+                try:
+                    # 创建总结agent
+                    summary_agent = create_summary_agent(
+                        st.session_state.current_model)
+                    summary = get_summary_response(
+                        summary_agent, expert_responses)
 
-                        # 保存总结到消息历史
-                        st.session_state.messages.append({
-                            "role": "assistant",
-                            "content": summary,
-                            "agent_name": "专家观点总结",
-                            "avatar": "🎯"
-                        })
-                    except Exception as e:
-                        st.error(f"生成总结时出错: {str(e)}")
+                    with st.chat_message("assistant", avatar="🎯"):
+                        st.markdown("### 💡 专家观点总结")
+                        st.markdown(summary)
+                    status.update(label="✨ 总结完成",
+                                  state="complete", expanded=True)
+
+                    # 保存总结到消息历史
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": summary,
+                        "agent_name": "专家观点总结",
+                        "avatar": "🎯"
+                    })
+                except Exception as e:
+                    st.error(f"生成总结时出错: {str(e)}")
 
     except Exception as e:
         st.error(f"处理请求时出错: {str(e)}")
     finally:
         # 重置处理状态
         st.session_state.is_processing = False
-        st.session_state.current_response = {}
+
+# 添加底部边距
+st.markdown("<div style='margin-bottom: 100px'></div>", unsafe_allow_html=True)

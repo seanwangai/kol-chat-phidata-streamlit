@@ -26,8 +26,8 @@ SPEAKER_EMOJIS = ["👨‍💼", "👩‍💼", "👨‍💻", "👩‍💻", "�
 
 # 定义可用的模型
 MODELS = {
-    "gemini-2.0-flash-thinking-exp-1219": "Gemini Flash Thinking",
     "gemini-2.0-flash-exp": "Gemini Flash",
+    "gemini-2.0-flash-thinking-exp-1219": "Gemini Flash Thinking",
     "gemini-exp-1206": "Gemini 1206",
     "deepseek": "DeepSeek"
 }
