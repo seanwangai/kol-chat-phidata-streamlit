@@ -136,16 +136,13 @@ if st.session_state.current_model.startswith("gemini"):
         st.image(uploaded_file, caption="已上传的图片", use_container_width=True)
         uploaded_image = uploaded_file.getvalue()
 
-# 聊天区域
-chat_container = st.container()
-with chat_container:
-    # 显示聊天历史
-    for message in st.session_state.chat_messages:
-        with st.chat_message(message["role"], avatar="🧑‍💻" if message["role"] == "user" else "🤖"):
-            st.markdown(message["content"])
-            if "has_image" in message and message["has_image"]:
-                st.image(message["image"], caption="用户上传的图片",
-                         use_container_width=True)
+# 显示聊天历史
+for message in st.session_state.chat_messages:
+    with st.chat_message(message["role"], avatar="🧑‍💻" if message["role"] == "user" else "🤖"):
+        st.markdown(message["content"])
+        if "has_image" in message and message["has_image"]:
+            st.image(message["image"], caption="用户上传的图片",
+                     use_container_width=True)
 
 # 用户输入
 user_input = st.chat_input("请输入您的问题...")
@@ -156,7 +153,7 @@ if user_input and not st.session_state.chat_is_processing:
         st.session_state.chat_is_processing = True
         st.session_state.chat_error_count = 0
 
-        # 添加用户消息
+        # 添加用户消息到会话状态
         message_data = {
             "role": "user",
             "content": user_input,
@@ -175,24 +172,36 @@ if user_input and not st.session_state.chat_is_processing:
 
         # 获取AI响应
         with st.chat_message("assistant", avatar="🤖"):
-            with st.status("🤔 正在思考...", expanded=True):
+            with st.status("🤔 正在思考...", expanded=True) as status:
                 try:
                     agent = create_chat_agent(st.session_state.current_model)
                     response = get_chat_response(
                         agent, user_input, uploaded_image)
                     st.markdown(response)
+                    status.update(label="✅ 回答完成",
+                                  state="complete", expanded=True)
 
-                    # 保存响应
+                    # 保存响应到会话状态
                     st.session_state.chat_messages.append({
                         "role": "assistant",
                         "content": response
                     })
 
                 except Exception as e:
-                    st.error(f"生成回答时出错: {str(e)}")
+                    error_msg = f"生成回答时出错: {str(e)}"
+                    st.error(error_msg)
+                    # 保存错误消息到会话状态
+                    st.session_state.chat_messages.append({
+                        "role": "assistant",
+                        "content": f"❌ {error_msg}"
+                    })
+                    st.session_state.chat_error_count += 1
 
     except Exception as e:
         st.error(f"处理请求时出错: {str(e)}")
     finally:
         # 重置处理状态
         st.session_state.chat_is_processing = False
+
+# 添加底部边距
+st.markdown("<div style='margin-bottom: 100px'></div>", unsafe_allow_html=True)

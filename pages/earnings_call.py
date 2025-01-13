@@ -46,7 +46,7 @@ def init_session_state():
     if "transcripts_data" not in st.session_state:
         st.session_state.transcripts_data = {}
     if "current_model" not in st.session_state:
-        st.session_state.current_model = "gemini-exp-1206"
+        st.session_state.current_model = "gemini-2.0-flash-exp"
     if "company_quarters_info" not in st.session_state:
         st.session_state.company_quarters_info = []
     if "competitor_count" not in st.session_state:
@@ -532,6 +532,10 @@ if st.session_state.transcript_agents:
             "content": user_input
         })
 
+        # 显示用户消息
+        with st.chat_message("user", avatar="🧑‍💻"):
+            st.markdown(user_input)
+
         # 获取所有唯一的年份和季度组合，按时间倒序排序
         year_quarters = sorted(set((agent['year'], agent['quarter'])
                                    for agent in st.session_state.transcript_agents),
@@ -560,26 +564,16 @@ if st.session_state.transcript_agents:
                     with st.status(f"🤔 {agent_info['company']} - {year}Q{quarter} 正在分析...", expanded=False) as status:
                         response = agent_info['agent'].run(user_input)
                         status.update(label=f"✅ {
-                                      agent_info['company']} - {year}Q{quarter} 分析完成", state="complete", expanded=False)
+                                      agent_info['company']} - {year}Q{quarter} 分析完成", state="complete", expanded=True)
 
                         # 添加公司回答
                         response_text = f"### 🏢 {
                             agent_info['company']} - {year}Q{quarter}\n{response.content}\n---\n"
                         all_responses.append(response_text)
 
-                        # 立即添加到会话状态
-                        temp_response = {
-                            "role": "assistant",
-                            "content": response_text,
-                            "is_partial": True  # 标记为部分回答
-                        }
-                        st.session_state.earnings_chat_messages.append(
-                            temp_response)
-
-                        # 重新显示所有消息
-                        for msg in st.session_state.earnings_chat_messages:
-                            with st.chat_message(msg["role"], avatar="🧑‍💻" if msg["role"] == "user" else "🤖"):
-                                st.markdown(msg["content"])
+                        # 显示当前回答
+                        with st.chat_message("assistant", avatar="🤖"):
+                            st.markdown(response_text)
 
                 except Exception as e:
                     print(f"错误: {str(e)}")
@@ -592,22 +586,11 @@ if st.session_state.transcript_agents:
         # 将所有回答合并为一个字符串
         complete_response = "\n".join(all_responses)
 
-        # 移除所有部分回答
-        st.session_state.earnings_chat_messages = [
-            msg for msg in st.session_state.earnings_chat_messages
-            if not msg.get("is_partial", False)
-        ]
-
-        # 添加完整回答
+        # 保存完整回答到会话状态
         st.session_state.earnings_chat_messages.append({
             "role": "assistant",
             "content": complete_response
         })
-
-        # 重新显示所有消息
-        for msg in st.session_state.earnings_chat_messages:
-            with st.chat_message(msg["role"], avatar="🧑‍💻" if msg["role"] == "user" else "🤖"):
-                st.markdown(msg["content"])
 
     # 添加底部边距，避免输入框遮挡内容
     st.markdown("<div style='margin-bottom: 100px'></div>",
