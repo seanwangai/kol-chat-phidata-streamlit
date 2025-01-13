@@ -108,6 +108,18 @@ if "selected_experts" not in st.session_state:
     st.session_state.selected_experts = []
 if "agents" not in st.session_state:
     st.session_state.agents = {}
+if "is_processing" not in st.session_state:
+    st.session_state.is_processing = False
+if "error_count" not in st.session_state:
+    st.session_state.error_count = 0
+if "processing_status" not in st.session_state:
+    st.session_state.processing_status = {
+        "is_processing": False,
+        "current_expert": None,
+        "completed_experts": set(),
+        "has_summary": False,
+        "last_user_input": None
+    }
 
 # 检查数据目录
 if 'dropbox_initialized' not in st.session_state:
@@ -254,35 +266,41 @@ with chat_container:
 # 用户输入
 user_input = st.chat_input("请输入您的问题...")
 
-if user_input and not st.session_state.is_processing:
-    try:
-        # 设置处理状态
-        st.session_state.is_processing = True
-        st.session_state.error_count = 0
+# 用户输入处理
+if user_input and not st.session_state.processing_status["is_processing"]:
+    # 重置处理状态
+    st.session_state.processing_status = {
+        "is_processing": True,
+        "current_expert": None,
+        "completed_experts": set(),
+        "has_summary": False,
+        "last_user_input": user_input
+    }
 
-        # 添加用户消息
-        message_data = {
-            "role": "user",
-            "content": user_input,
-        }
-        if uploaded_image:
-            message_data["has_image"] = True
-            message_data["image"] = uploaded_image
-        st.session_state.messages.append(message_data)
+    # 添加用户消息
+    message_data = {
+        "role": "user",
+        "content": user_input,
+    }
+    if uploaded_image:
+        message_data["has_image"] = True
+        message_data["image"] = uploaded_image
+    st.session_state.messages.append(message_data)
 
-        # 显示用户消息
-        with st.chat_message("user", avatar="🧑‍💻"):
-            st.markdown(user_input)
-            if uploaded_image:
-                st.image(uploaded_image, caption="用户上传的图片",
-                         use_container_width=True)
+# 如果正在处理中且有未完成的专家
+elif st.session_state.processing_status["is_processing"]:
+    user_input = st.session_state.processing_status["last_user_input"]
 
-        # 存储所有专家的回答
+    # 获取选中的专家列表
+    selected_experts = [name for name in st.session_state.selected_experts
+                        if name not in st.session_state.processing_status["completed_experts"]]
+
+    if selected_experts:
         expert_responses = []
 
-        # 获取选中专家的响应
+        # 继续处理未完成的专家
         for agent_name, (agent, avatar) in st.session_state.agents.items():
-            if agent_name in st.session_state.selected_experts:
+            if agent_name in selected_experts:
                 with st.status(f"{avatar} {agent_name} 正在思考...", expanded=False) as status:
                     with st.chat_message("assistant", avatar=avatar):
                         try:
@@ -301,6 +319,10 @@ if user_input and not st.session_state.is_processing:
                             st.session_state.messages.append(response_data)
                             expert_responses.append(response_data)
 
+                            # 标记该专家已完成
+                            st.session_state.processing_status["completed_experts"].add(
+                                agent_name)
+
                         except Exception as e:
                             error_msg = f"生成回答时出错: {str(e)}"
                             st.error(error_msg)
@@ -310,13 +332,16 @@ if user_input and not st.session_state.is_processing:
                                 "agent_name": agent_name,
                                 "avatar": avatar
                             })
+                            # 标记该专家已完成（即使出错）
+                            st.session_state.processing_status["completed_experts"].add(
+                                agent_name)
                             st.session_state.error_count += 1
 
-        # 如果有多个专家回答，生成总结
-        if len(expert_responses) > 1:
+        # 如果所有专家都已完成且需要生成总结
+        if len(st.session_state.processing_status["completed_experts"]) == len(st.session_state.selected_experts) and \
+           len(expert_responses) > 1 and not st.session_state.processing_status["has_summary"]:
             with st.status("🤔 正在生成总结...", expanded=False) as status:
                 try:
-                    # 创建总结agent
                     summary_agent = create_summary_agent(
                         st.session_state.current_model)
                     summary = get_summary_response(
@@ -328,21 +353,22 @@ if user_input and not st.session_state.is_processing:
                     status.update(label="✨ 总结完成",
                                   state="complete", expanded=True)
 
-                    # 保存总结到消息历史
                     st.session_state.messages.append({
                         "role": "assistant",
                         "content": summary,
                         "agent_name": "专家观点总结",
                         "avatar": "🎯"
                     })
+                    st.session_state.processing_status["has_summary"] = True
                 except Exception as e:
                     st.error(f"生成总结时出错: {str(e)}")
+                finally:
+                    # 所有处理完成，重置状态
+                    st.session_state.processing_status["is_processing"] = False
 
-    except Exception as e:
-        st.error(f"处理请求时出错: {str(e)}")
-    finally:
-        # 重置处理状态
-        st.session_state.is_processing = False
+    else:
+        # 所有专家都已完成，重置状态
+        st.session_state.processing_status["is_processing"] = False
 
 # 添加底部边距
 st.markdown("<div style='margin-bottom: 100px'></div>", unsafe_allow_html=True)
