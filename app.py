@@ -99,7 +99,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# 初始化所有会话状态
+# 初始化所有会话状态（只在这里初始化一次）
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "current_model" not in st.session_state:
@@ -120,6 +120,10 @@ if "processing_status" not in st.session_state:
         "has_summary": False,
         "last_user_input": None
     }
+if "research_agent" not in st.session_state:
+    st.session_state.research_agent = None
+if "should_fetch_data" not in st.session_state:
+    st.session_state.should_fetch_data = False
 
 # 检查数据目录
 if 'dropbox_initialized' not in st.session_state:
@@ -163,9 +167,8 @@ with st.sidebar:
     if st.session_state.current_model != model_type:
         st.session_state.current_model = model_type
         st.session_state.messages = []
-        st.session_state.agents = create_agents(model_type)
-        st.session_state.selected_experts = list(
-            st.session_state.agents.keys())
+        st.session_state.agents = {}
+        st.session_state.research_agent = None
         st.rerun()
 
     # 如果还没有创建agents，现在创建
@@ -216,23 +219,13 @@ with st.sidebar:
                     st.session_state.current_model)
                 st.session_state.selected_experts = list(
                     st.session_state.agents.keys())
+                st.session_state.research_agent = None  # 重置研究 agent
                 st.success("专家资料更新成功！")
                 st.rerun()
             else:
                 st.error("更新失败，请检查网络连接或配置。")
 
-# 初始化会话状态
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-if "agents" not in st.session_state:
-    st.session_state.agents = create_agents(model_type)
-if "current_response" not in st.session_state:
-    st.session_state.current_response = {}
-if "is_processing" not in st.session_state:
-    st.session_state.is_processing = False
-if "error_count" not in st.session_state:
-    st.session_state.error_count = 0
-
+# 删除重复的初始化代码
 # 页面标题
 st.title("📈 Investment Titans Chat")
 
@@ -241,27 +234,24 @@ uploaded_image = None
 if model_type.startswith("gemini"):
     uploaded_file = st.file_uploader("上传图片（可选）", type=['png', 'jpg', 'jpeg'])
     if uploaded_file is not None:
-        # 显示上传的图片
         st.image(uploaded_file, caption="已上传的图片", use_container_width=True)
         uploaded_image = uploaded_file.getvalue()
 
 # 左侧聊天区域
-chat_container = st.container()
-with chat_container:
-    # 显示聊天历史
-    for message in st.session_state.messages:
-        if message["role"] == "user":
-            # 显示用户消息
-            with st.chat_message("user", avatar="🧑‍💻"):
-                st.markdown(message["content"])
-                if "has_image" in message and message["has_image"]:
-                    st.image(message["image"], caption="用户上传的图片",
-                             use_container_width=True)
-        else:
-            # 显示专家回答
-            st.markdown(f"### {message.get('agent_name', '专家')}")
-            with st.chat_message("assistant", avatar=message.get('avatar', '🤖')):
-                st.markdown(message["content"])
+# 显示聊天历史
+for message in st.session_state.messages:
+    if message["role"] == "user":
+        # 显示用户消息
+        with st.chat_message("user", avatar="🧑‍💻"):
+            st.markdown(message["content"])
+            if "has_image" in message and message["has_image"]:
+                st.image(message["image"], caption="用户上传的图片",
+                         use_container_width=True)
+    else:
+        # 显示专家回答
+        st.markdown(f"### {message.get('agent_name', '专家')}")
+        with st.chat_message("assistant", avatar=message.get('avatar', '🤖')):
+            st.markdown(message["content"])
 
 # 用户输入
 user_input = st.chat_input("请输入您的问题...")
@@ -286,6 +276,9 @@ if user_input and not st.session_state.processing_status["is_processing"]:
         message_data["has_image"] = True
         message_data["image"] = uploaded_image
     st.session_state.messages.append(message_data)
+
+    # 立即重新运行以显示用户消息
+    st.rerun()
 
 # 如果正在处理中且有未完成的专家
 elif st.session_state.processing_status["is_processing"]:
