@@ -387,9 +387,19 @@ with st.sidebar:
     col1, col2 = st.columns([2, 1])
     with col1:
         ticker = st.text_input(
-            "股票代码", placeholder="例如：MSFT", key="ticker_input").upper()
+            "尋找同業股票代码",
+            placeholder="例如：MSFT",
+            key="ticker_input",
+            label_visibility="visible"  # 显示标签
+        ).upper()
     with col2:
-        expand_tickers = st.button("扩充股票代码", type="secondary")
+        # 使用空白行对齐
+        st.write("")  # 添加一个空行来对齐
+        expand_tickers = st.button(
+            "尋找",
+            type="secondary",
+            use_container_width=True  # 使按钮填充整个列宽
+        )
 
     # 如果点击扩充按钮
     if expand_tickers and ticker:
@@ -420,7 +430,10 @@ with st.sidebar:
                     else:
                         st.session_state.related_tickers = all_tickers
 
-                    st.success(f"✅ 已找到 {len(related_tickers)} 个相关公司")
+                    # 自动选择前5个股票
+                    st.session_state.selected_tickers = all_tickers[:5]
+
+                    st.success(f"✅ 已找到 {len(related_tickers)} 个相关公司，已自动选择前5个")
 
                 except Exception as e:
                     print(f"解析响应时出错: {str(e)}")
@@ -428,19 +441,28 @@ with st.sidebar:
                     st.error(f"❌ 解析相关公司时出错")
                     if "related_tickers" not in st.session_state:
                         st.session_state.related_tickers = [ticker]
+                        st.session_state.selected_tickers = [ticker]
                     else:
                         st.session_state.related_tickers = [ticker]
+                        st.session_state.selected_tickers = [ticker]
 
             except Exception as e:
                 st.error(f"❌ 分析相关公司时出错: {str(e)}")
                 if "related_tickers" not in st.session_state:
                     st.session_state.related_tickers = [ticker]
+                    st.session_state.selected_tickers = [ticker]
                 else:
                     st.session_state.related_tickers = [ticker]
+                    st.session_state.selected_tickers = [ticker]
 
     # 显示相关股票多选框
     if "related_tickers" in st.session_state and st.session_state.related_tickers:
         st.subheader("📊 相关股票")
+
+        # 初始化selected_tickers的session state
+        if "selected_tickers" not in st.session_state:
+            # 默认选择前5个
+            st.session_state.selected_tickers = st.session_state.related_tickers[:5]
 
         # 添加自定义输入
         custom_ticker = st.text_input(
@@ -450,19 +472,30 @@ with st.sidebar:
         ).upper()
 
         # 如果输入了新的股票代码
-        if custom_ticker and custom_ticker not in st.session_state.related_tickers:
-            st.session_state.related_tickers.append(custom_ticker)
+        if custom_ticker:
+            if custom_ticker not in st.session_state.related_tickers:
+                st.session_state.related_tickers.append(custom_ticker)
+                if custom_ticker not in st.session_state.selected_tickers:
+                    st.session_state.selected_tickers.append(custom_ticker)
+                st.rerun()  # 重新运行以更新界面
 
         # 多选框
         selected_tickers = st.multiselect(
             "选择要分析的公司",
             st.session_state.related_tickers,
-            default=st.session_state.related_tickers[:5],  # 默认选择前5个
+            default=st.session_state.selected_tickers,  # 使用session state中的选择
             max_selections=10,  # 最多选择10个
             help="从列表中选择要分析的公司（最多10个）"
         )
+        # 更新session state中的选择
+        st.session_state.selected_tickers = selected_tickers
+
     else:
         st.subheader("📊 相关股票")
+        # 初始化session state
+        if "selected_tickers" not in st.session_state:
+            st.session_state.selected_tickers = []
+
         # 添加自定义输入
         custom_ticker = st.text_input(
             "输入股票代码",
@@ -477,13 +510,20 @@ with st.sidebar:
             elif custom_ticker not in st.session_state.related_tickers:
                 st.session_state.related_tickers.append(custom_ticker)
 
+            if custom_ticker not in st.session_state.selected_tickers:
+                st.session_state.selected_tickers.append(custom_ticker)
+            st.rerun()  # 重新运行以更新界面
+
         # 多选框
         selected_tickers = st.multiselect(
             "选择要分析的公司",
             st.session_state.related_tickers if "related_tickers" in st.session_state else [],
+            default=st.session_state.selected_tickers,
             max_selections=10,
             help="从列表中选择要分析的公司（最多10个）"
         )
+        # 更新session state中的选择
+        st.session_state.selected_tickers = selected_tickers
 
     # 季度选择
     st.subheader("📅 选择季度")
