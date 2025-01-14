@@ -8,6 +8,7 @@ from phi.agent import Agent
 from phi.model.google import GeminiOpenAIChat
 from itertools import cycle
 import random
+import re
 
 # 页面配置
 st.set_page_config(
@@ -411,10 +412,22 @@ with st.sidebar:
                 try:
                     # 清理响应内容，确保是有效的 Python 列表格式
                     content = response.content.strip()
+
+                    # 使用正则表达式提取列表内容
+                    list_pattern = r'\[(.*?)\]'
+                    matches = re.findall(list_pattern, content)
+                    if matches:
+                        # 使用最后一个匹配的列表（通常是最完整的）
+                        content = f"[{matches[-1]}]"
+
+                    # 继续清理内容
                     if content.startswith('```') and content.endswith('```'):
                         content = content[3:-3].strip()
                     if content.startswith('python') or content.startswith('json'):
                         content = content.split('\n', 1)[1].strip()
+
+                    print("原始响应:", response.content)
+                    print("提取后的列表:", content)
 
                     # 尝试解析列表
                     related_tickers = eval(content)
