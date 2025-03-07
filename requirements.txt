@@ -9,3 +9,4 @@ PyMuPDF
 ebooklib
 beautifulsoup4==4.12.3
 python-docx
+google-genai
