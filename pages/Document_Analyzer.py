@@ -11,7 +11,7 @@ from ebooklib import epub
 from bs4 import BeautifulSoup
 import math
 import re
-
+from streamlit_pdf_viewer import pdf_viewer
 
 # 页面配置
 st.set_page_config(
@@ -216,19 +216,9 @@ with st.sidebar:
                 pdf_bytes = uploaded_file.read()
                 pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
                 
-                # 将PDF转换为base64编码
-                pdf_base64 = base64.b64encode(pdf_bytes).decode('utf-8')
-                
-                # 创建PDF嵌入式查看器
-                pdf_display = f'''
-                    <iframe
-                        src="data:application/pdf;base64,{pdf_base64}"
-                        width="100%"
-                        height="800"
-                        style="border: none;"
-                    ></iframe>
-                '''
-                st.markdown(pdf_display, unsafe_allow_html=True)
+                pdf_viewer(pdf_bytes)
+
+
             
             elif st.session_state.document_type == "epub" and st.session_state.epub_chapters:
                 # 显示EPUB章节导航和字数统计
@@ -283,7 +273,10 @@ if uploaded_file is not None:
                             
                             # 显示分析结果
                             # st.markdown(f"### 📚 Pages {start_page + 1} to {end_page} Analysis")
-                            st.success("Pages {start_page + 1} to {end_page} Analysis", icon="📚")
+                            if start_page + 1 == end_page:
+                                st.success(f"Page {start_page + 1} Analysis", icon="📚")
+                            else:
+                                st.success(f"Pages {start_page + 1} to {end_page} Analysis", icon="📚")
                             st.markdown(analysis)
                             st.markdown("---")  # Add separator
         
@@ -296,11 +289,6 @@ if uploaded_file is not None:
             
             st.subheader(f"📖 {current_chapter_title}")
             st.caption(f"字数：{count_words(current_content)}")
-            
-            # 显示当前章节内容
-            st.subheader("📄 Chapter Content")
-            st.markdown(current_content)
-            st.markdown("---")
             
             # 如果有提示词且点击了Enter按钮，才显示分析结果
             if user_prompt and st.session_state.get("analyze_trigger", False):
@@ -317,6 +305,11 @@ if uploaded_file is not None:
                         st.markdown("---")  # Add separator
                 # 重置分析触发器
                 st.session_state.analyze_trigger = False
+            
+            # 显示当前章节内容
+            st.subheader("📄 Chapter Content")
+            st.markdown(current_content)
+            st.markdown("---")
             
             # 章节导航按钮
             col1, col2 = st.columns(2)
