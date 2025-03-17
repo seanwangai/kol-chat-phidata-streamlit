@@ -190,10 +190,17 @@ def analyze_transcript_topics(transcript: str) -> List[str]:
 def get_monthly_news(client: genai.Client, company_name: str, topic: str, year: int, month: int) -> List[Dict]:
     """获取特定月份的主题新闻"""
     try:
-        prompt = f""" 你是一個專業的投資人，请搜索并总结 "{company_name}" 公司有关於  '{topic}'。在 {year}年{month}月 新發生的新的重大事件和討論區有在討論的，或是發表的新產品，但是如果財報中有說到的就不用了，json event 內文總結成投資人會想看的重點，然後重點先行，以中文回答
+        prompt = f""" 你是一個專業的投資人，请搜索并总结 "{company_name}" 公司有关於  '{topic}'。在 {year}年{month}月 新發生的新的重大事件和討論區有在討論的，或是發表的新產品，但是如果財報中有說到的就不用了，json格式 以中文回答
 注意 一定要跟 '{topic}' 有關的
+
+event內文總結成投資人會想看的重點，然後重點先行，內文分成 重點：內文，像是 "**香港新概念店開設**: Hollister在香港開設全新概念店，突顯集團對亞太市場的重視"
+event資訊如果是來自財報，event內文寫成： "**財報電話會議**：....."
+
+注意：重點必須使用兩個星號 ** 包圍來實現加粗效果，例如："**中金公司关注 HOKA 2025 新品发布**: 德克斯户外(DECK.N)UGG延续强势，关注HOKA 2025新品发布"
+
+
 一定要以JSON格式返回，格式如下:
-[{{"date": "2025-01-15","event": "事件简短描述","group": "{topic}"}},]
+[{{"date": "2025-01-15","event": "**香港新概念店開設**: Hollister在香港開設全新概念店，突顯集團對亞太市場的重視","group": "{topic}"}},]
 """
 
         contents = [
@@ -341,23 +348,19 @@ if ticker:
                                 # 显示当前主题的事件表格
                                 if events:
                                     st.write(f"📋 {topic}相关事件表格：")
-                                    # 创建一个更美观的DataFrame
+                                    # 创建Markdown表格
                                     events_df = pd.DataFrame(events)
                                     # 按日期排序
                                     events_df = events_df.sort_values('date')
                                     # 重命名列以便更直观
                                     events_df = events_df[['date', 'event']]
-                                    events_df.columns = ["日期", "事件描述"]
-                                    # 应用样式并显示
-                                    st.dataframe(
-                                        events_df,
-                                        column_config={
-                                            "日期": st.column_config.DateColumn("日期", format="YYYY-MM-DD"),
-                                            "事件描述": st.column_config.TextColumn("事件描述", width="large"),
-                                        },
-                                        use_container_width=True,
-                                        hide_index=True,
-                                    )
+                                    # 生成Markdown表格
+                                    table_header = "| 日期 | 事件描述 |"
+                                    table_separator = "|------|------|"
+                                    table_rows = [f"| {row['date']} | {row['event']} |" for _, row in events_df.iterrows()]
+                                    table_markdown = "\n".join([table_header, table_separator] + table_rows)
+                                    # 显示Markdown表格
+                                    st.markdown(table_markdown)
                                 else:
                                     st.info(f"未找到与 {topic} 相关的最新事件")
 

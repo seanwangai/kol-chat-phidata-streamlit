@@ -112,6 +112,9 @@ if "is_processing" not in st.session_state:
     st.session_state.is_processing = False
 if "error_count" not in st.session_state:
     st.session_state.error_count = 0
+if "custom_prompt_ending" not in st.session_state:
+    st.session_state.custom_prompt_ending = ""
+    print("初始化 custom_prompt_ending")
 if "processing_status" not in st.session_state:
     st.session_state.processing_status = {
         "is_processing": False,
@@ -124,6 +127,12 @@ if "research_agent" not in st.session_state:
     st.session_state.research_agent = None
 if "should_fetch_data" not in st.session_state:
     st.session_state.should_fetch_data = False
+if "retry_counts" not in st.session_state:
+    st.session_state.retry_counts = {}
+# 设置响应超时时间（秒）
+RESPONSE_TIMEOUT = 30
+# 最大重试次数
+MAX_RETRY_COUNT = 3
 
 # 检查数据目录
 if 'dropbox_initialized' not in st.session_state:
@@ -143,7 +152,7 @@ if not st.session_state.dropbox_initialized and not (Path("data").exists() or Pa
 
 # 右侧边栏
 with st.sidebar:
-    st.header("⚙️ 系统设置")
+    # st.header("⚙️ 系统设置")
 
     # 模型选择
     model_type = st.selectbox(
@@ -163,6 +172,54 @@ with st.sidebar:
         ]).index(st.session_state.current_model)
     )
 
+    # prompt_ending输入框
+    def on_prompt_ending_change():
+        # 保存当前选中的专家
+        current_selected_experts = st.session_state.selected_experts if "selected_experts" in st.session_state else []
+
+        # 清空消息
+        st.session_state.messages = []
+        st.session_state.agents = {}
+        st.session_state.research_agent = None
+        st.session_state.custom_prompt_ending = st.session_state.custom_prompt_ending_input
+        print("提示词已更新：", st.session_state.custom_prompt_ending)  # 添加调试信息
+
+        # 重新创建 agents
+        st.session_state.agents = create_agents(
+            st.session_state.current_model,
+            lazy_loading=True,
+            custom_prompt_ending=st.session_state.custom_prompt_ending
+        )
+
+        # 恢复之前选中的专家
+        st.session_state.selected_experts = [
+            expert for expert in current_selected_experts if expert in st.session_state.agents]
+
+        # 如果没有选中的专家，默认选择所有专家
+        if not st.session_state.selected_experts:
+            st.session_state.selected_experts = list(
+                st.session_state.agents.keys())
+
+    custom_prompt_ending = st.text_area(
+        "自定义提示词结尾",
+        value=st.session_state.custom_prompt_ending,
+        key="custom_prompt_ending_input",
+        help="如果不填写，将使用默认的提示词结尾",
+        on_change=on_prompt_ending_change
+    )
+
+    # 确保值被正确设置
+    if custom_prompt_ending:
+        if st.session_state.custom_prompt_ending != custom_prompt_ending:
+            st.session_state.custom_prompt_ending = custom_prompt_ending
+            print("更新 custom_prompt_ending：", custom_prompt_ending)
+            # 强制重新创建 agents
+            st.session_state.agents = create_agents(
+                st.session_state.current_model,
+                lazy_loading=True,
+                custom_prompt_ending=custom_prompt_ending
+            )
+
     # 当模型改变时重新创建agents
     if st.session_state.current_model != model_type:
         st.session_state.current_model = model_type
@@ -173,7 +230,8 @@ with st.sidebar:
 
     # 如果还没有创建agents，现在创建
     if not st.session_state.agents:
-        st.session_state.agents = create_agents(model_type)
+        st.session_state.agents = create_agents(
+            model_type, lazy_loading=True, custom_prompt_ending=custom_prompt_ending)
         st.session_state.selected_experts = list(
             st.session_state.agents.keys())
 
@@ -190,12 +248,14 @@ with st.sidebar:
         st.rerun()
 
     # 专家选择
-    for agent_name, (_, avatar) in st.session_state.agents.items():
+    for agent_name, (agent, avatar, expert_folder) in st.session_state.agents.items():
         col1, col2 = st.columns([0.7, 3])
         with col1:
+            # 使用之前保存的选择状态
+            is_selected = agent_name in st.session_state.selected_experts
             if st.checkbox(
                 label=f"选择{agent_name}",
-                value=agent_name in st.session_state.selected_experts,
+                value=is_selected,
                 key=f"check_{agent_name}",
                 label_visibility="collapsed"
             ):
@@ -229,13 +289,52 @@ with st.sidebar:
 # 页面标题
 st.title("📈 Investment Titans Chat")
 
-# 在用户输入区域之前添加图片上传
+# 在用户输入区域之前添加图片和PDF上传
 uploaded_image = None
+uploaded_pdf_content = None
 if model_type.startswith("gemini"):
-    uploaded_file = st.file_uploader("上传图片（可选）", type=['png', 'jpg', 'jpeg'])
+    uploaded_file = st.file_uploader(
+        "上传图片或PDF文件（可选）", type=['png', 'jpg', 'jpeg', 'pdf'])
     if uploaded_file is not None:
-        st.image(uploaded_file, caption="已上传的图片", use_container_width=True)
-        uploaded_image = uploaded_file.getvalue()
+        # 根据文件扩展名判断文件类型
+        file_extension = uploaded_file.name.split('.')[-1].lower()
+
+        if file_extension == 'pdf':
+            # 处理PDF文件
+            try:
+                from utils import read_pdf
+                import fitz  # PyMuPDF
+                import io
+
+                # 读取PDF文件内容
+                pdf_bytes = uploaded_file.read()
+                pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
+
+                # 显示PDF信息
+                st.write(
+                    f"📄 PDF文件: {uploaded_file.name} ({pdf_document.page_count} 页)")
+
+                # 提取PDF文本内容
+                pdf_text = ""
+                for page in pdf_document:
+                    pdf_text += page.get_text()
+
+                # 存储PDF内容以供后续使用
+                uploaded_pdf_content = pdf_text
+
+                # 显示PDF预览（仅显示第一页）
+                first_page = pdf_document[0]
+                pix = first_page.get_pixmap()
+                img_data = pix.tobytes("png")
+                st.image(
+                    img_data, caption=f"PDF预览 (第1页，共{pdf_document.page_count}页)", use_container_width=True)
+
+            except Exception as e:
+                st.error(f"读取PDF文件失败: {str(e)}")
+        else:
+            # 处理图片文件
+            st.image(uploaded_file, caption="已上传的图片", use_container_width=True)
+            uploaded_image = uploaded_file.getvalue()
 
 # 左侧聊天区域
 # 显示聊天历史
@@ -275,6 +374,11 @@ if user_input and not st.session_state.processing_status["is_processing"]:
     if uploaded_image:
         message_data["has_image"] = True
         message_data["image"] = uploaded_image
+    elif uploaded_pdf_content:
+        # 如果有PDF内容，将其添加到用户消息中
+        message_data[
+            "content"] = f"{user_input}\n\n[PDF内容]:\n{uploaded_pdf_content[:2000]}...(PDF内容已截断)"
+        message_data["has_pdf"] = True
     st.session_state.messages.append(message_data)
 
     # 立即重新运行以显示用户消息
@@ -292,29 +396,154 @@ elif st.session_state.processing_status["is_processing"]:
         expert_responses = []
 
         # 继续处理未完成的专家
-        for agent_name, (agent, avatar) in st.session_state.agents.items():
+        for agent_name, (agent, avatar, _) in st.session_state.agents.items():
             if agent_name in selected_experts:
                 with st.status(f"{avatar} {agent_name} 正在思考...", expanded=False) as status:
                     with st.chat_message("assistant", avatar=avatar):
                         try:
-                            response = get_response(
-                                agent, user_input, uploaded_image)
-                            st.markdown(response)
-                            status.update(
-                                label=f"✅ {agent_name} 已回答", state="complete", expanded=True)
+                            # 初始化重试计数
+                            if agent_name not in st.session_state.retry_counts:
+                                st.session_state.retry_counts[agent_name] = 0
 
-                            response_data = {
-                                "role": "assistant",
-                                "content": response,
-                                "agent_name": agent_name,
-                                "avatar": avatar
-                            }
-                            st.session_state.messages.append(response_data)
-                            expert_responses.append(response_data)
+                            # 设置超时标志
+                            response_timeout = False
+                            response = None
 
-                            # 标记该专家已完成
-                            st.session_state.processing_status["completed_experts"].add(
-                                agent_name)
+                            # 使用超时机制获取响应
+                            try:
+                                import threading
+                                import time
+
+                                # 创建一个事件用于通知超时
+                                timeout_event = threading.Event()
+                                response_ready = threading.Event()
+                                response_container = [None]
+
+                                # 定义获取响应的线程函数
+                                def get_response_with_timeout():
+                                    try:
+                                        # 传递完整的元组(agent, avatar, expert_folder)给get_response函数
+                                        agent_tuple = (agent, avatar, _)
+                                        # 根据上传的内容类型调用不同的处理方式
+                                        if uploaded_pdf_content:
+                                            # 如果有PDF内容，将其作为文本传递给模型
+                                            result = get_response(
+                                                agent_tuple,
+                                                user_input,
+                                                None,
+                                                pdf_content=uploaded_pdf_content,
+                                                custom_prompt_ending=custom_prompt_ending  # 直接传入
+                                            )
+                                        else:
+                                            # 否则使用原有的图片处理方式
+                                            result = get_response(
+                                                agent_tuple,
+                                                user_input,
+                                                uploaded_image,
+                                                custom_prompt_ending=custom_prompt_ending  # 直接传入
+                                            )
+                                        if not timeout_event.is_set():
+                                            response_container[0] = result
+                                            response_ready.set()
+                                    except Exception as e:
+                                        if not timeout_event.is_set():
+                                            response_container[0] = f"错误: {str(e)}"
+                                            response_ready.set()
+
+                                # 启动响应线程
+                                response_thread = threading.Thread(
+                                    target=get_response_with_timeout)
+                                response_thread.daemon = True
+                                response_thread.start()
+
+                                # 等待响应或超时
+                                start_time = time.time()
+                                status.update(
+                                    label=f"{avatar} {agent_name} 正在思考... (0/{RESPONSE_TIMEOUT}秒)", state="running")
+
+                                # 更新进度条
+                                while not response_ready.is_set() and time.time() - start_time < RESPONSE_TIMEOUT:
+                                    elapsed = int(time.time() - start_time)
+                                    status.update(
+                                        label=f"{avatar} {agent_name} 正在思考... ({elapsed}/{RESPONSE_TIMEOUT}秒)", state="running")
+                                    time.sleep(1)
+
+                                # 检查是否超时
+                                if not response_ready.is_set():
+                                    timeout_event.set()
+                                    response_timeout = True
+                                    status.update(
+                                        label=f"⏱️ {agent_name} 响应超时", state="error")
+                                else:
+                                    response = response_container[0]
+
+                            except Exception as e:
+                                st.error(f"执行超时检测时出错: {str(e)}")
+
+                            # 处理超时情况
+                            if response_timeout:
+                                # 增加重试计数
+                                st.session_state.retry_counts[agent_name] += 1
+
+                                # 检查是否达到最大重试次数
+                                if st.session_state.retry_counts[agent_name] <= MAX_RETRY_COUNT:
+                                    status.update(
+                                        label=f"🔄 {agent_name} 正在重试... (第{st.session_state.retry_counts[agent_name]}次)", state="running")
+                                    st.warning(
+                                        f"{agent_name} 响应超时，正在重试... (第{st.session_state.retry_counts[agent_name]}/{MAX_RETRY_COUNT}次)")
+                                    # 不标记为已完成，允许在下一个循环中重试
+                                    continue
+                                else:
+                                    # 达到最大重试次数，标记为失败
+                                    error_msg = f"响应超时，已重试{MAX_RETRY_COUNT}次"
+                                    st.error(error_msg)
+                                    st.session_state.messages.append({
+                                        "role": "assistant",
+                                        "content": f"❌ {error_msg}",
+                                        "agent_name": agent_name,
+                                        "avatar": avatar
+                                    })
+                                    # 标记该专家已完成（超过最大重试次数）
+                                    st.session_state.processing_status["completed_experts"].add(
+                                        agent_name)
+                                    st.session_state.error_count += 1
+                                    continue
+
+                            # 正常响应处理
+                            if response and not response.startswith("错误:"):
+                                st.markdown(response)
+                                status.update(
+                                    label=f"✅ {agent_name} 已回答", state="complete", expanded=True)
+
+                                # 重置重试计数
+                                st.session_state.retry_counts[agent_name] = 0
+
+                                response_data = {
+                                    "role": "assistant",
+                                    "content": response,
+                                    "agent_name": agent_name,
+                                    "avatar": avatar
+                                }
+                                st.session_state.messages.append(response_data)
+                                expert_responses.append(response_data)
+
+                                # 标记该专家已完成
+                                st.session_state.processing_status["completed_experts"].add(
+                                    agent_name)
+                            else:
+                                # 处理错误响应
+                                error_msg = response if response else "生成回答时出错"
+                                st.error(error_msg)
+                                st.session_state.messages.append({
+                                    "role": "assistant",
+                                    "content": f"❌ {error_msg}",
+                                    "agent_name": agent_name,
+                                    "avatar": avatar
+                                })
+                                # 标记该专家已完成（即使出错）
+                                st.session_state.processing_status["completed_experts"].add(
+                                    agent_name)
+                                st.session_state.error_count += 1
 
                         except Exception as e:
                             error_msg = f"生成回答时出错: {str(e)}"

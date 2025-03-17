@@ -103,28 +103,74 @@ def count_words(text):
     return len(chinese_characters) + len(english_words)
 
 # 分析文档页面内容
-def analyze_page_content(client, prompt, content, page_info):
-    try:
-        full_prompt = f"""{content}
+def analyze_page_content(client, prompt, content, page_info, max_retries=3, timeout_seconds=30):
+    import threading
+    import time
+    
+    # 创建一个结果容器
+    result = {"text": None, "error": None, "completed": False}
+    
+    def api_call():
+        try:
+            full_prompt = f"""{content}
 
 {prompt}"""
-        
-        model = "gemini-2.0-flash-exp"
-        contents = [
-            types.Content(
-                role="user",
-                parts=[types.Part.from_text(text=full_prompt)],
-            ),
-        ]
+            
+            model = "gemini-2.0-flash-exp"
+            contents = [
+                types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(text=full_prompt)],
+                ),
+            ]
 
-        response = client.models.generate_content(
-            model=model,
-            contents=contents,
-        )
+            response = client.models.generate_content(
+                model=model,
+                contents=contents,
+            )
+            
+            result["text"] = response.candidates[0].content.parts[0].text
+            result["completed"] = True
+        except Exception as e:
+            result["error"] = str(e)
+    
+    # 尝试多次调用API
+    for attempt in range(max_retries):
+        # 如果不是第一次尝试，则切换API密钥
+        if attempt > 0:
+            client = genai.Client(api_key=get_next_api_key())
+            st.warning(f"⚠️ 分析超时，正在进行第 {attempt+1} 次尝试...", icon="🔄")
         
-        return response.candidates[0].content.parts[0].text
-    except Exception as e:
-        return f"Analysis error: {str(e)}"
+        # 重置结果
+        result = {"text": None, "error": None, "completed": False}
+        
+        # 创建并启动线程
+        api_thread = threading.Thread(target=api_call)
+        api_thread.daemon = True
+        api_thread.start()
+        
+        # 等待线程完成或超时
+        start_time = time.time()
+        while not result["completed"] and time.time() - start_time < timeout_seconds:
+            time.sleep(0.5)  # 每0.5秒检查一次
+            
+            # 如果线程已经完成，返回结果
+            if result["completed"]:
+                return result["text"]
+        
+        # 如果已经完成，返回结果
+        if result["completed"]:
+            return result["text"]
+        
+        # 如果是最后一次尝试且超时
+        if attempt == max_retries - 1:
+            if result["error"]:
+                return f"Analysis error after {max_retries} attempts: {result['error']}"
+            else:
+                return f"Analysis timed out after {max_retries} attempts (each waiting {timeout_seconds} seconds)"
+    
+    # 这里不应该到达，但为了安全起见
+    return "Analysis failed with unknown error"
 
 # Main page
 st.title("📚 Document Analyzer")
