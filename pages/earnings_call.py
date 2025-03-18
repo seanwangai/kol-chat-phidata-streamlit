@@ -240,11 +240,13 @@ def create_summary_agent(model_type: str) -> Agent:
 
 def get_summary_response(summary_agent: Agent, expert_responses: list) -> str:
     """获取总结 Agent 的响应"""
+    # 按日期降序排序专家回答
+    sorted_responses = sorted(expert_responses, key=lambda x: (x['year'], x['quarter']), reverse=True)
+    
     # 构建输入信息
-    summary_input = "请总结以下财报分析：\n\n"
-    for response in expert_responses:
-        summary_input += f"【{response['company']} {response['year']
-                                                   }年Q{response['quarter']}】的分析：\n{response['content']}\n\n"
+    summary_input = "请总结以下财报分析（按时间从新到旧排序）：\n\n"
+    for response in sorted_responses:
+        summary_input += f"【{response['company']} {response['year']}年Q{response['quarter']}】的分析：\n{response['content']}\n\n"
 
     # 获取总结
     try:
@@ -291,9 +293,12 @@ def create_research_agent(ticker: str, competitor_count: int) -> Agent:
     return agent
 
 
-def create_transcript_agent(transcript: str, company: str, year: int, quarter: int) -> dict:
+def create_transcript_agent(transcript_data: dict, company: str, year: int, quarter: int) -> dict:
     """为每个财报创建一个 Agent，返回 agent 信息字典"""
-    system_prompt = f"""你是 {company} 公司 {year}年第{quarter}季度财报电话会议记录的分析专家。
+    date = transcript_data.get('date', f"{year}-{quarter*3:02d}-01")
+    transcript = transcript_data.get('transcript', '')
+
+    system_prompt = f"""你是 {company} 公司 {year}年第{quarter}季度（{date}）财报电话会议记录的分析专家。
 以下是这次电话会议的完整记录：
 
 {transcript}
@@ -305,7 +310,7 @@ def create_transcript_agent(transcript: str, company: str, year: int, quarter: i
 4. 最後給一個結論
 """
 
-    print(f"\n=== 创建 {company} {year}Q{quarter} Transcript Agent ===")
+    print(f"\n=== 创建 {company} {year}Q{quarter} ({date}) Transcript Agent ===")
     print(f"使用模型: {st.session_state.current_model}")
     print(f"System Prompt: {system_prompt[:200]}...")  # 只打印前200个字符
 
@@ -329,7 +334,8 @@ def create_transcript_agent(transcript: str, company: str, year: int, quarter: i
         'agent': agent,
         'company': company,
         'year': year,
-        'quarter': quarter
+        'quarter': quarter,
+        'date': date
     }
 
 
@@ -623,7 +629,7 @@ if selected_tickers and selected_quarters and st.session_state.should_fetch_data
                 for year, quarter, transcript_data in transcripts:
                     # 为每个季度创建一个 agent
                     agent_info = create_transcript_agent(
-                        transcript_data['transcript'],
+                        transcript_data,
                         current_ticker,
                         year,
                         quarter
@@ -668,26 +674,41 @@ if st.session_state.transcript_agents:
     # 添加财报原文显示区域
     st.markdown("## 📄 财报原文")
 
-    # 获取所有唯一的年份和季度组合，按时间倒序排序
-    year_quarters = sorted(set((agent['year'], agent['quarter'])
-                               for agent in st.session_state.transcript_agents),
-                           reverse=True)
+    # 按年月分组并排序所有财报
+    transcripts_by_month = {}
+    for agent in st.session_state.transcript_agents:
+        if agent.get('date'):
+            date_obj = datetime.strptime(agent['date'], '%Y-%m-%d')
+            month_key = date_obj.strftime('%Y年%m月')
+            if month_key not in transcripts_by_month:
+                transcripts_by_month[month_key] = []
+            transcripts_by_month[month_key].append({
+                'date_obj': date_obj,
+                'company': agent['company'],
+                'year': agent['year'],
+                'quarter': agent['quarter'],
+                'date': agent['date']
+            })
 
-    # 对于每个季度
-    for year, quarter in year_quarters:
-        st.markdown(f"### {year} Q{quarter}")
+    # 按月份降序显示财报
+    for month in sorted(transcripts_by_month.keys(), reverse=True):
+        st.markdown(f"### {month}")
 
-        # 找到这个季度的所有公司
-        quarter_companies = sorted(set(
-            agent['company'] for agent in st.session_state.transcript_agents
-            if agent['year'] == year and agent['quarter'] == quarter
-        ))
+        # 在每个月内按日期降序排序
+        month_transcripts = sorted(transcripts_by_month[month], key=lambda x: x['date_obj'], reverse=True)
 
-        # 为每个公司创建下拉框
-        for company in quarter_companies:
+        # 显示该月的所有财报
+        for transcript_info in month_transcripts:
+            company = transcript_info['company']
+            year = transcript_info['year']
+            quarter = transcript_info['quarter']
+            date_str = f"({transcript_info['date']})"
             transcript_key = f"{company}_{year}Q{quarter}"
+
             if transcript_key in st.session_state.transcripts_data:
-                with st.expander(f"{company} Earnings Call Transcript"):
+                # 统一添加年份和季度信息到标题
+                title = f"{company} Earnings Call Transcript {date_str} [{year} Q{quarter}]"
+                with st.expander(title):
                     st.markdown("#### 原文内容")
                     # 处理文本格式
                     raw_text = st.session_state.transcripts_data[transcript_key]
@@ -717,9 +738,12 @@ if st.session_state.transcript_agents:
                     # 显示总结标题
                     st.markdown(f"### {message['agent_name']}")
                 elif "company" in message:
+                    # 获取日期信息
+                    date = message.get('date', '')
+                    date_str = f"({date})" if date else ""
                     # 显示公司和季度信息
-                    st.markdown(f"### {message['company']} {
-                                message['year']}年Q{message['quarter']}")
+                    st.markdown(
+                        f"### {message['company']} {message['year']}年Q{message['quarter']} {date_str}")
                 st.markdown(message["content"])
 
     # 用户输入
@@ -764,9 +788,9 @@ if st.session_state.transcript_agents:
                             if f"{agent_info['company']}_{agent_info['year']}_{agent_info['quarter']}"
                             not in st.session_state.processing_status["completed_agents"]]
 
-        # 按年份和季度降序排序（最新的先回答）
+        # 按日期降序排序（最新的先回答）
         remaining_agents.sort(
-            key=lambda x: (-x['year'], -x['quarter'], x['company']))
+            key=lambda x: (x.get('date', f"{x['year']}-{x['quarter']*3:02d}-01"), x['company']), reverse=True)
 
         print(f"待处理专家数: {len(remaining_agents)}")
         print(
@@ -798,6 +822,7 @@ if st.session_state.transcript_agents:
                                 "company": company,
                                 "year": year,
                                 "quarter": quarter,
+                                "date": agent_info.get('date', ''),
                                 "avatar": "📊"
                             }
 
@@ -827,6 +852,7 @@ if st.session_state.transcript_agents:
                                 "company": company,
                                 "year": year,
                                 "quarter": quarter,
+                                "date": agent_info.get('date', ''),
                                 "avatar": "📊"
                             })
                             st.session_state.processing_status["completed_agents"].add(
