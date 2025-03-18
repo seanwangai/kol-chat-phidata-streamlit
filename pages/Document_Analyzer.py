@@ -221,7 +221,7 @@ def analyze_image_content(images, user_prompt, timeout_seconds=120):
 
         # 创建上传文件列表
         uploaded_files = []
-
+        print('====處理圖片中===')
         for i, img in enumerate(images):
             # 调整图片大小以提高处理速度
             img = resize_image(img, max_size=800)
@@ -253,6 +253,7 @@ def analyze_image_content(images, user_prompt, timeout_seconds=120):
         # 构建请求内容
         parts = []
 
+        print('====添加所有图片文件中===')
         # 添加所有图片文件
         for file in uploaded_files:
             parts.append(
@@ -281,14 +282,14 @@ def analyze_image_content(images, user_prompt, timeout_seconds=120):
             max_output_tokens=8192,
             response_mime_type="text/plain",
         )
-
+        print('====调用API生成内容中===')
         # 调用API生成内容
         response = client.models.generate_content(
             model=model,
             contents=contents,
             config=generate_content_config,
         )
-
+        print('====获取结果文本中===')
         # 获取结果文本
         result_text = response.candidates[0].content.parts[0].text if response.candidates else "无法生成分析结果"
 
@@ -421,6 +422,7 @@ with st.sidebar:
 
         # 如果是图片模式，添加建议性提示
         if pdf_mode:
+
             # 在图片模式下调整批次大小的默认值
             pages_per_batch = st.number_input(
                 "每批分析页数 (强烈建议每批1页)",
@@ -449,122 +451,8 @@ with st.sidebar:
         )
 
     # 添加一个美观的Enter按钮
-    if st.button("🚀 开始分析", type="primary", use_container_width=True):
-        if not user_prompt:
-            st.error("请先输入分析提示！")
-        else:
-            if st.session_state.document_type == "pdf" and st.session_state.pdf_bytes:
-                # 使用进度条显示处理进度
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-
-                # 计算批次总数
-                pdf_document = fitz.open(
-                    stream=st.session_state.pdf_bytes, filetype="pdf")
-                total_pages = pdf_document.page_count
-                total_batches = (
-                    total_pages + pages_per_batch - 1) // pages_per_batch
-
-                combined_analysis = []
-
-                # 处理每个批次
-                for batch_idx in range(total_batches):
-                    start_page = batch_idx * pages_per_batch
-                    end_page = min((batch_idx + 1) *
-                                   pages_per_batch, total_pages)
-
-                    # 更新进度条
-                    progress = (batch_idx) / total_batches
-                    progress_bar.progress(progress)
-                    status_text.info(
-                        f"正在处理第 {start_page + 1}-{end_page} 页 (批次 {batch_idx + 1}/{total_batches})")
-
-                    # 根据分析模式选择处理方法
-                    if st.session_state.pdf_analysis_mode == "image" and 'pdf_images' in st.session_state:
-                        # 图片模式分析
-                        with st.spinner(f"🖼️ 正在使用图片模式分析第 {start_page + 1} 到 {end_page} 页..."):
-                            st.info("图片分析中，请耐心等待...")
-
-                            # 显示正在分析的图片
-                            cols = st.columns(min(3, end_page - start_page))
-                            for i, col in enumerate(cols):
-                                if start_page + i < len(st.session_state.pdf_images):
-                                    with col:
-                                        st.image(st.session_state.pdf_images[start_page + i],
-                                                 caption=f"Page {start_page + i + 1}",
-                                                 use_column_width=True)
-
-                            # 生成图片分析的提示词
-                            image_prompt = f"{user_prompt}\n\n请分析这{'些' if end_page-start_page > 1 else ''}PDF页面的内容。"
-
-                            try:
-                                # 分析图片内容
-                                analysis = analyze_image_content(
-                                    st.session_state.pdf_images[start_page:end_page],
-                                    image_prompt
-                                )
-
-                                # 添加到合并结果
-                                batch_result = f"### 📄 第 {start_page + 1}-{end_page} 页分析结果\n\n{analysis}"
-                                combined_analysis.append(batch_result)
-
-                            except Exception as e:
-                                error_msg = f"图片分析出错: {str(e)}"
-                                st.error(error_msg)
-                                traceback.print_exc()
-
-                                # 如果图片分析失败，尝试使用文本模式作为备选
-                                st.warning("图片分析失败，正在尝试使用文本模式作为备选...")
-
-                                # 提取当前批次的文本内容
-                                batch_text = ""
-                                for page_num in range(start_page, end_page):
-                                    if page_num < pdf_document.page_count:
-                                        page = pdf_document[page_num]
-                                        batch_text += page.get_text() + "\n\n"
-
-                                # 使用文本模式进行分析
-                                backup_analysis = analyze_page_content(
-                                    init_gemini_client(),
-                                    user_prompt,
-                                    batch_text,
-                                    f"PDF Pages {start_page + 1}-{end_page}"
-                                )
-
-                                batch_result = f"### 📄 第 {start_page + 1}-{end_page} 页分析结果 (文本模式备选)\n\n{backup_analysis}"
-                                combined_analysis.append(batch_result)
-
-                    else:
-                        # 文本模式分析
-                        with st.spinner(f"📝 正在使用文本模式分析第 {start_page + 1} 到 {end_page} 页..."):
-                            # 提取当前批次的文本
-                            batch_text = ""
-                            for page_num in range(start_page, end_page):
-                                if page_num < pdf_document.page_count:
-                                    page = pdf_document[page_num]
-                                    batch_text += page.get_text() + "\n\n"
-
-                            # 使用文本模式进行分析
-                            analysis = analyze_page_content(
-                                init_gemini_client(),
-                                user_prompt,
-                                batch_text,
-                                f"PDF Pages {start_page + 1}-{end_page}"
-                            )
-
-                            # 添加到合并结果
-                            batch_result = f"### 📄 第 {start_page + 1}-{end_page} 页分析结果\n\n{analysis}"
-                            combined_analysis.append(batch_result)
-
-                # 完成所有批次，显示结果
-                progress_bar.progress(1.0)
-                status_text.success("✅ 分析完成!")
-
-                # 显示所有批次的合并结果
-                st.markdown("## 📊 分析结果")
-                for result in combined_analysis:
-                    st.markdown(result)
-                    st.divider()
+    analyze_button = st.button(
+        "🚀 开始分析", type="primary", use_container_width=True)
 
     # 在侧边栏显示文档预览
     if uploaded_file is not None:
@@ -587,7 +475,7 @@ with st.sidebar:
                             if selected_page <= len(st.session_state.pdf_images):
                                 st.image(st.session_state.pdf_images[selected_page-1],
                                          caption=f"第 {selected_page} 页",
-                                         use_column_width=True)
+                                         use_container_width=True)
             elif st.session_state.document_type == "epub" and st.session_state.epub_chapters:
                 # 显示EPUB章节导航和字数统计
                 st.subheader("📑 Chapters")
@@ -613,95 +501,126 @@ if uploaded_file is not None:
             # 显示PDF信息
             st.subheader(f"📄 PDF文档 - {doc_title} ({page_count} 页)")
 
-            # 获取当前页面的文本内容用于分析
-            if user_prompt:
-                with st.spinner('分析页面内容中...'):
-                    client = init_gemini_client()
+            # 在这里显示PDF的预览或其他信息，但不自动执行分析
+            if not analyze_button:
+                st.info("请在侧边栏输入分析提示，然后点击「🚀 开始分析」按钮开始分析。")
 
-                    # 显示分析结果
-                    st.subheader('📝 分析结果')
+            # 如果点击了分析按钮，显示分析结果
+            if analyze_button:
+                if not user_prompt:
+                    st.error("请先输入分析提示！")
+                else:
+                    # 使用进度条显示处理进度
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
 
-                    # 计算需要处理的批次数
-                    total_pages = page_count
-                    batch_count = (
+                    # 计算批次总数
+                    pdf_document = fitz.open(
+                        stream=st.session_state.pdf_bytes, filetype="pdf")
+                    total_pages = pdf_document.page_count
+                    total_batches = (
                         total_pages + pages_per_batch - 1) // pages_per_batch
 
-                    # 分析处理的具体逻辑
-                    for batch in range(batch_count):
-                        start_page = batch * pages_per_batch
-                        end_page = min(
-                            start_page + pages_per_batch, total_pages)
+                    combined_analysis = []
 
-                        with st.spinner(f'📚 正在分析第 {start_page + 1} 到 {end_page} 页...'):
-                            # 根据分析模式选择不同的处理方式
-                            if st.session_state.pdf_analysis_mode == "text":
-                                # 文本模式：使用预先存储的PDF字节重新打开文档以提取文本
-                                batch_text = ""
-                                # 重新打开PDF以获取文本（这样可以确保每次都能正确获取）
-                                with fitz.open(stream=st.session_state.pdf_bytes, filetype="pdf") as pdf_doc:
+                    # 处理每个批次
+                    for batch_idx in range(total_batches):
+                        start_page = batch_idx * pages_per_batch
+                        end_page = min((batch_idx + 1) *
+                                       pages_per_batch, total_pages)
+
+                        # 更新进度条
+                        progress = (batch_idx) / total_batches
+                        progress_bar.progress(progress)
+                        status_text.info(
+                            f"正在处理第 {start_page + 1}-{end_page} 页 (批次 {batch_idx + 1}/{total_batches})")
+
+                        # 根据分析模式选择处理方法
+                        if st.session_state.pdf_analysis_mode == "image" and 'pdf_images' in st.session_state:
+                            # 图片模式分析
+                            with st.spinner(f"🖼️ 正在使用图片模式分析第 {start_page + 1} 到 {end_page} 页..."):
+
+                                # # 显示正在分析的图片
+                                # cols = st.columns(
+                                #     min(3, end_page - start_page))
+                                # for i, col in enumerate(cols):
+                                #     if start_page + i < len(st.session_state.pdf_images):
+                                #         with col:
+                                #             st.image(st.session_state.pdf_images[start_page + i],
+                                #                      caption=f"Page {start_page + i + 1}",
+                                #                      use_container_width=True)
+
+                                # 生成图片分析的提示词
+                                image_prompt = f"{user_prompt}\n\n请分析这{'些' if end_page-start_page > 1 else ''}PDF页面的内容。"
+
+                                try:
+                                    # 分析图片内容
+                                    analysis = analyze_image_content(
+                                        st.session_state.pdf_images[start_page:end_page],
+                                        image_prompt
+                                    )
+
+                                    # 添加到合并结果
+                                    batch_result = f"### 📄 第 {start_page + 1}-{end_page} 页分析结果\n\n{analysis}"
+                                    combined_analysis.append(batch_result)
+
+                                except Exception as e:
+                                    error_msg = f"图片分析出错: {str(e)}"
+                                    st.error(error_msg)
+                                    traceback.print_exc()
+
+                                    # 如果图片分析失败，尝试使用文本模式作为备选
+                                    st.warning("图片分析失败，正在尝试使用文本模式作为备选...")
+
+                                    # 提取当前批次的文本内容
+                                    batch_text = ""
                                     for page_num in range(start_page, end_page):
-                                        batch_text += pdf_doc[page_num].get_text() + \
-                                            "\n\n"
+                                        if page_num < pdf_document.page_count:
+                                            page = pdf_document[page_num]
+                                            batch_text += page.get_text() + "\n\n"
 
-                                # 分析合并后的文本内容
+                                    # 使用文本模式进行分析
+                                    backup_analysis = analyze_page_content(
+                                        init_gemini_client(),
+                                        user_prompt,
+                                        batch_text,
+                                        f"PDF Pages {start_page + 1}-{end_page}"
+                                    )
+
+                                    batch_result = f"### 📄 第 {start_page + 1}-{end_page} 页分析结果 (文本模式备选)\n\n{backup_analysis}"
+                                    combined_analysis.append(batch_result)
+
+                        else:
+                            # 文本模式分析
+                            with st.spinner(f"📝 正在使用文本模式分析第 {start_page + 1} 到 {end_page} 页..."):
+                                # 提取当前批次的文本
+                                batch_text = ""
+                                for page_num in range(start_page, end_page):
+                                    if page_num < pdf_document.page_count:
+                                        page = pdf_document[page_num]
+                                        batch_text += page.get_text() + "\n\n"
+
+                                # 使用文本模式进行分析
                                 analysis = analyze_page_content(
-                                    client, user_prompt, batch_text, f"PDF Pages {start_page + 1}-{end_page}")
-                            else:
-                                # 图片模式：分析每个页面的图片
-                                # 显示正在处理的图片
-                                st.subheader(
-                                    f"正在分析第 {start_page + 1} 到 {end_page} 页的图片")
-
-                                # 在分析前展示要分析的页面图片
-                                img_cols = st.columns(
-                                    min(3, end_page - start_page + 1))
-                                for i, page_idx in enumerate(range(start_page, end_page)):
-                                    if page_idx < len(st.session_state.pdf_images):
-                                        with img_cols[i % len(img_cols)]:
-                                            st.image(st.session_state.pdf_images[page_idx],
-                                                     caption=f"第 {page_idx + 1} 页",
-                                                     use_column_width=True)
-
-                                # 创建一个自定义提示词格式
-                                image_prompt = f"以下是PDF的第{start_page + 1}页到第{end_page}页的图片。\n\n{user_prompt}"
-
-                                # 允许用户在分析前查看和确认图片
-                                st.info("正在使用图片模式分析这些页面。可能需要较长时间，请耐心等待...")
-
-                                # 分析图片内容
-                                analysis = analyze_image_content(
-                                    st.session_state.pdf_images[start_page:end_page],
-                                    image_prompt
+                                    init_gemini_client(),
+                                    user_prompt,
+                                    batch_text,
+                                    f"PDF Pages {start_page + 1}-{end_page}"
                                 )
 
-                                # 如果分析失败，可以选择切换到文本模式
-                                if "图片分析错误" in analysis or "图片分析超时" in analysis:
-                                    st.error("图片分析失败，正在尝试使用文本模式作为备选...")
-                                    # 尝试使用文本模式作为备选
-                                    try:
-                                        with fitz.open(stream=st.session_state.pdf_bytes, filetype="pdf") as pdf_doc:
-                                            backup_text = ""
-                                            for page_num in range(start_page, end_page):
-                                                backup_text += pdf_doc[page_num].get_text(
-                                                ) + "\n\n"
+                                # 添加到合并结果
+                                batch_result = f"### 📄 第 {start_page + 1}-{end_page} 页分析结果\n\n{analysis}"
+                                combined_analysis.append(batch_result)
 
-                                        backup_analysis = analyze_page_content(
-                                            client, user_prompt, backup_text, f"PDF Pages {start_page + 1}-{end_page}")
+                    # 完成所有批次，显示结果
+                    progress_bar.progress(1.0)
+                    status_text.success("✅ 分析完成!")
 
-                                        # 组合结果
-                                        analysis += "\n\n---\n\n**文本模式备选分析结果：**\n" + backup_analysis
-                                    except Exception as e:
-                                        st.error(f"备选文本分析也失败了: {str(e)}")
-
-                            # 显示分析结果
-                            if start_page + 1 == end_page:
-                                st.success(
-                                    f"第 {start_page + 1} 页分析", icon="📚")
-                            else:
-                                st.success(
-                                    f"第 {start_page + 1} 到 {end_page} 页分析", icon="📚")
-                            st.markdown(analysis)
-                            st.markdown("---")  # Add separator
+                    # 显示所有批次的合并结果
+                    st.markdown("## 📊 分析结果")
+                    for result in combined_analysis:
+                        st.markdown(result)
+                        st.divider()
 
         elif st.session_state.document_type == "epub" and st.session_state.epub_chapters:
             # 显示EPUB信息
@@ -712,23 +631,6 @@ if uploaded_file is not None:
 
             st.subheader(f"📖 {current_chapter_title}")
             st.caption(f"字数：{count_words(current_content)}")
-
-            # 如果有提示词且点击了Enter按钮，才显示分析结果
-            if user_prompt and st.session_state.get("analyze_trigger", False):
-                with st.spinner('Analyzing content...'):
-                    client = init_gemini_client()
-
-                    # 显示分析结果
-                    st.subheader('📝 Analysis Results')
-
-                    # 分析当前章节内容
-                    with st.spinner(f'📚 Analyzing chapter {current_chapter + 1}...'):
-                        analysis = analyze_page_content(
-                            client, user_prompt, current_content, f"Chapter {current_chapter + 1}: {current_chapter_title}")
-                        st.markdown(analysis)
-                        st.markdown("---")  # Add separator
-                # 重置分析触发器
-                st.session_state.analyze_trigger = False
 
             # 显示当前章节内容
             st.subheader("📄 Chapter Content")
@@ -751,5 +653,28 @@ if uploaded_file is not None:
                         print(
                             f"点击下一章按钮，设置 current_chapter: {st.session_state.current_chapter}")
                         st.rerun()
+
+            # 如果点击了分析按钮，显示EPUB分析结果
+            if analyze_button:
+                if not user_prompt:
+                    st.error("请先输入分析提示！")
+                else:
+                    with st.spinner('正在分析章节内容...'):
+                        client = init_gemini_client()
+
+                        # 显示分析结果
+                        st.subheader('📝 分析结果')
+
+                        # 分析当前章节内容
+                        with st.spinner(f'📚 正在分析章节 {current_chapter + 1}...'):
+                            analysis = analyze_page_content(
+                                client,
+                                user_prompt,
+                                current_content,
+                                f"Chapter {current_chapter + 1}: {current_chapter_title}"
+                            )
+                            st.markdown(analysis)
+                            st.markdown("---")  # Add separator
+
     except Exception as e:
         st.error(f'Error processing document: {str(e)}')
