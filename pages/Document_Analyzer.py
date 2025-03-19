@@ -29,7 +29,7 @@ css = '''
 <style>
     [data-testid="stSidebar"]{
         min-width: 400px;
-        max-width: 800px;
+        max-width: 1600px;
     }
 </style>
 '''
