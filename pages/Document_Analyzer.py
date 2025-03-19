@@ -25,7 +25,15 @@ st.set_page_config(
 )
 
 # 初始化 Gemini 客户端
-
+css = '''
+<style>
+    [data-testid="stSidebar"]{
+        min-width: 400px;
+        max-width: 800px;
+    }
+</style>
+'''
+st.markdown(css, unsafe_allow_html=True)
 
 def get_next_api_key():
     """获取下一个API密钥"""
