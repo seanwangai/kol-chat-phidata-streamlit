@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import calendar
 from collections import Counter
+from itertools import cycle
 import json
 import time
 import os
@@ -25,17 +26,18 @@ st.set_page_config(
 # 初始化 Exa 客戶端
 @st.cache_resource
 def get_exa_client():
-    return Exa(api_key=st.secrets["EXA_API_KEY"])
+    # 使用密钥池轮换机制
+    if "exa_api_key_cycle" not in st.session_state:
+        st.session_state.exa_api_key_cycle = cycle(st.secrets["EXA_API_KEYS"])
+    return Exa(api_key=next(st.session_state.exa_api_key_cycle))
 
 # 設置 Gemini API
 def get_gemini_client():
     """獲取 Gemini API 客戶端"""
-    api_key = st.secrets.get("GOOGLE_API_KEY", None)
-    if not api_key:
-        st.error("未找到 Gemini API Key，請在 .streamlit/secrets.toml 中設置 GEMINI_API_KEY")
-        return None
-    
-    return genai.Client(api_key=api_key)
+    # 使用密钥池轮换机制
+    if "google_api_key_cycle" not in st.session_state:
+        st.session_state.google_api_key_cycle = cycle(st.secrets["GOOGLE_API_KEYS"])
+    return genai.Client(api_key=next(st.session_state.google_api_key_cycle))
 
 # 獲取當前日期和12個月前的日期
 def get_default_dates():
@@ -151,34 +153,37 @@ def run_exa_search(keyword, start_date, end_date, max_results=100):
         formatted_start = format_date_for_api(start_date)
         formatted_end = format_date_for_api(end_date)
         
+        print(f"\n[{datetime.now().strftime('%H:%M:%S')}] 開始搜索 {start_date.strftime('%Y-%m')} 的資料...")
         with st.spinner(f"搜索 {start_date.strftime('%Y-%m')} 的資料..."):
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] 正在調用 Exa API...")
             result = exa.search_and_contents(
                 keyword,
-                # !!!!!
-                category="news", # news, tweet, financial report, company
+                category="news",
                 text={
                     "max_characters": 1000
                 },
                 type="keyword",
                 num_results=max_results,
                 start_published_date=formatted_start,
-                end_published_date=formatted_end
+                end_published_date=formatted_end,
+                exclude_domains = ["keji100.net"]
             )
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Exa API 調用完成，正在處理結果...")
             
-            # 調試信息
-            # st.write(f"API 響應類型: {type(result)}")
-            
-            # 檢查響應結構
             if hasattr(result, 'results'):
-                st.write(f"找到 {len(result.results)} 個結果")
+                result_count = len(result.results)
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] 找到 {result_count} 個結果")
+                st.write(f"找到 {result_count} 個結果")
                 return result
             elif hasattr(result, 'data') and hasattr(result.data, 'results'):
-                st.write(f"找到 {len(result.data.results)} 個結果")
+                result_count = len(result.data.results)
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] 找到 {result_count} 個結果")
+                st.write(f"找到 {result_count} 個結果")
                 return result.data
             else:
-                # 嘗試將結果轉換為字典
                 try:
                     if hasattr(result, 'to_dict'):
+                        print(f"[{datetime.now().strftime('%H:%M:%S')}] 正在轉換結果格式...")
                         result_dict = result.to_dict()
                         st.write("轉換為字典:", result_dict.keys())
                         
@@ -187,13 +192,18 @@ def run_exa_search(keyword, start_date, end_date, max_results=100):
                                 def __init__(self, results):
                                     self.results = results
                             
+                            result_count = len(result_dict['data']['results'])
+                            print(f"[{datetime.now().strftime('%H:%M:%S')}] 找到 {result_count} 個結果")
                             return ResultWrapper(result_dict['data']['results'])
                 except Exception as e:
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] 轉換結果時出錯: {str(e)}")
                     st.error(f"轉換結果時出錯: {str(e)}")
                 
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] API 響應格式異常")
                 st.warning(f"API 響應缺少 'results' 屬性。可用屬性: {dir(result)}")
                 return None
     except Exception as e:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] 搜索出錯: {str(e)}")
         st.error(f"搜索時發生錯誤: {str(e)}")
         return None
 
@@ -204,54 +214,68 @@ def run_parallel_exa_searches(keyword, month_ranges, max_results_per_month):
     total_results = 0
     
     # 創建主頁面容器來顯示進度
-    progress_area = st.empty()
+    progress_container = st.container()
     status_area = st.empty()
     
-    with progress_area:
+    with progress_container:
         progress_bar = st.progress(0)
     
+    print(f"\n[{datetime.now().strftime('%H:%M:%S')}] 開始並行搜索，共 {len(month_ranges)} 個月份")
+    
     # 創建一個執行器
-    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
         # 提交所有任務
         future_to_month = {
             executor.submit(run_exa_search, keyword, month['start'], month['end'], max_results_per_month): month
             for month in month_ranges
         }
         
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] 已提交所有搜索任務")
+        
         # 處理完成的任務
         completed = 0
         for future in concurrent.futures.as_completed(future_to_month):
             month = future_to_month[future]
             try:
+                print(f"\n[{datetime.now().strftime('%H:%M:%S')}] 正在處理 {month['name']} 的搜索結果...")
                 result = future.result()
                 if result and hasattr(result, 'results'):
-                    print('~~~~')
-                    print(result)
                     month_results = [extract_data_from_result(r) for r in result.results]
                     all_results.extend(month_results)
                     total_results += len(month_results)
                     with status_area:
                         st.text(f"已完成 {month['name']} 的搜索，找到 {len(month_results)} 個結果")
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] {month['name']} 處理完成，找到 {len(month_results)} 個結果")
             except Exception as e:
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] {month['name']} 處理出錯: {str(e)}")
                 with st.container():
                     st.error(f"搜索 {month['name']} 時發生錯誤: {str(e)}")
             
             # 更新進度
             completed += 1
-            progress_bar.progress(completed / len(month_ranges))
+            progress = completed / len(month_ranges)
+            progress_bar.progress(progress)
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] 總進度: {progress*100:.1f}%")
+    
+    print(f"\n[{datetime.now().strftime('%H:%M:%S')}] 所有搜索任務完成，共找到 {total_results} 個結果")
     
     # 清除進度條和狀態文本
-    progress_area.empty()
+    progress_container.empty()
     status_area.empty()
     
-    return all_results, total_results
-
-# 使用 Gemini 分析搜索結果
-def analyze_with_gemini(search_results, keyword):
-    """使用 Gemini 分析搜索結果並提取重要事件"""
-    client = get_gemini_client()
+    # 按日期排序結果
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] 正在對結果進行排序...")
+    sorted_results = sorted(all_results, 
+                          key=lambda x: datetime.fromisoformat(x['published_date'].replace('Z', '+00:00')).replace(tzinfo=timezone.utc) if x['published_date'] else datetime.min.replace(tzinfo=timezone.utc),
+                          reverse=True)
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] 排序完成")
     
-    # 按月份分組結果
+    return sorted_results, total_results
+
+# 使用 Gemini 分析搜索结果
+def analyze_with_gemini(search_results, keyword):
+    """使用 Gemini 分析搜索结果并提取重要事件"""
+    # 按月份分組结果
     results_by_month = {}
     for result in search_results:
         try:
@@ -263,63 +287,82 @@ def analyze_with_gemini(search_results, keyword):
             
             results_by_month[month_key].append(result)
         except Exception as e:
-            st.error(f"處理日期時出錯: {str(e)}")
+            # !!!!!! 有些publish_date 是none
+            # TO FIX: 如果是 published_date 是 None ，date 改用end_published_date=formatted_end,
+            print(f"处理日期时出错: {str(e)}")
+            print(result)
     
-    # 創建進度顯示（在主頁面而非側邊欄）
+    # 创建进度显示（在主页而非侧边栏）
     analysis_container = st.container()
     with analysis_container:
         analysis_progress = st.progress(0)
         analysis_status = st.empty()
     
-    # 存儲所有月份的分析結果
+    # 存储所有月份的进行分析结果
     all_events = []
     
-    # 按月份逐個分析
-    for i, (month, month_results) in enumerate(results_by_month.items()):
-        analysis_status.text(f"正在分析 {month} 的數據 ({len(month_results)} 條結果)...")
-        
-        # 準備輸入文本
-        input_text = f"以下是關於 '{keyword}' 在 {month} 的新聞報導，請分析並提取重要事件：\n\n"
-        
-        # 添加每個結果的數據
-        for j, data in enumerate(month_results):
-            # 格式化日期
-            try:
-                date_obj = datetime.fromisoformat(data['published_date'].replace('Z', '+00:00'))
-                formatted_date = date_obj.strftime('%Y-%m-%d')
-            except:
-                formatted_date = data['published_date']
-            
-            input_text += f"[{j+1}] 標題: {data['title']}\n"
-            input_text += f"日期: {formatted_date}\n"
-            input_text += f"內容: {data['text'][:1000]}\n\n"
-        
-        # 分析當月數據
+    def analyze_month_data(month_data):
+        month, month_results = month_data
         try:
+            # 准备输入文本
+            input_text = f"以下是关于 '{keyword}' 在 {month} 的新闻报导，请分析并提取重要事件：\n\n"
+            
+            # 添加每个结果的数据
+            for j, data in enumerate(month_results):
+                try:
+                    date_obj = datetime.fromisoformat(data['published_date'].replace('Z', '+00:00'))
+                    formatted_date = date_obj.strftime('%Y-%m-%d')
+                except:
+                    formatted_date = data['published_date']
+                
+                input_text += f"[{j+1}] 标题: {data['title']}\n"
+                input_text += f"日期: {formatted_date}\n"
+                input_text += f"内容: {data['text'][:1000]}\n\n"
+            
+            # 获取新的 client 并分析
+            client = get_gemini_client()
             month_analysis = call_gemini_api(client, input_text, keyword)
             
-            # 解析 JSON 響應
+            # 解析 JSON 响应
             try:
                 month_events = json.loads(month_analysis)
                 if 'events' in month_events and isinstance(month_events['events'], list):
-                    all_events.extend(month_events['events'])
+                    return month_events['events']
             except json.JSONDecodeError:
-                st.error(f"無法解析 {month} 的 Gemini 分析結果")
-                print('===========')
-                print('f"無法解析 {month} 的 Gemini 分析結果"')
+                print(f"无法解析 {month} 的 Gemini 分析结果")
                 print(month_analysis)
+                return []
         except Exception as e:
-            st.error(f"分析 {month} 數據時出錯: {str(e)}")
-        
-        # 更新進度 - 確保值在 0.0 到 1.0 之間
-        progress_value = min(1.0, max(0.0, (i + 1) / len(results_by_month)))
-        analysis_progress.progress(progress_value)
+            print(f"分析 {month} 数据时出错: {str(e)}")
+            return []
     
-    # 清除進度顯示
+    # 使用线程池并行处理
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        # 提交所有任务
+        future_to_month = {executor.submit(analyze_month_data, (month, results)): month 
+                         for month, results in results_by_month.items()}
+        
+        # 处理完成的任务
+        completed = 0
+        for future in concurrent.futures.as_completed(future_to_month):
+            month = future_to_month[future]
+            try:
+                month_events = future.result()
+                all_events.extend(month_events)
+            except Exception as e:
+                st.error(f"处理 {month} 数据时出错: {str(e)}")
+            
+            # 更新进度
+            completed += 1
+            progress_value = min(1.0, max(0.0, completed / len(results_by_month)))
+            analysis_progress.progress(progress_value)
+            analysis_status.text(f"已完成 {completed}/{len(results_by_month)} 个月份的分析...")
+    
+    # 清除进度显示
     analysis_progress.empty()
     analysis_status.empty()
     
-    # 返回合併的分析結果
+    # 返回合併的分析结果
     combined_analysis = {
         "events": all_events
     }
@@ -336,28 +379,93 @@ def call_gemini_api(client, input_text, keyword):
         try:
             model = "gemini-2.0-flash"
             
-            # 設置系統指令
-            system_instruction = f"""你是一位資深的投資分析師，統整出各時間點，要跟 {keyword} 有關的事件，請根據新聞資料，篩選出「對投資決策有幫助」的重點資訊。
-            判斷新聞是否有幫助包括但不限於：新業務、新產品、新合作、即將推出、出海成功海外爆火、新技術、新產線、產業趨勢、政府政策、重大風險、重大財務異動、重大人事變動、法說會內容、競爭對手訊息、對未來的預測、券商新觀點、券商首次覆蓋
-            注意，一定要跟 投資分析有關的事件
-            time是發布日期，text是身為分析師應該要提到的重點事件
-            text格式為兩段:  重點短語：重點內文 
+            # 設置系統指令  
+            system_instruction = f"""**角色設定：**  
+            你是一位資深的基本面投資分析師，負責整理各時間點與 {keyword} 有關的新聞資料，挑選「對投資決策有幫助」的重大事件。
 
-            text 以SCQA 結構化表達
-            S – Situation（情境）
-            C – Complication（衝突 / 複雜化）
-            Q – Question（問題）
-            A – Answer（回答 / 解決方案）
+            ---
 
-            重點短語 只說 Answer（回答 / 解決方案），有重點數字 或是新動作 或是新發表 可以包含在內， 前面加上emoji分別表示整篇的sentiment(只要emoji即可) 📉📉Strong negative / 📉negative / ⚖️Neutral / 📈positive / 📈📈Strong positive
-            重點內文 背後用 SCQ 的結構回答，不過不要特別標記出S:C:Q:，是通順的文字即可
+            ### ✅ 任務目標：  
+            依據新聞內容，篩選出對基本面分析有價值的資訊，統整出時間序列資訊表，重點聚焦在影響公司營運、財報、產業地位與未來發展的資訊。  
+            **排除所有股價漲跌相關資訊**，專注於事件對基本面的影響。
 
-            注意！一定要是 資深的基本面投資分析師 會說的話
+            ---
 
-            重點短語：重點內文  的範例如下:
-            東南亞市場增長 25%：日本市場需求趨緩，東南亞訂單成長成為未來主要營收動能.....
+            ### ✅ 新聞判斷標準（符合下列條件的新聞才需整理）：  
+            - 新業務 / 新產品 / 新合作 / 即將推出  
+            - 出海成功 / 海外市場增長 / 海外熱銷  
+            - 新技術 / 新產線 / 技術突破  
+            - 產業趨勢 / 政策導向 / 法規影響  
+            - 政府政策支持 / 補貼  
+            - 重大風險 / 法律糾紛 / 營運風險  
+            - 重大財務異動（營收、獲利、毛利等）  
+            - 重大人事異動（高階主管更換）  
+            - 法說會 / 財報重點 / 公司展望  
+            - 券商觀點 / 首次覆蓋 / 調升調降目標  
+            - 競爭對手重大動作（新產品、新產線、重大合作等）
+
+            ---
+
+            ### ✅ 輸出格式（務必遵守）：  
+            以時間為排序單位，呈現重要新聞資訊，格式如下：
+
+            ```
+            time: YYYY-MM-DD  
+            text:  
+            {{emoji}}{{重點短語}}：  
+            {{SCQA 結構重點內文}}
+            ```
+
+            ---
+
+            ### ✅ SCQA 結構說明  
+            - **S（Situation）**：描述當前的背景或產業/公司現況  
+            - **C（Complication）**：指出面臨的變化、挑戰或潛在機會  
+            - **Q（Question）**：提出市場或投資人關注的問題  
+            - **A（Answer）**：公司或產業的應對措施、具體行動或預期結果（這部分需寫在重點短語前）
+
+            ---
+
+            ### ✅ 重點短語規則  
+            - 前面加上 sentiment emoji  
+            - 📈📈 Strong positive  
+            - 📈 Positive  
+            - ⚖️ Neutral  
+            - 📉 Negative  
+            - 📉📉 Strong negative  
+            - 重點短語只寫 Answer（具體作為/數字/結論）  
+            - 簡明扼要，清楚展示影響力（新訂單、新市場、營收變化等）  
+
+            ---
+
+            ### ✅ 範例  
+            ```
+            time: 2025-03-18  
+            text:  
+            📈📈 東南亞市場訂單成長 25%：  
+            日本市場需求趨緩，導致公司在亞洲區域營收承壓。為突破瓶頸，公司積極拓展東南亞市場。  
+            東南亞經濟復甦帶動整體需求上升，市場對公司主力產品需求大幅增長。  
+            投資人關注公司是否能成功彌補日本市場下滑的缺口。  
+            最新數據顯示，公司東南亞市場訂單季增 25%，有望成為未來主要營收動能來源。
+
+            time: 2025-03-12  
+            text:  
+            📉📉 核心技術專利糾紛導致產品延遲上市：  
+            公司計畫在上半年推出新一代旗艦產品，以鞏固高端市場地位。然而，因涉及專利侵權，公司被競爭對手提起訴訟。  
+            市場普遍擔心訴訟將影響產品上市時程及市場信心。  
+            目前，公司已宣布產品上市將延遲兩個季度，恐影響下半年營收表現。
+            ```
+
+            ---
+
+            ### ✅ 小技巧提醒  
+            - 重點不在「新聞」，而在「對營運基本面的影響」。  
+            - 不重要的、冗餘的資訊要學會「刪減」或「合併」。  
+            - emoji 決定這條資訊的投資情緒。  
+            - 模型輸出只關注 **有用的事實**，而非新聞表象。
             """
-            
+
+
             # 組合提示詞
             prompt = f"{system_instruction}\n\n{input_text}"
             
@@ -373,7 +481,7 @@ def call_gemini_api(client, input_text, keyword):
                 temperature=0.2,
                 top_p=0.95,
                 top_k=40,
-                max_output_tokens=2048,
+                max_output_tokens=50000,
                 response_mime_type="application/json",
                 response_schema=genai.types.Schema(
                     type = genai.types.Type.OBJECT,
@@ -483,7 +591,7 @@ if st.session_state.gemini_analysis:
                     temperature=1,
                     top_p=0.95,
                     top_k=40,
-                    max_output_tokens=8192,
+                    max_output_tokens=50000,
                     response_mime_type="application/json",
                     response_schema=genai.types.Schema(
                         type = genai.types.Type.OBJECT,
@@ -508,14 +616,26 @@ if st.session_state.gemini_analysis:
                     # 解析 JSON 響應
                     ticker_data = json.loads(response.text)
                     if 'ticker' in ticker_data and ticker_data['ticker']:
-                        print(ticker_data['ticker'])
-                        return ticker_data['ticker']
+                        ticker = ticker_data['ticker']
+                        print(ticker)
+                        
+                        # 檢查是否為 HKEX 或 TWSE
+                        if ticker.startswith(('HKEX:', 'TWSE:')):
+                            # 生成 TradingView 鏈接
+                            tradingview_symbol = ticker.replace(':', '%3A')
+                            tradingview_url = f"https://www.tradingview.com/chart?symbol={tradingview_symbol}"
+                            
+                            # 顯示 TradingView 鏈接
+                            st.markdown(f"[在 TradingView 中查看 {ticker}]({tradingview_url})")
+                        
+                        return ticker
                 except json.JSONDecodeError:
                     st.error(f"無法解析 Gemini 返回的股票代碼: {response.text}")
                     
                 return None
             except Exception as e:
-                st.error(f"獲取股票代碼時出錯: {str(e)}")
+                # st.error(f"獲取股票代碼時出錯: {str(e)}")
+                print(f"獲取股票代碼時出錯: {str(e)}")
                 return None
         
         stock_ticker = get_stock_ticker_from_gemini(st.session_state.search_keyword)
@@ -533,7 +653,7 @@ if st.session_state.gemini_analysis:
               new TradingView.widget(
               {{
                 "width": "100%",
-                "height": 650,
+                "height": 600,
                 "symbol": "{stock_ticker}",
                 "interval": "D",
                 "timezone": "Asia/Taipei",
@@ -548,7 +668,7 @@ if st.session_state.gemini_analysis:
               );
               </script>
             </div>
-            <!-- TradingView Widget END -->""", height=500)
+            <!-- TradingView Widget END -->""", height=600)
         
 
         try:
@@ -614,10 +734,10 @@ if st.session_state.gemini_analysis:
                         border-radius: 5px;
                     }
                     .timeline-item {
-                        padding: 10px 40px;
+                        padding: 5px 40px;
                         position: relative;
                         background-color: inherit;
-                        margin-bottom: 30px;
+                        margin-bottom: 15px;
                     }
                     .timeline-item::before {
                         content: '';
@@ -625,17 +745,41 @@ if st.session_state.gemini_analysis:
                         width: 24px;
                         height: 24px;
                         background: white;
-                        border: 4px solid #6e8efb;
+                        border: 4px solid var(--circle-color, #6e8efb);
                         top: 15px;
                         border-radius: 50%;
                         z-index: 1;
                         left: -12px;
-                        box-shadow: 0 0 0 5px rgba(110, 142, 251, 0.2);
+                        box-shadow: 0 0 0 5px var(--circle-shadow-color, rgba(110, 142, 251, 0.2));
                         transition: all 0.3s ease;
                     }
+                    .timeline-item[data-sentiment='📈']::before, .timeline-item[data-sentiment='📈📈']::before {
+                        border-color: #ff6b6b;
+                        box-shadow: 0 0 0 5px rgba(255, 107, 107, 0.2);
+                    }
+                    .timeline-item[data-sentiment='⚖️']::before {
+                        border-color: #868e96;
+                        box-shadow: 0 0 0 5px rgba(134, 142, 150, 0.2);
+                    }
+                    .timeline-item[data-sentiment='📉']::before, .timeline-item[data-sentiment='📉📉']::before {
+                        border-color: #51cf66;
+                        box-shadow: 0 0 0 5px rgba(81, 207, 102, 0.2);
+                    }
                     .timeline-item:hover::before {
-                        background-color: #6e8efb;
-                        box-shadow: 0 0 0 8px rgba(110, 142, 251, 0.3);
+                        background-color: var(--circle-color, #6e8efb);
+                        box-shadow: 0 0 0 8px var(--circle-shadow-color, rgba(110, 142, 251, 0.3));
+                    }
+                    .timeline-item[data-sentiment='📈']:hover::before, .timeline-item[data-sentiment='📈📈']:hover::before {
+                        background-color: #ff6b6b;
+                        box-shadow: 0 0 0 8px rgba(255, 107, 107, 0.3);
+                    }
+                    .timeline-item[data-sentiment='⚖️']:hover::before {
+                        background-color: #868e96;
+                        box-shadow: 0 0 0 8px rgba(134, 142, 150, 0.3);
+                    }
+                    .timeline-item[data-sentiment='📉']:hover::before, .timeline-item[data-sentiment='📉📉']:hover::before {
+                        background-color: #51cf66;
+                        box-shadow: 0 0 0 8px rgba(81, 207, 102, 0.3)
                     }
                     .timeline-content {
                         padding: 20px;
@@ -643,8 +787,25 @@ if st.session_state.gemini_analysis:
                         position: relative;
                         border-radius: 10px;
                         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-                        border-left: 5px solid #6e8efb;
                         transition: all 0.3s ease;
+                    }
+                    .timeline-content[data-sentiment='📈'], .timeline-content[data-sentiment='📈📈'] {
+                        border-left: 5px solid #ff6b6b;
+                        background-color: rgba(255, 107, 107, 0.05);
+                        --circle-color: #ff6b6b;
+                        --circle-shadow-color: rgba(255, 107, 107, 0.2);
+                    }
+                    .timeline-content[data-sentiment='⚖️'] {
+                        border-left: 5px solid #868e96;
+                        background-color: rgba(134, 142, 150, 0.05);
+                        --circle-color: #868e96;
+                        --circle-shadow-color: rgba(134, 142, 150, 0.2);
+                    }
+                    .timeline-content[data-sentiment='📉'], .timeline-content[data-sentiment='📉📉'] {
+                        border-left: 5px solid #51cf66;
+                        background-color: rgba(81, 207, 102, 0.05);
+                        --circle-color: #51cf66;
+                        --circle-shadow-color: rgba(81, 207, 102, 0.2);
                     }
                     .timeline-content:hover {
                         transform: translateY(-5px);
@@ -670,6 +831,24 @@ if st.session_state.gemini_analysis:
                     <div class="custom-timeline">
                     """, unsafe_allow_html=True)
                     
+                    # 添加JavaScript函數
+                    st.markdown("""
+                    <script>
+                    function scrollToDate(date) {
+                        const targetElement = document.getElementById('date-' + date);
+                        if (targetElement) {
+                            const offset = 80;
+                            const elementPosition = targetElement.getBoundingClientRect().top;
+                            const offsetPosition = elementPosition - offset;
+                            window.scrollBy({
+                                top: offsetPosition,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                    </script>
+                    """, unsafe_allow_html=True)
+                    
                     for item in timeline_data:
                         # 分割內容，使冒號前的文字加粗
                         content = item["content"]
@@ -679,9 +858,20 @@ if st.session_state.gemini_analysis:
                         else:
                             formatted_content = content
                         
+                        # 获取情感标记
+                        sentiment = '⚖️'  # 默认为中性
+                        if "：" in content:
+                            first_part = content.split("：")[0]
+                            if "📈" in first_part:
+                                sentiment = '📈'
+                            elif "📉" in first_part:
+                                sentiment = '📉'
+                            elif "⚖️" in first_part:
+                                sentiment = '⚖️'
+                        
                         st.markdown(f"""
-                        <div class="timeline-item">
-                            <div class="timeline-content">
+                        <div class="timeline-item" onclick="scrollToDate('{item['start']}')" style="cursor: pointer;" data-sentiment='{sentiment}'>
+                            <div class="timeline-content" data-sentiment='{sentiment}'>
                                 <div class="timeline-date">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="#6e8efb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -709,8 +899,9 @@ if st.session_state.gemini_analysis:
                         except:
                             formatted_date = result['published_date']
                         
-                        # 使用卡片樣式顯示結果
+                        # 使用卡片樣式顯示結果，添加日期ID作為錨點
                         with st.container():
+                            st.markdown(f"<div id='date-{formatted_date}'></div>", unsafe_allow_html=True)
                             st.markdown(f"### {result['title']}")
                             st.markdown(f"**發布日期**: {formatted_date}")
                             st.markdown(f"**URL**: [{result['url']}]({result['url']})")
