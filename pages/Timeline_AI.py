@@ -250,104 +250,186 @@ def run_parallel_exa_searches(keyword, month_ranges, max_results_per_month):
 def analyze_with_gemini(search_results, keyword):
     """使用 Gemini 分析搜索結果並提取重要事件"""
     client = get_gemini_client()
-    if not client:
-        return None
     
-    # 準備輸入數據
-    input_text = f"關鍵詞: {keyword}\n\n搜索結果:\n\n"
-    
-    # 添加每個搜索結果
-    for i, result in enumerate(search_results):
-        data = extract_data_from_result(result)
-        # 格式化日期
+    # 按月份分組結果
+    results_by_month = {}
+    for result in search_results:
         try:
-            # 假設日期格式為 YYYY-MM-DD
-            if data['published_date'] and len(data['published_date']) >= 10:
-                parsed_date = datetime.fromisoformat(data['published_date'].replace('Z', '+00:00'))
-                formatted_date = parsed_date.strftime('%Y-%m-%d')
-            else:
-                formatted_date = data['published_date'] or '未知日期'
-        except Exception as e:
-            formatted_date = data['published_date'] or '未知日期'
+            date_obj = datetime.fromisoformat(result['published_date'].replace('Z', '+00:00'))
+            month_key = date_obj.strftime('%Y-%m')
             
-        input_text += f"[{i+1}] 標題: {data['title']}\n"
-        input_text += f"日期: {formatted_date}\n"
-        input_text += f"內容: {data['text'][:1000]}\n\n"
+            if month_key not in results_by_month:
+                results_by_month[month_key] = []
+            
+            results_by_month[month_key].append(result)
+        except Exception as e:
+            st.error(f"處理日期時出錯: {str(e)}")
     
-    try:
-        model = "gemini-2.0-flash"
-        contents = [
-            types.Content(
-                role="user",
-                parts=[
-                    types.Part.from_text(text=input_text),
-                ],
-            ),
-        ]
+    # 創建進度顯示（在主頁面而非側邊欄）
+    analysis_container = st.container()
+    with analysis_container:
+        analysis_progress = st.progress(0)
+        analysis_status = st.empty()
+    
+    # 存儲所有月份的分析結果
+    all_events = []
+    
+    # 按月份逐個分析
+    for i, (month, month_results) in enumerate(results_by_month.items()):
+        analysis_status.text(f"正在分析 {month} 的數據 ({len(month_results)} 條結果)...")
         
-        generate_content_config = types.GenerateContentConfig(
-            temperature=1,
-            top_p=0.95,
-            top_k=40,
-            max_output_tokens=8192,
-            response_mime_type="application/json",
-            response_schema=genai.types.Schema(
-                type = genai.types.Type.OBJECT,
-                properties = {
-                    "events": genai.types.Schema(
-                        type = genai.types.Type.ARRAY,
-                        items = genai.types.Schema(
-                            type = genai.types.Type.OBJECT,
-                            properties = {
-                                "time": genai.types.Schema(
-                                    type = genai.types.Type.STRING,
-                                ),
-                                "text": genai.types.Schema(
-                                    type = genai.types.Type.STRING,
-                                ),
-                            },
+        # 準備輸入文本
+        input_text = f"以下是關於 '{keyword}' 在 {month} 的新聞報導，請分析並提取重要事件：\n\n"
+        
+        # 添加每個結果的數據
+        for j, data in enumerate(month_results):
+            # 格式化日期
+            try:
+                date_obj = datetime.fromisoformat(data['published_date'].replace('Z', '+00:00'))
+                formatted_date = date_obj.strftime('%Y-%m-%d')
+            except:
+                formatted_date = data['published_date']
+            
+            input_text += f"[{j+1}] 標題: {data['title']}\n"
+            input_text += f"日期: {formatted_date}\n"
+            input_text += f"內容: {data['text'][:1000]}\n\n"
+        
+        # 分析當月數據
+        try:
+            month_analysis = call_gemini_api(client, input_text, keyword)
+            
+            # 解析 JSON 響應
+            try:
+                month_events = json.loads(month_analysis)
+                if 'events' in month_events and isinstance(month_events['events'], list):
+                    all_events.extend(month_events['events'])
+            except json.JSONDecodeError:
+                st.error(f"無法解析 {month} 的 Gemini 分析結果")
+                print('===========')
+                print('f"無法解析 {month} 的 Gemini 分析結果"')
+                print(month_analysis)
+        except Exception as e:
+            st.error(f"分析 {month} 數據時出錯: {str(e)}")
+        
+        # 更新進度 - 確保值在 0.0 到 1.0 之間
+        progress_value = min(1.0, max(0.0, (i + 1) / len(results_by_month)))
+        analysis_progress.progress(progress_value)
+    
+    # 清除進度顯示
+    analysis_progress.empty()
+    analysis_status.empty()
+    
+    # 返回合併的分析結果
+    combined_analysis = {
+        "events": all_events
+    }
+    
+    return json.dumps(combined_analysis)
+
+# 調用 Gemini API
+def call_gemini_api(client, input_text, keyword):
+    """調用 Gemini API 進行分析"""
+    max_retries = 3
+    timeout_seconds = 15
+    
+    for retry_count in range(max_retries):
+        try:
+            model = "gemini-2.0-flash"
+            
+            # 設置系統指令
+            system_instruction = f"""你是一位資深的投資分析師，統整出各時間點，要跟 {keyword} 有關的事件，請根據新聞資料，篩選出「對投資決策有幫助」的重點資訊。
+            判斷新聞是否有幫助包括但不限於：新業務、新產品、新合作、即將推出、出海成功海外爆火、新技術、新產線、產業趨勢、政府政策、重大風險、重大財務異動、重大人事變動、法說會內容、競爭對手訊息、對未來的預測、券商新觀點、券商首次覆蓋
+            注意，一定要跟 投資分析有關的事件
+            time是發布日期，text是身為分析師應該要提到的重點事件
+            text格式為兩段:  重點短語：重點內文 
+
+            text 以SCQA 結構化表達
+            S – Situation（情境）
+            C – Complication（衝突 / 複雜化）
+            Q – Question（問題）
+            A – Answer（回答 / 解決方案）
+
+            重點短語 只說 Answer（回答 / 解決方案），有重點數字 或是新動作 或是新發表 可以包含在內， 前面加上emoji分別表示整篇的sentiment(只要emoji即可) 📉📉Strong negative / 📉negative / ⚖️Neutral / 📈positive / 📈📈Strong positive
+            重點內文 背後用 SCQ 的結構回答，不過不要特別標記出S:C:Q:，是通順的文字即可
+
+            注意！一定要是 資深的基本面投資分析師 會說的話
+
+            重點短語：重點內文  的範例如下:
+            東南亞市場增長 25%：日本市場需求趨緩，東南亞訂單成長成為未來主要營收動能.....
+            """
+            
+            # 組合提示詞
+            prompt = f"{system_instruction}\n\n{input_text}"
+            
+            # 設置 Gemini 請求
+            contents = [
+                types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(text=prompt)],
+                ),
+            ]
+            
+            generate_content_config = types.GenerateContentConfig(
+                temperature=0.2,
+                top_p=0.95,
+                top_k=40,
+                max_output_tokens=2048,
+                response_mime_type="application/json",
+                response_schema=genai.types.Schema(
+                    type = genai.types.Type.OBJECT,
+                    properties = {
+                        "events": genai.types.Schema(
+                            type = genai.types.Type.ARRAY,
+                            items = genai.types.Schema(
+                                type = genai.types.Type.OBJECT,
+                                properties = {
+                                    "time": genai.types.Schema(
+                                        type = genai.types.Type.STRING,
+                                    ),
+                                    "text": genai.types.Schema(
+                                        type = genai.types.Type.STRING,
+                                    ),
+                                },
+                            ),
                         ),
-                    ),
-                },
-            ),
-            system_instruction=[
-                types.Part.from_text(text="""你是一位資深的投資分析師，統整出各時間點，要跟 {keyword} 有關的事件，請根據新聞資料，篩選出「對投資決策有幫助」的重點資訊。
-                判斷新聞是否有幫助包括但不限於：新業務、新產品、新合作、即將推出、出海成功海外爆火、新技術、新產線、產業趨勢、政府政策、重大風險、重大財務異動、重大人事變動、法說會內容、競爭對手訊息、對未來的預測、券商新觀點、券商首次覆蓋
-                注意，一定要跟 投資分析有關的事件
-                time是發布日期，text是身為分析師應該要提到的重點事件
-                text格式為兩段:  重點短語：重點內文 
-
-                text 以SCQA 結構化表達
-                S – Situation（情境）
-                C – Complication（衝突 / 複雜化）
-                Q – Question（問題）
-                A – Answer（回答 / 解決方案）
-
-                重點短語 只說 Answer（回答 / 解決方案），有重點數字 或是Action 可以包含在內， 前面加上emoji分別表示 📉📉Strong negative / 📉negative / ⚖️Neutral / 📈positive / 📈📈Strong positive
-                重點內文 背後用 SCQ 的結構回答，不過不要特別標記出S:C:Q:，是通順的文字即可
-
-                注意！一定要是 資深的基本面投資分析師 會說的話
-
-                重點短語：重點內文  的範例如下:
-                東南亞市場增長 25%：日本市場需求趨緩，東南亞訂單成長成為未來主要營收動能.....
-
-                """),
-            ],
-        )
-
-        response = client.models.generate_content(
-            model=model,
-            contents=contents,
-            config=generate_content_config,
-        )
-        
-        return response.text
-    except Exception as e:
-        st.error(f"Gemini 分析時出錯: {str(e)}")
-        st.error(f"錯誤類型: {type(e).__name__}")
-        import traceback
-        st.error(f"詳細錯誤: {traceback.format_exc()}")
-        return None
+                    },
+                ),
+            )
+            
+            # 使用 timeout 發送請求
+            # 使用 concurrent.futures 實現 timeout
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(
+                    client.models.generate_content,
+                    model=model,
+                    contents=contents,
+                    config=generate_content_config,
+                )
+                
+                try:
+                    response = future.result(timeout=timeout_seconds)
+                    # 返回響應文本
+                    return response.text
+                except concurrent.futures.TimeoutError:
+                    if retry_count < max_retries - 1:
+                        st.warning(f"Gemini API 請求超時，正在重試 ({retry_count + 1}/{max_retries})...")
+                        continue
+                    else:
+                        raise TimeoutError(f"Gemini API 請求在 {timeout_seconds} 秒內未完成，已重試 {max_retries} 次")
+                
+        except TimeoutError as e:
+            st.error(f"調用 Gemini API 時出錯: {str(e)}")
+            return json.dumps({"events": []})
+        except Exception as e:
+            if retry_count < max_retries - 1:
+                st.warning(f"Gemini API 請求出錯，正在重試 ({retry_count + 1}/{max_retries}): {str(e)}")
+                continue
+            else:
+                st.error(f"調用 Gemini API 時出錯: {str(e)}")
+                return json.dumps({"events": []})
+    
+    # 如果所有重試都失敗
+    return json.dumps({"events": []})
 
 # 主頁面
 # st.title("📊 Timeline AI")
@@ -697,6 +779,10 @@ with st.sidebar:
             if start_date > end_date:
                 st.error("開始日期不能晚於結束日期")
             else:
+                # 清空主頁面
+                st.empty()
+                
+                # 在主頁面顯示搜索進度
                 main_area = st.container()
                 with main_area:
                     info_msg = st.info(f"正在搜索: {search_keyword} (從 {start_date.strftime('%Y-%m')} 到 {end_date.strftime('%Y-%m')})")
@@ -714,13 +800,15 @@ with st.sidebar:
                 # 只有在有結果時才進行 Gemini 分析
                 if total_results > 0:
                     # Gemini 分析
-                    with st.spinner("🤖 Gemini AI 正在分析搜索結果，請稍候..."):
-                        gemini_analysis = analyze_with_gemini(all_results, search_keyword)
-                        if gemini_analysis:
-                            st.session_state.gemini_analysis = gemini_analysis
-                            st.session_state.search_keyword = search_keyword
-                            st.session_state.search_results = all_results
-                            st.rerun()
+                    with main_area:
+                        with st.spinner("🤖 Gemini AI 正在分析搜索結果，請稍候..."):
+                            gemini_analysis = analyze_with_gemini(all_results, search_keyword)
+                            if gemini_analysis:
+                                st.session_state.gemini_analysis = gemini_analysis
+                                st.session_state.search_keyword = search_keyword
+                                st.session_state.search_results = all_results
+                                st.rerun()
                     
                 else:
-                    st.warning("沒有找到任何結果，請嘗試不同的關鍵詞或日期範圍")
+                    with main_area:
+                        st.warning("沒有找到任何結果，請嘗試不同的關鍵詞或日期範圍")
