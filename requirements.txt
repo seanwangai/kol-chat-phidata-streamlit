@@ -11,5 +11,5 @@ beautifulsoup4==4.12.3
 python-docx
 google-genai
 streamlit-pdf-viewer
-streamlit-vis-timeline
 setuptools>=65.5.1
+exa-py
