@@ -388,6 +388,8 @@ def call_gemini_api(client, input_text, keyword):
             ### ✅ 任務目標：  
             依據新聞內容，篩選出對基本面分析有價值的資訊，統整出時間序列資訊表，重點聚焦在影響公司營運、財報、產業地位與未來發展的資訊。  
             **排除所有股價漲跌相關資訊**，專注於事件對基本面的影響。
+            注意，一定要跟 {keyword} 有關，無關的新聞，請直接略過。
+            如果相近的天數，有兩個一樣的新聞，請選擇發生時間最早的新聞，整在一起即可。
 
             ---
 
@@ -428,13 +430,13 @@ def call_gemini_api(client, input_text, keyword):
 
             ### ✅ 重點短語規則  
             - 前面加上 sentiment emoji  
-            - 📈📈 Strong positive  
-            - 📈 Positive  
-            - ⚖️ Neutral  
-            - 📉 Negative  
-            - 📉📉 Strong negative  
-            - 重點短語只寫 Answer（具體作為/數字/結論）  
-            - 簡明扼要，清楚展示影響力（新訂單、新市場、營收變化等）  
+                - 📈📈 Strong positive  
+                - 📈 Positive  
+                - ⚖️ Neutral  
+                - 📉 Negative  
+                - 📉📉 Strong negative  
+            重點短語只寫 Answer（具體作為/數字/結論）  
+            簡明扼要，清楚展示影響力（新訂單、新市場、營收變化等）  
 
             ---
 
@@ -710,7 +712,7 @@ if st.session_state.gemini_analysis:
                 
                 # 如果有足夠的事件用於時間線
                 if len(timeline_data) >= 2:
-                    st.markdown('<div class="timeline-container"><h2 class="timeline-title">📅 事件時間線</h2></div>', unsafe_allow_html=True)
+                    st.markdown('<div class="timeline-container"><h2 class="timeline-title">📅 事件時間線 <span class="copy-icon" onclick="copyTimelineEvents()" title="複製時間線內容"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 9H11C9.89543 9 9 9.89543 9 11V20C9 21.1046 9.89543 22 11 22H20C21.1046 22 22 21.1046 22 20V11C22 9.89543 21.1046 9 20 9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 15H4C3.46957 15 2.96086 14.7893 2.58579 14.4142C2.21071 14.0391 2 13.5304 2 13V4C2 3.46957 2.21071 2.96086 2.58579 2.58579C2.96086 2.21071 3.46957 2 4 2H13C13.5304 2 14.0391 2.21071 14.4142 2.58579C14.7893 2.96086 15 3.46957 15 4V5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></h2></div>', unsafe_allow_html=True)
                     
                     # 創建自定義時間線可視化
                     # 按日期排序
@@ -832,6 +834,24 @@ if st.session_state.gemini_analysis:
                         line-height: 1.6;
                         color: #444;
                     }
+                    .copy-icon {
+                        cursor: pointer;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin-left: 10px;
+                        padding: 5px;
+                        border-radius: 50%;
+                        transition: all 0.2s ease;
+                        color: #6e8efb;
+                    }
+                    .copy-icon:hover {
+                        background-color: rgba(110, 142, 251, 0.1);
+                        transform: scale(1.1);
+                    }
+                    .copy-icon:active {
+                        transform: scale(0.95);
+                    }
                     </style>
                     <div class="custom-timeline">
                     """, unsafe_allow_html=True)
@@ -850,6 +870,46 @@ if st.session_state.gemini_analysis:
                                 behavior: 'smooth'
                             });
                         }
+                    }
+                    
+                    function copyTimelineEvents() {
+                        // 收集所有时间线事件
+                        const timelineItems = document.querySelectorAll('.timeline-item');
+                        let copyText = "📅 事件時間線\n\n";
+                        
+                        timelineItems.forEach(item => {
+                            const dateElement = item.querySelector('.timeline-date');
+                            const contentElement = item.querySelector('p');
+                            
+                            if (dateElement && contentElement) {
+                                // 获取日期文本（移除SVG图标）
+                                const dateText = dateElement.textContent.trim();
+                                // 获取内容文本
+                                const contentText = contentElement.textContent.trim();
+                                
+                                copyText += `${dateText}: ${contentText}\n\n`;
+                            }
+                        });
+                        
+                        // 复制到剪贴板
+                        navigator.clipboard.writeText(copyText)
+                            .then(() => {
+                                // 显示复制成功提示
+                                const copyIcon = document.querySelector('.copy-icon');
+                                const originalTitle = copyIcon.getAttribute('title');
+                                copyIcon.setAttribute('title', '複製成功！');
+                                copyIcon.style.color = '#51cf66';
+                                
+                                // 2秒后恢复原样
+                                setTimeout(() => {
+                                    copyIcon.setAttribute('title', originalTitle);
+                                    copyIcon.style.color = '#6e8efb';
+                                }, 2000);
+                            })
+                            .catch(err => {
+                                console.error('複製失敗:', err);
+                                alert('複製失敗，請重試');
+                            });
                     }
                     </script>
                     """, unsafe_allow_html=True)

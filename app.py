@@ -321,13 +321,14 @@ if model_type.startswith("gemini"):
 
                 # 存储PDF内容以供后续使用
                 uploaded_pdf_content = pdf_text
+                print(pdf_text)
 
                 # 显示PDF预览（仅显示第一页）
                 first_page = pdf_document[0]
                 pix = first_page.get_pixmap()
                 img_data = pix.tobytes("png")
-                st.image(
-                    img_data, caption=f"PDF预览 (第1页，共{pdf_document.page_count}页)", use_container_width=True)
+                # st.image(
+                #     img_data, caption=f"PDF预览 (第1页，共{pdf_document.page_count}页)", use_container_width=True)
 
             except Exception as e:
                 st.error(f"读取PDF文件失败: {str(e)}")
