@@ -219,7 +219,7 @@ def analyze_image_content(images, user_prompt, timeout_seconds=120):
         # 先打印调试信息
         print(f"开始处理{len(images)}张图片的分析请求...")
 
-        if len(images) > 3:
+        if len(images) > 10:
             print(f"警告: 尝试同时分析{len(images)}张图片，可能导致超时")
 
         # 创建客户端
@@ -433,11 +433,11 @@ with st.sidebar:
 
             # 在图片模式下调整批次大小的默认值
             pages_per_batch = st.number_input(
-                "每批分析页数 (强烈建议每批1页)",
+                "每批分析页数",
                 min_value=1,
-                max_value=3,  # 限制最大页数
-                value=1,
-                help="图片模式下强烈建议每批分析1页以提高成功率"
+                max_value=10,  # 限制最大页数
+                value=3,
+                help="可以一次多張图片"
             )
         else:
             # 文本模式下的批次大小设置

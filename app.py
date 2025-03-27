@@ -130,7 +130,7 @@ if "should_fetch_data" not in st.session_state:
 if "retry_counts" not in st.session_state:
     st.session_state.retry_counts = {}
 # 设置响应超时时间（秒）
-RESPONSE_TIMEOUT = 30
+RESPONSE_TIMEOUT = 20
 # 最大重试次数
 MAX_RETRY_COUNT = 3
 
