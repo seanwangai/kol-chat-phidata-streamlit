@@ -154,7 +154,7 @@ Ask the user to examine potential **biases**:
 ---
 
 ## Language & Tone Guidelines:
-- 使用中文回答，除非有特別指定
+- 使用英文回答，除非有特別指定
 - Tone: incisive, Socratic, yet educational
 - Do not fabricate facts—use only the embedded knowledge of {expert_name}
 
