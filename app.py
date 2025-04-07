@@ -466,7 +466,7 @@ elif st.session_state.processing_status["is_processing"]:
                                 while not response_ready.is_set() and time.time() - start_time < RESPONSE_TIMEOUT:
                                     elapsed = int(time.time() - start_time)
                                     status.update(
-                                        label=f"{avatar} {agent_name} 正在思考... ({elapsed}/{RESPONSE_TIMEOUT}秒)", state="running")
+                                        label=f"{avatar} {agent_name} is thinking... ({elapsed}/{RESPONSE_TIMEOUT}秒)", state="running")
                                     time.sleep(1)
 
                                 # 检查是否超时
@@ -474,7 +474,7 @@ elif st.session_state.processing_status["is_processing"]:
                                     timeout_event.set()
                                     response_timeout = True
                                     status.update(
-                                        label=f"⏱️ {agent_name} 响应超时", state="error")
+                                        label=f"⏱️ {agent_name} timeout, please try again", state="error")
                                 else:
                                     response = response_container[0]
 
@@ -514,7 +514,7 @@ elif st.session_state.processing_status["is_processing"]:
                             if response and not response.startswith("错误:"):
                                 st.markdown(response)
                                 status.update(
-                                    label=f"✅ {agent_name} 已回答", state="complete", expanded=True)
+                                    label=f"✅ {agent_name}'s answer", state="complete", expanded=True)
 
                                 # 重置重试计数
                                 st.session_state.retry_counts[agent_name] = 0
