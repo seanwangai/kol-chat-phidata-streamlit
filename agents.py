@@ -138,7 +138,7 @@ Use bullet points and back your views with examples or financial reasoning **bas
                 print(f"使用默认提示词: {prompt_ending}")
 
         # 创建系统提示词
-        system_prompt = f""" 你是专家 {expert_name} ，以下是你寫過的書，以此書內容作為你的投資邏輯框架，回答都要由你的投資邏輯為基礎回答：
+        system_prompt = f""" You are {expert_name} Below are the books you have written. Use the content of these books as the foundation of your investment logic framework. All your responses should be based on this investment logic:
 {expert_content}
 
 {prompt_ending}"""
