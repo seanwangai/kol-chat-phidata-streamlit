@@ -371,15 +371,34 @@ def initialize_dropbox():
 # 获取专家的头像
 def get_expert_avatar(expert_name):
     """根据专家名称获取头像"""
-    # 这里可以根据需要设置不同的头像
+    # 为每个专家配置不同的头像
     avatars = {
-        "Chanos": "🕵️‍♂️",
-        "Citron": "🔎",
+        "Bonitas Research": "🔍",
+        "Grizzly Research": "🐻",
+        "Hindenburg Research": "🔥",
         "Muddy Waters": "🦏",
+        "J Capital": "💸",
+        "Viceroy Research": "🕵️‍♂️",
+        "Citron": "🍋",
         "Spruce": "🌲",
-        "Hindenburg Research": "🔥"
+        "Chanos": "🏛️",
+        "Publication - Confidence Game": "📚",
+        "Publication - The Art of Short Selling": "📖",
+        "Publication - The Most Dangerous Trade": "📊",
+        "Publication - The Smartest Guys in the Room": "🧩",
+        "Publication - Financial Shenanigans": "🎭",
+        "Publication - Others": "📝"
     }
-    return avatars.get(expert_name, "🧠")
+    
+    # 如果找不到预定义的头像，随机分配一个
+    if expert_name not in avatars:
+        import random
+        random_emojis = ["⚡", "🔬", "📈", "🔮", "🧮", "💼", "🗂️", "📊", "💰", "💹"]
+        # 使用专家名称的哈希值来确保同一专家每次获得相同的emoji
+        random.seed(hash(expert_name))
+        return random.choice(random_emojis)
+        
+    return avatars.get(expert_name)
 
 # 添加token计数辅助函数
 def estimate_tokens(text):
@@ -458,7 +477,7 @@ def create_expert_llm(expert_name):
         original_length = len(all_expert_knowledge)
         
         
-        expert_prompt = f"""你是知名做空機構 以下是你过去short过的所有case
+        expert_prompt = f"""你是知名做空機構分析師 以下是你过去short过的所有case
         {all_expert_knowledge} 
 
 ========
@@ -469,6 +488,7 @@ def create_expert_llm(expert_name):
 3. 最後根據過去看造假公司的經驗，然後結合這家公司的目前得到的資訊  跟我說可以再深入朝什麼方向研究 做什麼調研 為什麼要作這個調研 
 
 用標準的markdown格式回答，要有結構，可以加入emoji 要是專業的emoji 幫助閱讀用的，注意這是非常專業的報告，講解的越詳細越好，給專業投資人看的
+注意，你是非常專業的財務股市分析師，所以回答都要有邏輯
 
 不用說：好的，以下是您提供的.... ，也不用免责聲明，這種廢話，直接進入正題開始回答，所以不要說 "好的" 也不要說 "希望这些分析对您有所帮助！
 
@@ -1004,8 +1024,12 @@ with st.sidebar:
         else:
             st.session_state.selected_experts = []
     
+    # 对专家名单进行排序，将"Publication"开头的放在最后
+    sorted_experts = sorted(st.session_state.expert_names, 
+                          key=lambda x: (1 if x.startswith("Publication") else 0, x))
+    
     # 专家选择
-    for expert_name in st.session_state.expert_names:
+    for expert_name in sorted_experts:
         avatar = get_expert_avatar(expert_name)
         col1, col2 = st.columns([0.7, 3])
         
