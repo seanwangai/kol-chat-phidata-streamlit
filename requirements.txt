@@ -14,3 +14,4 @@ streamlit-pdf-viewer
 setuptools>=65.5.1
 exa-py
 firecrawl-py
+backoff
