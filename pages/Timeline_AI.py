@@ -999,7 +999,7 @@ with st.sidebar:
                             index=default_end.month - 1)
     
     # 每月最大結果數
-    max_results_per_month = st.slider("每月最大結果數", 10, 100, 100)
+    max_results_per_month = st.slider("每月最大結果數", 10, 100, 50)
     
     # 搜索按鈕
     if st.button("🔍 開始搜索", type="primary", use_container_width=True):
