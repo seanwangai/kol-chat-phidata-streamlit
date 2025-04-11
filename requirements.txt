@@ -1,3 +1,4 @@
+backoff
 streamlit==1.41.1
 phidata==2.7.6
 altair<5
@@ -13,5 +14,4 @@ google-genai
 streamlit-pdf-viewer
 setuptools>=65.5.1
 exa-py
-firecrawl-py
-backoff
+# firecrawl-py
