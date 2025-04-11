@@ -11,7 +11,7 @@ import httpx
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from exa_py import Exa
-from firecrawl import FirecrawlApp
+# from firecrawl import App
 from google import genai
 from pathlib import Path
 
@@ -112,26 +112,26 @@ class APIKeyManager:
             except Exception as e:
                 exa_results.append({"key": masked_key, "status": "无效", "error": str(e)})
         
-        # 测试Firecrawl API密钥
-        firecrawl_results = []
-        for i, key in enumerate(self.api_keys["firecrawl"]):
-            masked_key = f"{key[:5]}...{key[-4:]}"
-            try:
-                # 创建客户端对象测试
-                client = FirecrawlApp(api_key=key)
-                # 尝试获取一个简单网站的信息
-                result = client.map_url("https://example.com")
-                if result:
-                    firecrawl_results.append({"key": masked_key, "status": "有效"})
-                else:
-                    firecrawl_results.append({"key": masked_key, "status": "无效", "error": "无法映射URL"})
-            except Exception as e:
-                firecrawl_results.append({"key": masked_key, "status": "无效", "error": str(e)})
+        # # 测试Firecrawl API密钥
+        # firecrawl_results = []
+        # for i, key in enumerate(self.api_keys["firecrawl"]):
+        #     masked_key = f"{key[:5]}...{key[-4:]}"
+        #     try:
+        #         # 创建客户端对象测试
+        #         client = FirecrawlApp(api_key=key)
+        #         # 尝试获取一个简单网站的信息
+        #         result = client.map_url("https://example.com")
+        #         if result:
+        #             firecrawl_results.append({"key": masked_key, "status": "有效"})
+        #         else:
+        #             firecrawl_results.append({"key": masked_key, "status": "无效", "error": "无法映射URL"})
+        #     except Exception as e:
+        #         firecrawl_results.append({"key": masked_key, "status": "无效", "error": str(e)})
         
         # 汇总结果
         results["google"] = google_results
         results["exa"] = exa_results
-        results["firecrawl"] = firecrawl_results
+        # results["firecrawl"] = firecrawl_results
         
         return results
 
@@ -434,90 +434,90 @@ def test_exa_search():
         return False
 
 # 3. 测试Firecrawl功能
-def test_firecrawl():
-    print("\n=== 测试Firecrawl ===")
+# def test_firecrawl():
+#     print("\n=== 测试Firecrawl ===")
     
-    try:
-        # 使用指定的API密钥
-        api_key = 'fc-15209a3576e04246af1f273702ea8137'
-        print(f"使用API密钥: {api_key[:5]}...{api_key[-4:]}")
+#     try:
+#         # 使用指定的API密钥
+#         api_key = 'fc-15209a3576e04246af1f273702ea8137'
+#         print(f"使用API密钥: {api_key[:5]}...{api_key[-4:]}")
         
-        # 创建客户端
-        firecrawl_client = FirecrawlApp(api_key=api_key)
+#         # 创建客户端
+#         firecrawl_client = FirecrawlApp(api_key=api_key)
         
-        # 使用指定的URL
-        url = 'https://xueqiu.com/S/BABA/324257037?md5__1038=n4%2Bx9DRDnAKEe0%3DD%2FD0QpQWcxfxmq0QaY74D'
+#         # 使用指定的URL
+#         url = 'https://xueqiu.com/S/BABA/324257037?md5__1038=n4%2Bx9DRDnAKEe0%3DD%2FD0QpQWcxfxmq0QaY74D'
         
-        print(f"抓取URL: {url}")
+#         print(f"抓取URL: {url}")
         
-        # 根据API文档，使用scrape_url方法抓取内容
-        print("使用scrape_url方法抓取内容...")
+#         # 根据API文档，使用scrape_url方法抓取内容
+#         print("使用scrape_url方法抓取内容...")
         
-        # 使用指定的参数格式
-        scrape_result = firecrawl_client.scrape_url(
-            url=url, 
-            params={
-                'formats': ['markdown'],
-            }
-        )
+#         # 使用指定的参数格式
+#         scrape_result = firecrawl_client.scrape_url(
+#             url=url, 
+#             params={
+#                 'formats': ['markdown'],
+#             }
+#         )
         
-        # 打印原始返回结果结构
-        print("\n原始返回结果结构:")
-        print(f"类型: {type(scrape_result)}")
-        if isinstance(scrape_result, dict):
-            print("字典键:", list(scrape_result.keys()))
+#         # 打印原始返回结果结构
+#         print("\n原始返回结果结构:")
+#         print(f"类型: {type(scrape_result)}")
+#         if isinstance(scrape_result, dict):
+#             print("字典键:", list(scrape_result.keys()))
             
-        # 检查结果格式是否符合预期
-        success = False
-        content = ""
+#         # 检查结果格式是否符合预期
+#         success = False
+#         content = ""
         
-        # 预期的返回结构
-        # {
-        #       "markdown": "# Markdown Content",
-        #       "metadata": {
-        #         "title": "标题",
-        #         "description": "描述",
-        #         "language": null,
-        #         "sourceURL": "URL"
-        #       }
-        # }
+#         # 预期的返回结构
+#         # {
+#         #       "markdown": "# Markdown Content",
+#         #       "metadata": {
+#         #         "title": "标题",
+#         #         "description": "描述",
+#         #         "language": null,
+#         #         "sourceURL": "URL"
+#         #       }
+#         # }
         
-        if isinstance(scrape_result, dict):
-            print('md')
-            print(scrape_result.get('markdown'))
-            if scrape_result.get('markdown'):
-                content = scrape_result['markdown']
-                success = True
+#         if isinstance(scrape_result, dict):
+#             print('md')
+#             print(scrape_result.get('markdown'))
+#             if scrape_result.get('markdown'):
+#                 content = scrape_result['markdown']
+#                 success = True
                     
-                # 打印元数据
-                if 'metadata' in scrape_result:
-                    metadata = scrape_result['metadata']
-                    print("\n元数据:")
-                    print(f"标题: {metadata.get('title', '无')}")
-                    print(f"描述: {metadata.get('description', '无')}")
-                    print(f"源URL: {metadata.get('sourceURL', '无')}")
+#                 # 打印元数据
+#                 if 'metadata' in scrape_result:
+#                     metadata = scrape_result['metadata']
+#                     print("\n元数据:")
+#                     print(f"标题: {metadata.get('title', '无')}")
+#                     print(f"描述: {metadata.get('description', '无')}")
+#                     print(f"源URL: {metadata.get('sourceURL', '无')}")
         
-        if success:
-            content_length = len(content) if isinstance(content, str) else 0
-            print(f"\n成功抓取，内容长度: {content_length} 字符")
+#         if success:
+#             content_length = len(content) if isinstance(content, str) else 0
+#             print(f"\n成功抓取，内容长度: {content_length} 字符")
             
-            # 显示内容预览
-            if content_length > 0:
-                preview = content[:500] + ("..." if content_length > 500 else "")
-                print(f"\nMarkdown内容预览:\n{preview}")
+#             # 显示内容预览
+#             if content_length > 0:
+#                 preview = content[:500] + ("..." if content_length > 500 else "")
+#                 print(f"\nMarkdown内容预览:\n{preview}")
             
-            print("\nFirecrawl测试成功！")
-            return True
-        else:
-            print(f"\n无法解析Firecrawl响应或返回格式不符合预期")
-            print(f"返回内容: {scrape_result}")
-            return False
+#             print("\nFirecrawl测试成功！")
+#             return True
+#         else:
+#             print(f"\n无法解析Firecrawl响应或返回格式不符合预期")
+#             print(f"返回内容: {scrape_result}")
+#             return False
     
-    except Exception as e:
-        print(f"Firecrawl测试失败: {str(e)}")
-        import traceback
-        print(traceback.format_exc())
-        return False
+#     except Exception as e:
+#         print(f"Firecrawl测试失败: {str(e)}")
+#         import traceback
+#         print(traceback.format_exc())
+#         return False
 
 # 运行所有测试
 def run_all_tests():
@@ -548,7 +548,7 @@ def run_all_tests():
     results = {
         "gemini": test_gemini_api(),
         "exa": test_exa_search(),
-        "firecrawl": test_firecrawl()
+        # "firecrawl": test_firecrawl()
     }
     
     print("\n=== 测试结果摘要 ===")

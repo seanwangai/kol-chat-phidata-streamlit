@@ -11,7 +11,6 @@ import re
 import zipfile
 from dateutil.relativedelta import relativedelta
 from exa_py import Exa
-from firecrawl import FirecrawlApp
 from google import genai
 from pathlib import Path
 import concurrent.futures
@@ -64,13 +63,6 @@ def get_exa_client():
     if "exa_api_key_cycle" not in st.session_state:
         st.session_state.exa_api_key_cycle = cycle(st.secrets["EXA_API_KEYS"])
     return Exa(api_key=next(st.session_state.exa_api_key_cycle))
-
-@st.cache_resource
-def get_firecrawl_client():
-    """获取Firecrawl API客户端并轮换API密钥"""
-    if "firecrawl_api_key_cycle" not in st.session_state:
-        st.session_state.firecrawl_api_key_cycle = cycle(st.secrets["FIRECRAWL_API_KEYS"])
-    return FirecrawlApp(api_key=next(st.session_state.firecrawl_api_key_cycle))
 
 @st.cache_resource
 def get_gemini_client():
