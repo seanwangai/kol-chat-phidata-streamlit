@@ -46,17 +46,22 @@ def create_model(model_type: str):
         raise ValueError(f"不支持的模型类型: {model_type}")
 
 
-def create_agent(expert_folder: Path, model_type: str, lazy_loading: bool = False, custom_prompt_ending: str = None) -> Agent:
+def create_agent(expert_folder: Path, model_type: str, page_mode: str, lazy_loading: bool = False, custom_prompt_ending: str = None) -> Agent:
     """根据专家文件夹创建Agent
 
     Args:
         expert_folder: 专家文件夹路径
         model_type: 模型类型
+        page_mode: 页面模式 ('kol' 或其他)
         lazy_loading: 是否使用延迟加载模式，默认为False
         custom_prompt_ending: 自定义提示词结尾，默认为None
     """
     # 获取专家名称（文件夹名）
     expert_name = expert_folder.name
+
+    # --- 修改：直接使用傳入的 page_mode ---
+    print(f"--- create_agent: 使用頁面模式 {page_mode} ---")
+    # --- 修改結束 ---
 
     # 如果使用延迟加载模式，创建一个轻量级的Agent占位符
     if lazy_loading:
@@ -73,7 +78,7 @@ def create_agent(expert_folder: Path, model_type: str, lazy_loading: bool = Fals
         # 正常模式：读取专家资料
         expert_content = get_expert_content(expert_folder)
         print('正常模式：读取专家资料')
-        print(expert_content[4000:4100])
+        print('专家资料:', expert_content[:100])
         print('====in agent custom_prompt_ending==')
         print(custom_prompt_ending)
 
@@ -82,17 +87,13 @@ def create_agent(expert_folder: Path, model_type: str, lazy_loading: bool = Fals
             prompt_ending = custom_prompt_ending
             print(f"使用传入的自定义提示词: {prompt_ending}")
         else:
-            # 从 session_state 获取
-            prompt_ending = st.session_state.get('custom_prompt_ending')
-            print(f"从 session_state 获取的提示词: {prompt_ending}")
-
-            # 如果仍然为 None 或空字符串，使用默认值
-            if not prompt_ending or not prompt_ending.strip():
-                page = st.query_params.get("page", None)
-                if page == "kol":
-                    prompt_ending = "學習此寫作風格，根据我輸入的主題，開始寫作："
-                else:
-                    prompt_ending = f"""The above reflects the knowledge of {expert_name}.
+            # --- 修改：直接使用傳入的 page_mode 判斷默認提示詞 ---
+            # 注意：這裡不再從 session_state 獲取 custom_prompt_ending，因為預期它會被傳遞進來
+            # 如果需要回退到 session_state，需要在這裡添加邏輯
+            if page_mode == "kol":
+                prompt_ending = "學習此寫作風格，根据我輸入的主題，開始寫作："
+            else:
+                prompt_ending = f"""The above reflects the knowledge of {expert_name}.
 
 
 You are now embodying {expert_name}, a legendary investor and finance expert. You are known for your rigorous critical thinking, deep knowledge in finance, valuation and strategic decision-making. Please respond in English unless otherwise specified.
@@ -104,13 +105,13 @@ When a user presents an investment pitch, your structured response should always
 ---
 
 ### Initial Rating  
-Start your answer by choosing one of the following and explain **why**:  
+Start your answer by choosing one of the following and explain **why**:
 📉📉 Strong Short / 📉 Short / ⚖️ Neutral / 📈 Long / 📈📈 Strong Long  
 Avoid choosing ⚖️ Neutral unless it is absolutely necessary.
 
 **Begin your response with this sentence:**  
-#### {{📉📉 Strong Short / 📈📈 Strong Long  ...}}  
-As {expert_name}, I believe this is... because...
+#### {{{{📉📉 Strong Short / 📈📈 Strong Long  ...}}}}  
+As {{expert_name}}, I believe this is... because...
 
 ---
 ### Inconsistency Detection
@@ -119,8 +120,8 @@ Explain your logic based on your investing framework:
 
 ---
 ### Investment Philosophy  
-- Strictly apply the knowledge and investment philosophy of {expert_name}.  
-- Thoroughly evaluate the mentioned company using all the investment principles discussed by {expert_name}.  
+- Strictly apply the knowledge and investment philosophy of {{expert_name}}.  
+- Thoroughly evaluate the mentioned company using all the investment principles discussed by {{expert_name}}.  
 - List all the investment principles mentioned and analyze them one by one to see whether the company meets the criteria.
 
 
@@ -131,15 +132,16 @@ Use bullet points and back your views with examples or financial reasoning **bas
 ## Language & Tone Guidelines:
 - Please respond in English unless otherwise specified.
 - Tone: incisive, Socratic, yet educational
-- Do not fabricate facts—use only the embedded knowledge of {expert_name}
+- Do not fabricate facts—use only the embedded knowledge of {{expert_name}}
 
 """
-
-                print(f"使用默认提示词: {prompt_ending}")
+            # --- 修改結束 ---
+            print(f"使用默认提示词 (基於 page_mode='{page_mode}'): {prompt_ending}")
 
         # 创建系统提示词
-        page = st.query_params.get("page", None)
-        if page == "kol":
+        # --- 修改：使用傳入的 page_mode ---
+        if page_mode == "kol":
+        # --- 修改結束 ---
             system_prompt = f""" 根據以下書中的邏輯進行寫作，用中文回答:
 {expert_content}
 
@@ -162,12 +164,13 @@ Use bullet points and back your views with examples or financial reasoning **bas
         )
 
 
-def get_response(agent_info, message: str, image=None, pdf_content=None, max_retries: int = 3, custom_prompt_ending: str = None) -> str:
+def get_response(agent_info, message: str, page_mode: str, image=None, pdf_content=None, max_retries: int = 3, custom_prompt_ending: str = None) -> str:
     """获取 Agent 的响应，支持图片和PDF输入
 
     Args:
         agent_info: 可以是Agent对象或者(agent, avatar, expert_folder)元组
         message: 用户消息
+        page_mode: 页面模式
         image: 可选的图片
         pdf_content: 可选的PDF内容
         max_retries: 最大重试次数
@@ -176,7 +179,8 @@ def get_response(agent_info, message: str, image=None, pdf_content=None, max_ret
     print('=======')
     print(agent_info)
     print(isinstance(agent_info, tuple))
-    print('custom_prompt_ending:', custom_prompt_ending)  # 添加日志
+    print(f"get_response page_mode: {page_mode}")
+    print('custom_prompt_ending:', custom_prompt_ending)
     print('=======')
 
     # 检查agent_info是否是Agent对象
@@ -197,6 +201,7 @@ def get_response(agent_info, message: str, image=None, pdf_content=None, max_ret
             agent = create_agent(
                 expert_folder,
                 agent.model.id.split('/')[-1],
+                page_mode, # <-- 傳遞 page_mode
                 lazy_loading=False,
                 custom_prompt_ending=custom_prompt_ending  # 使用传入的值
             )
@@ -248,11 +253,12 @@ def get_response(agent_info, message: str, image=None, pdf_content=None, max_ret
                 return f"抱歉，我现在遇到了技术问题（{error_str}）。请稍后再试。"
 
 
-def create_agents(model_type: str = "gemini-2.0-flash-exp", lazy_loading: bool = True, custom_prompt_ending: str = None) -> Dict[str, tuple]:
+def create_agents(model_type: str, page_mode: str, lazy_loading: bool = True, custom_prompt_ending: str = None) -> Dict[str, tuple]:
     """根据目录创建agents，并为每个专家分配头像
 
     Args:
         model_type: 模型类型
+        page_mode: 页面模式 ('kol' 或其他)
         lazy_loading: 是否使用延迟加载模式，默认为True
         custom_prompt_ending: 自定义提示词结尾，默认为None
     """
@@ -261,9 +267,10 @@ def create_agents(model_type: str = "gemini-2.0-flash-exp", lazy_loading: bool =
     print(custom_prompt_ending)
 
     agents = {}
-    # 根据页面参数选择目录
-    page = st.query_params.get("page", None)
-    data_dir = Path("data_kol") if page == "kol" else Path("data")
+    # --- 修改：直接使用傳入的 page_mode ---
+    print(f"--- create_agents: 使用頁面模式 {page_mode} ---")
+    # --- 修改結束 ---
+    data_dir = Path("data_kol") if page_mode == "kol" else Path("data") # <-- 使用 page_mode
 
     used_avatars = set()
 
@@ -280,7 +287,12 @@ def create_agents(model_type: str = "gemini-2.0-flash-exp", lazy_loading: bool =
                 print('==============')
                 print('# 使用延迟加载模式创建agent')
                 agent = create_agent(
-                    expert_folder, model_type, lazy_loading, custom_prompt_ending)
+                    expert_folder,
+                    model_type,
+                    page_mode, # <-- 傳遞 page_mode
+                    lazy_loading,
+                    custom_prompt_ending
+                )
                 available_avatars = list(set(AVATARS) - used_avatars)
                 if not available_avatars:
                     available_avatars = AVATARS
@@ -298,10 +310,16 @@ def create_agents(model_type: str = "gemini-2.0-flash-exp", lazy_loading: bool =
     return agents
 
 
-def get_expert_names() -> list:
-    """获取所有专家名称"""
-    page = st.query_params.get("page", None)
-    data_dir = Path("data_kol") if page == "kol" else Path("data")
+def get_expert_names(page_mode: str) -> list:
+    """获取所有专家名称
+
+    Args:
+        page_mode: 页面模式 ('kol' 或其他)
+    """
+    # --- 修改：直接使用傳入的 page_mode ---
+    print(f"--- get_expert_names: 使用頁面模式 {page_mode} ---")
+    # --- 修改結束 ---
+    data_dir = Path("data_kol") if page_mode == "kol" else Path("data") # <-- 使用 page_mode
     return [folder.name for folder in data_dir.iterdir() if folder.is_dir()]
 
 

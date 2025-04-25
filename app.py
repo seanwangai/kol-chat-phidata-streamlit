@@ -5,14 +5,21 @@ import requests
 import zipfile
 import os
 
+# --- 新增：在腳本最上方初始化頁面模式 ---
+if 'current_page_mode' not in st.session_state:
+    st.session_state.current_page_mode = st.query_params.get("page", None) # 使用 st.query_params
+    print(f"--- 初始化頁面模式 (來自 URL): {st.session_state.current_page_mode} ---")
+# --- 初始化結束 ---
 
 def initialize_dropbox():
-    """初始化 Dropbox 并下载必要文件"""
-    # 获取 URL 参数
-    page = st.query_params.get("page", None)
+    """初始化 Dropbox 並下載必要文件"""
+    # --- 修改：從 session_state 讀取頁面模式 ---
+    page_mode = st.session_state.get('current_page_mode')
+    print(f"--- initialize_dropbox: 使用頁面模式 {page_mode} ---")
+    # --- 修改結束 ---
 
     # 根据页面参数选择不同的 URL 和目标目录
-    if page == "kol":
+    if page_mode == "kol": # <-- 使用 page_mode
         dropbox_url_key = "DROPBOX_DATA_URL_KOL"
         target_dir = Path("data_kol")
     else:
@@ -136,8 +143,8 @@ MAX_RETRY_COUNT = 3
 
 # 检查数据目录
 if 'dropbox_initialized' not in st.session_state:
-    page = st.query_params.get("page", None)
-    data_dir = Path("data_kol") if page == "kol" else Path("data")
+    page_mode = st.session_state.get('current_page_mode')
+    data_dir = Path("data_kol") if page_mode == "kol" else Path("data")
 
     if data_dir.exists() and any(data_dir.iterdir()):
         print(f"{data_dir} 目录已存在且有内容，跳过下载")
@@ -149,6 +156,11 @@ if 'dropbox_initialized' not in st.session_state:
 if not st.session_state.dropbox_initialized and not (Path("data").exists() or Path("data_kol").exists()):
     st.error("无法初始化专家数据。请确保data目录存在或Dropbox配置正确。")
     st.stop()
+
+# --- 新增：從 session_state 獲取一次 page_mode --- 
+page_mode = st.session_state.get('current_page_mode')
+print(f"--- app.py 主流程: 使用頁面模式 {page_mode} ---")
+# --- 新增結束 ---
 
 # 右侧边栏
 with st.sidebar:
@@ -184,9 +196,10 @@ with st.sidebar:
         st.session_state.custom_prompt_ending = st.session_state.custom_prompt_ending_input
         print("提示词已更新：", st.session_state.custom_prompt_ending)  # 添加调试信息
 
-        # 重新创建 agents
+        # 重新创建 agents, 傳遞 page_mode
         st.session_state.agents = create_agents(
             st.session_state.current_model,
+            page_mode, # <-- 傳遞 page_mode
             lazy_loading=True,
             custom_prompt_ending=st.session_state.custom_prompt_ending
         )
@@ -213,9 +226,10 @@ with st.sidebar:
         if st.session_state.custom_prompt_ending != custom_prompt_ending:
             st.session_state.custom_prompt_ending = custom_prompt_ending
             print("更新 custom_prompt_ending：", custom_prompt_ending)
-            # 强制重新创建 agents
+            # 强制重新创建 agents, 傳遞 page_mode
             st.session_state.agents = create_agents(
                 st.session_state.current_model,
+                page_mode, # <-- 傳遞 page_mode
                 lazy_loading=True,
                 custom_prompt_ending=custom_prompt_ending
             )
@@ -228,10 +242,14 @@ with st.sidebar:
         st.session_state.research_agent = None
         st.rerun()
 
-    # 如果还没有创建agents，现在创建
+    # 如果还没有创建agents，现在创建, 傳遞 page_mode
     if not st.session_state.agents:
         st.session_state.agents = create_agents(
-            model_type, lazy_loading=True, custom_prompt_ending=custom_prompt_ending)
+            model_type,
+            page_mode, # <-- 傳遞 page_mode
+            lazy_loading=True,
+            custom_prompt_ending=custom_prompt_ending
+        )
         st.session_state.selected_experts = list(
             st.session_state.agents.keys())
 
@@ -274,9 +292,11 @@ with st.sidebar:
     if st.button("🔄 更新专家列表", type="primary"):
         with st.spinner("正在更新专家资料..."):
             if initialize_dropbox():
-                # 重新创建agents
+                # 重新创建agents, 傳遞 page_mode
                 st.session_state.agents = create_agents(
-                    st.session_state.current_model)
+                    st.session_state.current_model,
+                    page_mode # <-- 傳遞 page_mode
+                )
                 st.session_state.selected_experts = list(
                     st.session_state.agents.keys())
                 st.session_state.research_agent = None  # 重置研究 agent
@@ -288,6 +308,11 @@ with st.sidebar:
 # 删除重复的初始化代码
 # 页面标题
 st.title("📈 Investment Titans Chat")
+
+
+# print("--- app.py start ---") # <-- 移除旧的打印語句
+# print("Query Params at app start:", st.experimental_get_query_params())
+# print("--------------------")
 
 # 在用户输入区域之前添加图片和PDF上传
 uploaded_image = None
@@ -423,25 +448,24 @@ elif st.session_state.processing_status["is_processing"]:
                                 # 定义获取响应的线程函数
                                 def get_response_with_timeout():
                                     try:
-                                        # 传递完整的元组(agent, avatar, expert_folder)给get_response函数
+                                        # 传递完整的元组和 page_mode
                                         agent_tuple = (agent, avatar, _)
-                                        # 根据上传的内容类型调用不同的处理方式
                                         if uploaded_pdf_content:
-                                            # 如果有PDF内容，将其作为文本传递给模型
                                             result = get_response(
                                                 agent_tuple,
                                                 user_input,
+                                                page_mode, # <-- 傳遞 page_mode
                                                 None,
                                                 pdf_content=uploaded_pdf_content,
-                                                custom_prompt_ending=custom_prompt_ending  # 直接传入
+                                                custom_prompt_ending=custom_prompt_ending
                                             )
                                         else:
-                                            # 否则使用原有的图片处理方式
                                             result = get_response(
                                                 agent_tuple,
                                                 user_input,
+                                                page_mode, # <-- 傳遞 page_mode
                                                 uploaded_image,
-                                                custom_prompt_ending=custom_prompt_ending  # 直接传入
+                                                custom_prompt_ending=custom_prompt_ending
                                             )
                                         if not timeout_event.is_set():
                                             response_container[0] = result
