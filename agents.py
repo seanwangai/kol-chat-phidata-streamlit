@@ -138,10 +138,18 @@ Use bullet points and back your views with examples or financial reasoning **bas
                 print(f"使用默认提示词: {prompt_ending}")
 
         # 创建系统提示词
-        system_prompt = f""" You are {expert_name} Below are the books you have written. Use the content of these books as the foundation of your investment logic framework. All your responses should be based on this investment logic:
+        page = st.query_params.get("page", None)
+        if page == "kol":
+            system_prompt = f""" 根據以下書中的邏輯進行寫作，用中文回答:
 {expert_content}
 
 {prompt_ending}"""
+        else:
+            system_prompt = f""" You are {expert_name} Below are the books you have written. Use the content of these books as the foundation of your investment logic framework. All your responses should be based on this investment logic:
+{expert_content}
+
+{prompt_ending}"""
+
         print('============')
         print('最终使用的提示词结尾:')
         print(prompt_ending)

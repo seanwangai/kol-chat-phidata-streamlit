@@ -15,6 +15,7 @@ from exa_py import Exa
 from dateutil.relativedelta import relativedelta
 import streamlit.components.v1 as components
 import concurrent.futures
+import re # <-- 導入正則表達式模塊
 
 # 頁面配置
 st.set_page_config(
@@ -667,41 +668,84 @@ if st.session_state.gemini_analysis:
         
 
         try:
-            # 解析 JSON 韉應
+            # 打印原始 Gemini 分析結果
+            print("\n--- 原始 Gemini 分析結果 ---")
+            print(st.session_state.gemini_analysis)
+            print("-----------------------------\n")
+
+            # 解析 JSON 響應
             analysis_data = json.loads(st.session_state.gemini_analysis)
-            
+
+            # 打印解析後的數據
+            print("\n--- 解析後的 analysis_data ---")
+            print(json.dumps(analysis_data, indent=2, ensure_ascii=False))
+            print("-----------------------------\n")
+
             if 'events' in analysis_data and isinstance(analysis_data['events'], list):
                 events = analysis_data['events']
-                
+                print(f"--- 找到 {len(events)} 個事件 ---")
+
                 # 創建時間線可視化
                 timeline_data = []
-                
-                for event in events:
-                    time_str = event.get('time', '未知日期')
-                    text = event.get('text', '')
-                    
+
+                for i, event in enumerate(events):
+                    print(f"\n--- 處理事件 {i+1} ---")
+                    print(event)
+                    print("--------------------")
+
+                    # --- 修改後的提取邏輯 ---
+                    combined_data = event.get('time', '') # 從 'time' 鍵獲取合併的字符串
+                    time_str = '未知日期'
+                    text = ''
+
+                    if isinstance(combined_data, str):
+                        # 使用正則表達式分割時間和文本，處理可能的空白差異
+                        # 尋找第一個換行符後跟可選空白和 "text:"
+                        parts = re.split(r'\n\s*text:', combined_data, 1) 
+                        if len(parts) == 2:
+                            time_str = parts[0].strip() # 第一部分是時間
+                            text = parts[1].strip()     # 第二部分是文本
+                        else:
+                            # 如果分割失敗，可能是只有時間，或者格式完全不同
+                            time_str = combined_data.strip()
+                            print(f"警告: 無法從事件 {i+1} 的 'time' 字段中分割出時間和文本。原始數據: {combined_data}")
+                    # --- 提取邏輯修改結束 ---
+
+
+                    # 打印提取的 time 和 text
+                    print(f"提取的時間: {time_str}")
+                    print(f"提取的文本 (前100字符): {text[:100]}") # <-- 現在應該有內容了
+
                     # 嘗試解析日期
                     try:
-                        # 假設日期格式為 YYYY-MM-DD
-                        if len(time_str) >= 10:
-                            parsed_date = datetime.fromisoformat(time_str[:10].replace('Z', '+00:00'))
+                        # 假設日期格式為 YYYY-MM-DD 或 YYYY-MM-DDTHH:MM:SSZ
+                        # 我們只取日期部分
+                        date_part_match = re.match(r'^(\d{4}-\d{2}-\d{2})', time_str)
+                        if date_part_match:
+                            date_only_str = date_part_match.group(1)
+                            parsed_date = datetime.fromisoformat(date_only_str)
                             formatted_date = parsed_date.strftime('%Y-%m-%d')
-                            
+
                             # 只有有效的日期才添加到時間線
-                            timeline_data.append({
+                            timeline_entry = {
                                 "id": str(len(timeline_data) + 1),
-                                # "content": text[:50] + "..." if len(text) > 50 else text,
-                                "content": text,
+                                "content": text, # <--- 使用新提取的 text
                                 "start": formatted_date
-                            })
+                            }
+                            timeline_data.append(timeline_entry)
+                            print(f"添加到 timeline_data: {timeline_entry}")
+                        else:
+                            print(f"無法從 '{time_str}' 提取有效的 YYYY-MM-DD 日期格式，跳過添加到時間線")
                     except Exception as e:
                         # 日期格式無效，跳過此事件的時間線
+                        print(f"解析日期 '{time_str}' 時出錯: {e}，跳過添加到時間線")
                         pass
-                
+                print("-----------------------------\n")
+
                 # 如果有足夠的事件用於時間線
                 if len(timeline_data) >= 2:
                     st.markdown('<div class="timeline-container"><h2 class="timeline-title">📅 事件時間線 <span class="copy-icon" onclick="copyTimelineEvents()" title="複製時間線內容"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 9H11C9.89543 9 9 9.89543 9 11V20C9 21.1046 9.89543 22 11 22H20C21.1046 22 22 21.1046 22 20V11C22 9.89543 21.1046 9 20 9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 15H4C3.46957 15 2.96086 14.7893 2.58579 14.4142C2.21071 14.0391 2 13.5304 2 13V4C2 3.46957 2.21071 2.96086 2.58579 2.58579C2.96086 2.21071 3.46957 2 4 2H13C13.5304 2 14.0391 2.21071 14.4142 2.58579C14.7893 2.96086 15 3.46957 15 4V5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></h2></div>', unsafe_allow_html=True)
-                    
+
                     # 創建自定義時間線可視化
                     # 按日期排序
                     timeline_data.sort(key=lambda x: x["start"])
@@ -902,27 +946,37 @@ if st.session_state.gemini_analysis:
                     </script>
                     """, unsafe_allow_html=True)
                     
-                    for item in timeline_data:
-                        # 分割內容，使冒號前的文字加粗
+                    for j, item in enumerate(timeline_data):
+                        print(f"\n--- 渲染時間線項目 {j+1} ---")
+                        print(f"項目數據: {item}")
+
                         content = item["content"]
-                        if "：" in content:
+                        print(f"原始 content (渲染前): {content[:100]}")
+
+                        formatted_content = content # 默認值
+                        if isinstance(content, str) and "：" in content: 
                             parts = content.split("：", 1)
                             formatted_content = f"<strong>{parts[0]}</strong>：{parts[1]}"
-                        else:
+                        elif isinstance(content, str): 
                             formatted_content = content
-                        
-                        # 获取情感标记
-                        sentiment = '⚖️'  # 默认为中性
-                        if "：" in content:
+                        else: 
+                             print(f"警告: 項目 {j+1} 的 content 不是字符串，類型為 {type(content)}")
+                             formatted_content = str(content) 
+
+                        print(f"格式化後 formatted_content (前100字符): {formatted_content[:100]}") 
+
+                        sentiment = '⚖️' 
+                        if isinstance(content, str) and "：" in content: 
                             first_part = content.split("：")[0]
                             if "📈" in first_part:
                                 sentiment = '📈'
                             elif "📉" in first_part:
                                 sentiment = '📉'
-                            elif "⚖️" in first_part:
-                                sentiment = '⚖️'
-                        
-                        st.markdown(f"""
+
+                        print(f"檢測到的 sentiment: {sentiment}")
+
+                        # 生成 HTML
+                        html_item = f"""
                         <div class="timeline-item" onclick="scrollToDate('{item['start']}')" style="cursor: pointer;" data-sentiment='{sentiment}'>
                             <div class="timeline-content" data-sentiment='{sentiment}'>
                                 <div class="timeline-date">
@@ -934,10 +988,12 @@ if st.session_state.gemini_analysis:
                                     </svg>
                                     {item["start"]}
                                 </div>
-                                <p>{formatted_content}</p>
+                                <p>{formatted_content}</p> 
                             </div>
                         </div>
-                        """, unsafe_allow_html=True)
+                        """
+                        st.markdown(html_item, unsafe_allow_html=True)
+                        print(f"已渲染項目 {j+1}")
                     
                     st.markdown("</div>", unsafe_allow_html=True)
                 
@@ -966,10 +1022,22 @@ if st.session_state.gemini_analysis:
                         st.write("原始結果數據:")
                         st.write(result)
             else:
-                st.write(st.session_state.gemini_analysis)
+                print("--- Gemini 分析結果中未找到 'events' 列表 ---")
+                st.write("Gemini 分析結果格式不符，無法提取事件列表。")
+                st.code(st.session_state.gemini_analysis) # 顯示原始結果幫助調試
+
         except json.JSONDecodeError:
+            print("--- Gemini 分析結果不是有效的 JSON ---")
             # 如果不是 JSON 格式，直接顯示文本
-            st.write(st.session_state.gemini_analysis)
+            st.write("Gemini 分析結果不是有效的 JSON 格式，直接顯示原始文本：")
+            st.code(st.session_state.gemini_analysis)
+        except Exception as e:
+            print(f"--- 處理 Gemini 分析結果時發生未知錯誤 ---")
+            print(f"錯誤類型: {type(e)}")
+            print(f"錯誤信息: {e}")
+            import traceback
+            print(traceback.format_exc())
+            st.error(f"處理和顯示時間線時出錯: {e}")
 
 # 側邊欄輸入
 with st.sidebar:
