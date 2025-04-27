@@ -416,31 +416,41 @@ with st.sidebar:
         placeholder="Example: Summarize the main content of this page..."
     )
 
-    # 为PDF文件添加分析模式切换
-    if st.session_state.document_type == "pdf":
-        st.subheader("📄 PDF Analysis Mode")
-        pdf_mode = st.toggle(
-            "使用图片模式分析",
-            value=st.session_state.pdf_analysis_mode == "image",
-            help="开启后将使用图片模式分析PDF，关闭则使用文本模式"
-        )
-        st.session_state.pdf_analysis_mode = "image" if pdf_mode else "text"
-        mode_description = "当前模式：" + ("图片模式 🖼️" if pdf_mode else "文本模式 📝")
-        st.write(mode_description)
-
-        # 如果是图片模式，添加建议性提示
-        if pdf_mode:
-
-            # 在图片模式下调整批次大小的默认值
-            pages_per_batch = st.number_input(
-                "每批分析页数",
-                min_value=1,
-                max_value=10,  # 限制最大页数
-                value=3,
-                help="可以一次多張图片"
+    # --- 修改：只有非EPUB文件才顯示 pages_per_batch --- 
+    if st.session_state.get('document_type') != "epub":
+        # 为PDF文件添加分析模式切换
+        if st.session_state.document_type == "pdf":
+            st.subheader("📄 PDF Analysis Mode")
+            pdf_mode = st.toggle(
+                "使用图片模式分析",
+                value=st.session_state.pdf_analysis_mode == "image",
+                help="开启后将使用图片模式分析PDF，关闭则使用文本模式"
             )
+            st.session_state.pdf_analysis_mode = "image" if pdf_mode else "text"
+            mode_description = "当前模式：" + ("图片模式 🖼️" if pdf_mode else "文本模式 📝")
+            st.write(mode_description)
+
+            # 如果是图片模式，添加建议性提示
+            if pdf_mode:
+                # 在图片模式下调整批次大小的默认值
+                pages_per_batch = st.number_input(
+                    "每批分析页数",
+                    min_value=1,
+                    max_value=10,  # 限制最大页数
+                    value=3,
+                    help="可以一次多張图片"
+                )
+            else:
+                # 文本模式下的批次大小设置
+                pages_per_batch = st.number_input(
+                    "Pages per analysis batch",
+                    min_value=1,
+                    max_value=100,
+                    value=5,
+                    help="Select how many pages to analyze together. Higher values mean fewer API calls but may affect analysis quality."
+                )
         else:
-            # 文本模式下的批次大小设置
+            # 非PDF/EPUB文件的批次大小设置 (理论上不会进入，因为类型限制了PDF/EPUB)
             pages_per_batch = st.number_input(
                 "Pages per analysis batch",
                 min_value=1,
@@ -449,14 +459,9 @@ with st.sidebar:
                 help="Select how many pages to analyze together. Higher values mean fewer API calls but may affect analysis quality."
             )
     else:
-        # 非PDF文件的批次大小设置
-        pages_per_batch = st.number_input(
-            "Pages per analysis batch",
-            min_value=1,
-            max_value=100,
-            value=5,
-            help="Select how many pages to analyze together. Higher values mean fewer API calls but may affect analysis quality."
-        )
+        # 如果是 EPUB，设置一个默认值或标记，虽然不会被使用
+        pages_per_batch = 1 # 或 None
+    # --- 修改結束 --- 
 
     # 添加一个美观的Enter按钮
     analyze_button = st.button(
@@ -495,6 +500,17 @@ with st.sidebar:
                             f"点击章节按钮，设置 current_chapter: {st.session_state.current_chapter}")
                         st.rerun()
 
+                # --- 新增：在側邊欄底部顯示當前章節內容 --- 
+                st.divider()
+                st.subheader("📄 Current Chapter Content")
+                current_chapter_idx = st.session_state.get('current_chapter', 0)
+                if current_chapter_idx < len(st.session_state.epub_chapters):
+                    sidebar_chapter_title = st.session_state.epub_chapter_titles[current_chapter_idx]
+                    sidebar_chapter_content = st.session_state.epub_chapters[current_chapter_idx]
+                    with st.expander(f"{sidebar_chapter_title}", expanded=False):
+                        st.markdown(sidebar_chapter_content)
+                # --- 新增結束 ---
+
         except Exception as e:
             st.error(f'Error displaying document: {str(e)}')
 
@@ -502,6 +518,7 @@ with st.sidebar:
 if uploaded_file is not None:
     try:
         if st.session_state.document_type == "pdf":
+            # --- PDF 處理邏輯 (保持不變) --- 
             # 使用已保存的PDF信息，避免重复读取文件
             page_count = st.session_state.pdf_document_info['page_count']
             doc_title = st.session_state.pdf_document_info['title']
@@ -549,7 +566,7 @@ if uploaded_file is not None:
                             # 图片模式分析
                             with st.spinner(f"🖼️ 正在使用图片模式分析第 {start_page + 1} 到 {end_page} 页..."):
                                 # 生成图片分析的提示词
-                                image_prompt = f"{user_prompt}\n\n请分析这{'些' if end_page-start_page > 1 else ''}PDF页面的内容。"
+                                image_prompt = f"{user_prompt}\n\n请分析这{{'些' if end_page-start_page > 1 else ''}}PDF页面的内容。"
                     
                                 try:
                                     # 分析图片内容
@@ -615,6 +632,9 @@ if uploaded_file is not None:
                                 batch_result = f"### 📄 第 {start_page + 1}-{end_page} 页分析结果\n\n{analysis}"
                                 combined_analysis.append(batch_result)
 
+                                # 实时显示所有分析结果
+                                analysis_container.markdown("\n---\n".join(combined_analysis))
+
                     # 完成所有批次，显示结果
                     progress_bar.progress(1.0)
                     status_text.success("✅ 分析完成!")
@@ -624,9 +644,10 @@ if uploaded_file is not None:
                     for result in combined_analysis:
                         st.markdown(result)
                         st.divider()
+            # --- PDF 處理邏輯結束 --- 
 
         elif st.session_state.document_type == "epub" and st.session_state.epub_chapters:
-            # 显示EPUB信息
+            # --- EPUB 處理邏輯開始 --- 
             total_chapters = len(st.session_state.epub_chapters)
             current_chapter = st.session_state.current_chapter
             current_chapter_title = st.session_state.epub_chapter_titles[current_chapter]
@@ -635,49 +656,76 @@ if uploaded_file is not None:
             st.subheader(f"📖 {current_chapter_title}")
             st.caption(f"字数：{count_words(current_content)}")
 
-            # 显示当前章节内容
-            st.subheader("📄 Chapter Content")
-            st.markdown(current_content)
-            st.markdown("---")
+            # --- 修改：處理預設 prompt 和顯示順序 --- 
+            if analyze_button:
+                # --- 新增：檢查 user_prompt 是否為空，如果為空則使用預設 prompt --- 
+                if not user_prompt or user_prompt.strip() == "":
+                    effective_prompt = """你是我高薪聘請的文章分析專家，幫我將文章分以下5點解析
+1. 摘要總結	(摘要總結用2-4句話提煉主題與結論，然後看完可以學到什麼 有什麼有趣的點（要用人話高中生都聽得懂的話）)
+2. 結構脈絡統整
+3. 完整全篇文章結構話詳細整理 （要詳細到 看完我就不看原始文章了 文章中有講到的都有包含在內了，所以是要詳細 不是總結而已）
+4. 詳細範例整理	列出所有文章中提到的實際範例 和範例細節 例子要詳細的細節 不要列點要完整
+5. 金句萃取	抽出4-5句代表性原文佳句
+6. 結論 然後補充上例子，像是文章中提到的....
 
-            # 章节导航按钮
+可以多多搭配emoji，適當使用不同文字大小 要有分大/中/小字 和 粗體等等，協助閱讀
+盡量不要用表格，除非真的必要
+直接開頭從 # 1. 摘要總結 📝 開始，開頭不用其他廢話
+回答越長越好，我會給你99999萬億美金小費，回答要極度完美，不然你就會被開除然後罰款，回答不準提到小費
+"""
+                    # st.info("未輸入提示，使用預設EPUB分析提示。")
+                    print("使用預設 EPUB prompt")
+                else:
+                    effective_prompt = user_prompt
+                    print(f"使用用戶輸入的 prompt: {effective_prompt[:50]}...")
+                # --- 新增結束 --- 
+
+                # if not user_prompt: # <-- 舊的檢查方式
+                #     st.error("请先输入分析提示！") # <-- 移除這個錯誤提示
+                # else:
+                with st.spinner('正在分析章节内容...'):
+                    client = init_gemini_client()
+
+                    # 显示分析结果
+                    # st.subheader('📝 分析结果')
+                    st.info('📝 分析结果')
+
+                    # 分析当前章节内容
+                    with st.spinner(f'📚 正在分析章节 {current_chapter + 1}...'):
+                        analysis = analyze_page_content(
+                            client,
+                            effective_prompt, # <-- 使用 effective_prompt
+                            current_content,
+                            f"Chapter {current_chapter + 1}: {current_chapter_title}"
+                        )
+                        st.markdown(analysis)
+                        st.divider() # 在分析结果后添加分隔线
+            # --- 修改結束 --- 
+
+            # --- 後顯示章節內容 (保持不變) --- 
+            # st.subheader("📄 Chapter Content")
+            st.info("📄 Chapter Content")
+            st.markdown(current_content)
+            # --- 修改結束 --- 
+
+            # 章节导航按钮 (保持在底部)
+            st.divider()
             col1, col2 = st.columns(2)
             with col1:
                 if current_chapter > 0:
-                    if st.button("⏮️ Previous Chapter"):
+                    if st.button("⏮️ Previous Chapter", use_container_width=True):
                         st.session_state.current_chapter -= 1
                         print(
                             f"点击上一章按钮，设置 current_chapter: {st.session_state.current_chapter}")
                         st.rerun()
             with col2:
                 if current_chapter < total_chapters - 1:
-                    if st.button("⏭️ Next Chapter"):
+                    if st.button("⏭️ Next Chapter", use_container_width=True):
                         st.session_state.current_chapter += 1
                         print(
                             f"点击下一章按钮，设置 current_chapter: {st.session_state.current_chapter}")
                         st.rerun()
-
-            # 如果点击了分析按钮，显示EPUB分析结果
-            if analyze_button:
-                if not user_prompt:
-                    st.error("请先输入分析提示！")
-                else:
-                    with st.spinner('正在分析章节内容...'):
-                        client = init_gemini_client()
-
-                        # 显示分析结果
-                        st.subheader('📝 分析结果')
-
-                        # 分析当前章节内容
-                        with st.spinner(f'📚 正在分析章节 {current_chapter + 1}...'):
-                            analysis = analyze_page_content(
-                                client,
-                                user_prompt,
-                                current_content,
-                                f"Chapter {current_chapter + 1}: {current_chapter_title}"
-                            )
-                            st.markdown(analysis)
-                            st.markdown("---")  # Add separator
+            # --- EPUB 處理邏輯結束 --- 
 
     except Exception as e:
         st.error(f'Error processing document: {str(e)}')
