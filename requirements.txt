@@ -15,3 +15,6 @@ setuptools>=65.5.1
 exa-py
 firecrawl-py
 backoff
+sec-edgar-api
+httpx
+lxml

@@ -378,7 +378,7 @@ def call_gemini_api(client, input_text, keyword):
     
     for retry_count in range(max_retries):
         try:
-            model = "gemini-2.0-flash"
+            model = st.session_state.selected_model
             
             # 設置系統指令  
             system_instruction = f"""**角色設定：**  
@@ -539,6 +539,12 @@ def call_gemini_api(client, input_text, keyword):
 # st.title("📊 Timeline AI")
 # st.subheader("基於關鍵詞的時間線分析")
 
+# 定义可用的模型
+MODELS = {
+    "gemini-2.5-flash": "Gemini 2.5 Flash",
+    "gemini-2.5-pro": "Gemini 2.5 Pro"
+}
+
 # 初始化會話狀態
 if 'gemini_analysis' not in st.session_state:
     st.session_state.gemini_analysis = None
@@ -546,6 +552,8 @@ if 'search_keyword' not in st.session_state:
     st.session_state.search_keyword = ""
 if 'search_results' not in st.session_state:
     st.session_state.search_results = None
+if 'selected_model' not in st.session_state:
+    st.session_state.selected_model = "gemini-2.5-flash"
 
 # 顯示 Gemini 分析結果（如果有）
 if st.session_state.gemini_analysis:
@@ -559,7 +567,7 @@ if st.session_state.gemini_analysis:
                 return None
             
             try:
-                model = "gemini-2.0-flash"
+                model = st.session_state.selected_model
                 contents = [
                     types.Content(
                         role="user",
@@ -1042,6 +1050,19 @@ if st.session_state.gemini_analysis:
 # 側邊欄輸入
 with st.sidebar:
     st.header("搜索設置")
+    
+    # 模型选择
+    st.subheader("🤖 AI模型")
+    selected_model = st.selectbox(
+        "选择模型",
+        list(MODELS.keys()),
+        index=list(MODELS.keys()).index(st.session_state.selected_model),
+        format_func=lambda x: MODELS[x]
+    )
+    
+    # 更新session state
+    if selected_model != st.session_state.selected_model:
+        st.session_state.selected_model = selected_model
     
     # 關鍵詞輸入
     search_keyword = st.text_input("輸入搜索關鍵詞", placeholder="例如: 快手kling新聞")

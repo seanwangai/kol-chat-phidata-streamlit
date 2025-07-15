@@ -41,7 +41,7 @@ if "company_name" not in st.session_state:
 if "show_search_results" not in st.session_state:
     st.session_state.show_search_results = False
 if "selected_model" not in st.session_state:
-    st.session_state.selected_model = "gemini-2.0-flash"
+    st.session_state.selected_model = "gemini-2.5-flash"
 
 # 设置默认选中的专家
 DEFAULT_EXPERTS = [
@@ -993,8 +993,8 @@ with st.sidebar:
     # 添加模型选择选项
     selected_model = st.radio(
         "选择分析模型",
-        options=["gemini-2.0-flash", "gemini-2.0-flash-thinking-exp-01-21"],
-        index=0 if st.session_state.selected_model == "gemini-2.0-flash" else 1,
+        options=["gemini-2.5-flash", "gemini-2.5-pro"],
+        index=0 if st.session_state.selected_model == "gemini-2.5-flash" else 1,
         help="选择用于分析的AI模型",
         key="model_selector"
     )

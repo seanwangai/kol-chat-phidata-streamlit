@@ -1,0 +1,197 @@
+============================================================
+EARNINGS CALL TRANSCRIPT
+============================================================
+
+Company: TCOM
+Fiscal Year: 2024
+Quarter: 3
+Date: November 18, 2024
+Transcript Date: 2024-11-18 19:00:00
+
+============================================================
+
+[Operator]
+[Call starts Abruptly] Third Quarter of 2024 Earnings Conference Call. Joining me today on the call are Mr. James Liang, Executive Chairman of the Board; Ms. Jane Sun, Chief Executive Officer; and Ms. Cindy Wang, Chief Financial Officer. During this call, we will discuss our future outlook and performance, which are forward-looking statements made under the safe harbor provisions of the U.S. Private Securities Litigation Reform Act of 1995. Forward-looking statements involve inherent risks and uncertainties. As such, our results may be materially different from the views expressed today. A number of potential risks and uncertainties are outlined in Trip.com Group's public filings with the Securities and Exchange Commission. Trip.com Group does not undertake any obligation to update any forward-looking statements, except as required under applicable law. James, Jane and Cindy will share our strategy and business updates, operating highlights and financial performance for the third quarter of 2024 as well as the outlook for the fourth quarter of 2024. After the prepared remarks, we will have a Q&A session. With that, I will turn the call over to James. James, please.
+
+----------------------------------------
+
+[James Liang]
+Thank you, Michelle, and thanks, everyone, for joining us on this call today. In the third quarter of 2024, the China travel market demonstrated remarkable resilience with strong performance in both domestic and cross-border travel. This surge in demand reflects a recovery in consumer confidence and a growing enthusiasm for travel. The National Day holiday clearly highlighted this momentum with passenger trips and travel bookings surpassing pre-pandemic levels. As consumer confidence rises, the demand for diversified and personalized travel experiences has become increasingly evident. During the holiday, our Trip Best Ranking revealed notable user preferences and significant growth across teams family travel, food, culture and seasonal specialties. In particular, young people are increasingly prioritizing travel in their spending. This trend is further reflected in the rising demand for concerts, music festivals, exhibitions and sporting events, which are particularly appealing to this demographic. This summer, the events featured on our trip events list have gained significant traction among younger travelers, highlighting the growing influence of such events on travel preferences. Riding the wave of this trend, we are excited to roll out our entertainment plus travel products. For example, we teamed up with Dunhuang City to host the 2024 going and Mountain and Crescent Lake concert. To make this desert site concert truly unforgettable, we added a sprinkle of fun with activities like camel riding, sand sliding and transport packages ensuring customers enjoyed an adventure that went beyond just music. As AI plays an increasingly pivotal role in enhancing the travel experience, our innovations not only streamline the planning process, but also offer personalized solutions. In this rapidly evolving landscape, our goal is to make travel more accessible and enjoyable for everyone. By continuously integrating AI into our services, we aim to empower travelers with smarter and more tailored options. While the advancement of AI revolutionizes the travel industry by enhancing customer experiences and operating efficiency, it is equally crucial to develop robust ESG practices to ensure sustainable and ethical growth within the sector. Over the years, we have diligently framework to embed ESG principles into every aspect of our operations and actively promote ESG adoption across the industry. Beyond our commitment to environmental stewardship, our ESG philosophy centers on people, focusing on creating jobs, fostering an inclusive and diverse workplace and raising service standards to enhance the experience for customers. This approach benefits the broader community and promote sustainable economic development. We are honored to receive the Forbes China best AI-driven and Digitized Employer of the Year 2024 Award, a recognition that celebrates our efforts and motivates us to continue advancing our ESG initiatives. In conclusion, the China travel market in Q3 has demonstrated strong resilience, driven by growing consumer confidence and robust demand across both domestic and international segments. As the travel industry continues to evolve, we are confident that technological advancements and favorable market conditions will drive sustained growth and shape the future of global travel. With that, I will turn the call over to Jane for operational highlights.
+
+----------------------------------------
+
+[Jane Sun]
+Thank you, James. Good morning, everyone. As a quick overview, our net revenue in Q3 grew by 16% year-over-year. We are pleased to see that travel consumption in China remains resilient and delivered strong performance as summer vacation and the National Day holiday. Outbound travel continues to experience strong growth during this peak season of the year. During the quarter, International flight market restored to about of the pre-pandemic level. Our outbound hotel and air ticket bookings recovered to 120% compared with 2019 levels, continuing to outperform the industry by 40%. Japan remains the top destination for Chinese outbound travelers closely followed by other APAC regions. Additionally, there is a growing interest in long-haul destinations, such as Europe, the Americas, Oceania and the Middle East. Notably, citizens from higher-tier cities are eager to expand their travel radius and explore more distant destinations while those from lower-tier cities are beginning to venture beyond national borders and emerging as a new growth driver in outbound travel. During the National Day holiday travel bookings from Tier 4 and 5 cities surged by 100% and 300%, respectively. In the domestic Chinese market, travel demand remains robust with travel pattern more evenly distributed across the country. It is encouraging to see travelers increasingly exploring inland and lesser-known destinations contributing to the further development of local tourism. To help our partners capitalize on these opportunities and promote sustainable growth within the industry, we are committed to innovating our product offerings in close collaboration with them. By developing hotel packaged deals, we can explore various use cases and address emerging customer needs. Through co-branding and mutual membership initiatives, we aim to enhance value for customers and cultivate stronger brand loyalty. Additionally, we support domestic hotels in gaining visibility among inbound travelers, driving demand from international markets. With our global network, suppliers can effortlessly reach both domestic and global audiences, maximizing their exposure and impact through integrated marketing efforts on our platform. On the international front, our global businesses continue to witness strong momentum in Q3. Air ticket and hotel bookings on our international OTA platform rose by over 60% year-over-year, with bookings from the APAC region, increasing by more than 70%. Our international OTAs has become the most downloaded OTA app in many markets, including Hong Kong, Macau, Taiwan, South Korea, Singapore, Malaysia and Thailand, reflecting the outstanding results we have achieved and our strengthened presence across the APAC region. Building on our success as downloaded OTA app in several APAC markets, our global development efforts are further enhancing inbound travel as these regions are also major sources of international visitors. In Q3, inbound hotel bookings on our platform increasing by around 100%, reflecting a heightened interest in travel China among global travelers. Notably, 25% of total inbound travelers this year have visited China more than once, demonstrating the country's appeal to repeat visitors eager to explore its rich culture and lifestyle. To capitalize on this opportunity, we offer a range of services designed to enhance the travel experience. International visitors can directly book ticket for over 2,000 attractions and access more than 8,000 day and half-day tour options available on our platform. We also provide convenient currency exchange services and collaborate with Internet service providers to offer eSIM card solution, ensuring travelers stay connected. At popular attractions like the, Great Wall and the Terracotta Warrior museum, we have implemented ticket vending check-in machines customized for international visitors, allowing for expedite entry. Additionally, we offer complementary city tours for international travelers with layovers exceeding eight hours at Shanghai Pudong International Airport, ensuring that every movement in China is memorable. With the continuous resumption of flight capacity improvement in entry convenience and a strengthened inbound supply chain, the outlook for the inbound travel market is optimistic. We look forward to contributing to the industry development and assisting our partners in seizing these opportunities. We see that the travel demand among senior population continues to show significant potential and growth. In the first three quarters of this year, travel bookings from users aged 50 and above have risen by 26% compared to the same period last year, outpacing growth in other age groups. Notably, the 61 to 65 age cohort has experienced the most substantial increase. With an impressive rise of 58%, more than 70% of transactions were directly by senior users through our Old Friends Club channel, while approximately 20% were booked by family members using the family card function. Over half of the silver generation travelers come from Tier 1 and emerging Tier 1 cities. With a higher level of disposable income, this cohort exhibit a greater propensity for air travel, prefer to stay in high star hotels with per capita spending 30% above the group average. They also show a preference of customized trips over traditional group tours usually with the theme of natural site seeing and cruise vacations seeking flexible, relaxing, and enjoyable experiences. We see immense potential in tailoring nature and culture theme trips to capture the travel demand of this demographic. Additionally, seniors are becoming active contributors to online content, comprising 7% of creators and generating over 10% of all travel-related materials with their output increasing by nearly 40% this year. We anticipate that this increased content output will help inspire fellow senior travelers and bolster their confidence in our Old Friends Club services, thereby amplifying flywheel effect. Travel is a powerful tool for addressing many of the challenges. It creates signified livelihoods and job opportunities while driving economic investments that benefit the environment. Representing 10% of global GDP and generating over 300 million jobs, the travel industry plays a crucial role in fostering global prosperity. Trip.com Group has been instrumental in supporting this growth over the past 25 years, providing exceptional services to millions of travelers and creating extensive business opportunities for our partners. To enhance travel experiences, we are dedicated to continuously improving service quality and are always prepared to assist with any customer issues, ensuring a hassle-free journey. Our customer service team is just 30 seconds ready to address concerns and facilitate smooth trips, allowing travelers to fully immerse themselves in their experiences and destinations. For our partners, we drive product innovation, explore new use cases seize the emerging opportunities while adapting to the evolving travel demands of inbound travelers, the silver generation and the use who seek entertaining travel experiences. Additionally, we have established 34 country retreats across China, generating employment for over 20,000 people with 80% of recruitment sourced from local hires. Our initiatives have also boosted local income from farm products and regional goods by RMB30 million, contributing positively to rural revitalization. Travel is a tool for economic growth, a bridge to understanding and the path toward a peaceful world. By fostering economic development and job creation, Trip.com Group makes a significant impact on both local communities and the global economy. In summary, our strong performance across various travel segments highlights the resilience of travel consumption and the industry's potential. With a bright outlook ahead, we remain committed to contributing to providing excellent services to our customers, bringing robust business to our partners and creating valuable job opportunities for young people. With that, I will now turn the call over to Cindy.
+
+----------------------------------------
+
+[Cindy Wang]
+Thanks, Jane. Good morning, everyone. For the third quarter of 2024, Trip.com Group reported a net revenue of RMB15.9 billion, representing a 16% increase from the same period last year and 24% increase from the previous quarter, primarily due to performance in the travel market during the summer and the Golden Week holiday. Accommodation reservation revenue for the third quarter was RMB6.8 billion, representing a 22% increase year-over-year and a 32% increase quarter-over-quarter. Outbound hotel bookings have exceeded the 2019 level. Our domestic and international hotel bookings have also seen robust growth. Transportation ticketing for the third quarter was RMB5.7 billion, representing a 5% year-over-year and a 16% increase quarter-over-quarter. Outbound air ticket bookings have surpassed the 2019 level with our domestic air business the market and international air business experiencing robust growth. Packaged tour revenue for the third quarter was RMB1.6 billion, representing a 17% increase year-over-year and a 52% increase quarter-over-quarter. The year-over-year growth was mainly driven by outbound packaged tour, which has increased by triple digit. Corporate travel revenue for the third quarter was RMB656 million, representing an 11% increase year-over-year and a 4% increase quarter-over-quarter. This was driven by more companies adopting our managed corporate travel services. Excluding share-based compensation charges, adjusted product development expenses for the third quarter increased by 3% year-over-year. Adjusted G&A expenses for the third quarter increased by 5% year-over-year mainly due to increase in personnel-related expenses. Adjusted sales and marketing expenses for third quarter increased by 20% from the previous quarter and increased by 23% from the same period last year. The increase was primarily driven by heightened marketing investments, particularly for our international OTA platform to support our global business development initiatives. Adjusted EBITDA was RMB5.7 billion for the third quarter compared with RMB4.6 billion in the same period last year and RMB4.4 billion in the previous quarter. Diluted earnings per ordinary share and per ADS were RMB9.93 or $1.42 for the third quarter of 2024. Excluding share-based compensation charges and fair value changes of equity security, investments and exchangeable senior notes, non-GAAP diluted earnings per ordinary share and per ADS were RMB8.75 or $1.25 for the third quarter. As of September 30, 2024, the balance of cash and cash equivalents, restricted cash, short-term investments held maturity time deposits and financial products was RMB86.9 billion or $12.4 billion. In conclusion, our company solid performance this quarter, and we are encouraged by the strong travel market activity during the peak season. The robustness of travel consumption highlights the industry's resilience. Looking ahead, we will continue to innovate and collaborate with our partners to capitalize on new market opportunities with an aim of delivering sustained value to our shareholders. With that, operator, please open the line for questions.
+
+----------------------------------------
+
+[Operator]
+[Operator Instructions] Our first question comes from the line of Yang Liu from Morgan Stanley.
+
+----------------------------------------
+
+[Yang Liu]
+Congratulations on the solid results. My question is could you please provide some insight into your recent performance following the National Day holiday? Additionally, what should investors expect for 2025?
+
+----------------------------------------
+
+[Cindy Wang]
+Thank you. After the National Day holiday, we observed that the China travel market is generally the normal seasonality. On a year-over-year basis, the overall momentum has further strengthened. Industry data shows that what your occupancy rates over the past months have surpassed the last year's level, improving from the lower than 2023 levels in Q3. This is partly due to a comparatively easier comp base and more travelers choosing to travel during off-peak seasons. At Trip.com Group, we continue to maintain a growth rate that surpasses the industry average. The outbound flight and hotel bookings also maintained very strong year-over-year growth momentum, exceeding 120% of the same period in 2019. And Trip.com's flight and hotel bookings continue to maintain a mid- to high double-digit growth. With regard to the colors for the next year, it's actually very challenging for us to make an accurate estimate for the year to come, but we anticipate normalized growth pattern for our China-related business with continued emphasizes on the inbound and outbound cross-border travel. Trip.com brand will continue to maintain a very strong growth momentum and expand our presence in Asia and other global markets. Thank you.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of Brian Gong from Citi.
+
+----------------------------------------
+
+[Brian Gong]
+Congratulations on the solid results. A question regarding hotel side. Yes, how have hotel prices changed rely for your observation and has a growth on China hotel inventory began to slow down? And also, could you please share your thoughts on 2025 outlook?
+
+----------------------------------------
+
+[Cindy Wang]
+Sure. The industry data shows that hotel prices are still below last year's level, but the gap has narrowed from double digits to mid- to low-single digits in line with our expectations. With regard to the hotel supplier on our platform, it continues to grow, reflecting a long-term market confidence. However, the growth rate has been normalizing. By the end of the third quarter, the numbers of hotels in China listed on our platform was 67%, higher compared with last year's level. In the longer-term period, we believe that the expansion and diversification of travel supplier will significantly contribute to the overall growth of the travel industry. Thank you.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of John Choi from Daiwa.
+
+----------------------------------------
+
+[John Choi]
+Congratulations on a strong set of results. Could you update on the outbound flight capacity changes for the summer and 4Q? When can we expect the full recovery given some airlines have reduced their flight?
+
+----------------------------------------
+
+[Cindy Wang]
+Sure. The outbound flight capacity reached around 80% of the 2019 level in Q3 and exceeded 80% in the fourth quarter while it is normal for some airlines to reduce flights during the off-peak season. We are pleased to see increases in flight from certain airlines and countries for example, the Canada. And we expect such capacity to further improve in the year to come.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of Andre Chang from JPMorgan.
+
+----------------------------------------
+
+[Andre Chang]
+I have a question a little bit different on the recent trend, right? Have there being any changes in travelers overspending? Have the recent stimulus measures boosted the travel spending?
+
+----------------------------------------
+
+[Cindy Wang]
+Sure. In the third quarter, we are pleased to see that our users' average spending remains quite consistent with last year's level and is approximately 20% higher than the pre-COVID 2019 levels. With regard to the recent trend, it's maybe too early to determine the direct impact of the recent stimulus measures, but the healthy economic environment should benefit all industries, including travel. Thank you.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of Boris Van from Bernstein.
+
+----------------------------------------
+
+[Boris Van]
+Congrats on the great quarter. I just wondering if I could ask a little bit more detail on the operational and financial performance for this quarter. So, for example, how have the domestic hotels done? How are you doing on our international business and Skyscanner, et cetera?
+
+----------------------------------------
+
+[Cindy Wang]
+Oh, sure. In third quarter, Trip.com's air and hotel reservations grew robustly by 60% to 70% year-over-year, and the APAC region accounts for over 70% of the total bookings and was the fastest growth among all the regions. And hotel and air reservations from the APAC region grew by more than 70% year-over-year in the third quarter. We're also very glad to see that some steady progress being made in our one-stop travel and mobile app strategy. For example, in the Q3, our hotel-related revenue accounted for more than 40% of Trip.com's total revenue with cross-selling from transportation to hotels continued to rise, and our mobile app from the top channel for the Trip.com brand, which contribute 65% to 70% of the global orders and over 70% in the APAC region. With regard to the financial results, the Trip.com brand contributed around 9% of the group's total revenue, up from 77% in the same period last year. And yes, we will continuously to make investment in the Trip.com brand in the international market, especially in the APAC region.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of Wei Xiong from UBS.
+
+----------------------------------------
+
+[Wei Xiong]
+Congrats on a very solid quarter. I wanted to follow up on our Trip.com's global business. So, could management maybe allow your strategy in Asia? How do we plan to gain market share further given this is a vast market opportunity and potentially we're going to see maybe increasing investments from international peers?
+
+----------------------------------------
+
+[Jane Sun]
+Yes, Asia is a very important market for us. It represents 50% of the GDP growth. It also represents 50% of the growth for the travel industry. When we focus on our customers, we pay a lot of attention just to make sure we provide the best product and best service to our customers, and we focus on a couple of things. First of all, we offer one-stop shopping platform, therefore, anything that our customer needs when they travel around the world, Trip.com offers that suited for them. Secondly, our 24 hours/7 excellent employees as our customers' peace in mind. Thirdly, we also make sure the user's experience on our app is excellent. And lastly, because of the volume we have, we also drive a lot of good products to our overall customers around the world. So going forward, we will focus to provide for best product and excellent services to our customers in Asia. Thank you.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of Wei Fang from Mizuho.
+
+----------------------------------------
+
+[Wei Fang]
+This is Wei calling for James Lee. Just one on your AI initiative, right? Could management help elaborate on AI kind of initiative and maybe share more on your operating highlights, if possible?
+
+----------------------------------------
+
+[Jane Sun]
+Sure. We invest heavily in our technology and AI. Many engineers are working very hard to make sure AI support our operations. There are four main usage on our platform. The first one is AI is helping us to improve the user's experience, in the past, customers need to use search to find the right product for their needs. Right now, we use AI, we can use a very smooth competition with our system and our system will promote the right product that is suitable for our customers based on their travel habit. The second thing is using AI, our engineers will be able to cut the coding time anywhere between 15% to 30%. Firstly, we also used AI to improve our customer service level to make sure we provide the excellent services to our customers. The last one is content generation. By using AI, our accuracy and efficiency will generate video and pictures and content is improved. And going forward, AI will provide a very useful tool for us to improve the efficiency and enhance our users' experience. Thank you.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of Jiong Shao from Barclays.
+
+----------------------------------------
+
+[Jiong Shao]
+Jane, I just want to follow up on what you just said. I think you highlighted some of the operational benefits from AI. I was wondering if you can expand a bit beyond that to talk about perhaps when it comes to the $1.10 on the financial impact, both for the short term and for the long term from AI?
+
+----------------------------------------
+
+[Jane Sun]
+Yes. So, AI -- go ahead, Cindy.
+
+----------------------------------------
+
+[Cindy Wang]
+Sure. We have consistently integrated our new technologies into our operations and progressing from the mobile technology to non-generative AI and now to the generative AI. And the financial impact, all the investment so far has been a minimum compared with our financial, especially the top line as well as the bottom line. And quantify the financial benefits of the new technology at this moment is still quite challenged. However, from operational perspective, AI definitely can improve our user engagement and conversion rates, as Jane explained, and at the same time, which will also enhance significantly on the service efficiencies and boost our internal operational efficiency. These improvements will eventually be reflected in our financial performance. Thank you.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of Parash Jain from HSBC.
+
+----------------------------------------
+
+[Parash Jain]
+I have two questions. First, so now, in a post-COVID world, the group has taken a lift frog in terms of setting the standard with respect to operating margin performance. Now consistently generating a huge amount of free cash flow, if you can give us some color with respect to your uses of capital, are you seeing enough M&A opportunities or it is about time where we come full year, we hear more on what will be the potential uses of those capital, whether it is from a dividend or a buyback? And my second question is, now in terms of the GMV, you are at a scale, how shall we think about the operating lever in terms of your product and marketing costs going forward? Is there a feeling or pretty much quarter-by-quarter, you will keep surprising us?
+
+----------------------------------------
+
+[Cindy Wang]
+Sure. Thank you. Yes, we generated a lot of free cash flow. But in terms of the use of capital, of course, we -- as a leader in the travel sector, we will continue to look at different opportunities in the market. However, we think at the moment, we already have a very, very important asset, travel assets in the whole international market. And at this moment, our top priority is to maximize the synergies among of our different brands in the international market. And with regard to the capital return policies, year-to-date, we have already repurchased approximately 6 million shares or approximately 1% of our outstanding shares. The scale of our future capital return will depend on our financial conditions, operational results cash flow, capital needs and other relevant factors. And we anticipate an expanded capital return program for the year to come 2025 and potentially will include a mix of dividends and buyback, but also subject to our Board approval. And the second question is about the margin rate?
+
+----------------------------------------
+
+[Parash Jain]
+Yes. I mean how much operating leverage do you have?
+
+----------------------------------------
+
+[Cindy Wang]
+Yes. We -- first of all, OTA is a very scalable business model. As you may know this already in the past couple of years after the -- in the past two years, after the COVID, we already achieved a very efficient operational efficiencies across all the expenses line, including the cost -- the product development as well as the sales and marketing expenses. But sales and the marketing expenses as a percentage of our gross bookings actually were less than 1% and benefiting from our very high customer royalty and strong cross-selling ratio through our mobile app. And we anticipate our marketing expenses ratio will actually increase in the Q4, especially compared with our net revenues due to seasonality and fluctuations in the revenue mix between our China and international businesses. And in the longer-term period, we aim to enhance our marketing efficiencies across all markets by prioritized direct mobile app traffic and cross-selling. But again, we are continuously to increase our efficiencies across all the expenses line item, especially after introduce AI to help us to increase the efficiencies. But at the same time, we need to investment especially in the international market. Thank you.
+
+----------------------------------------
+
+[Operator]
+Thank you. At this time, I would like to now turn the conference back over to Michelle Qi for closing remarks.
+
+----------------------------------------
+
+[Michelle Qi]
+Thank you. Thank you for joining us on the call today. As you all, our call will be available at the IR website. We look forward to convening with you again for the next quarter. Thank you.
+
+----------------------------------------
+
+[Operator]
+Thank you, everyone. You may now disconnect. Have a great day.
+
+----------------------------------------
+
