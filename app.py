@@ -1264,6 +1264,36 @@ class GeminiService:
             raise APIError(f"Gemini API调用失败: {e}")
     
     @retry_on_failure(max_retries=3)
+    def call_api_stream(self, prompt: str, model_type: str = "gemini-2.5-flash"):
+        """调用Gemini API 流式响应"""
+        self.rate_limiter.wait_if_needed()
+        
+        try:
+            client = self.init_client()
+            
+            contents = [
+                types.Content(
+                    role="user",
+                    parts=[types.Part.from_text(text=prompt)],
+                ),
+            ]
+
+            # 使用流式响应
+            response_stream = client.models.generate_content_stream(
+                model=model_type,
+                contents=contents,
+            )
+            
+            # 生成器函数，逐步返回文本片段
+            for chunk in response_stream:
+                if chunk.candidates and chunk.candidates[0].content.parts:
+                    yield chunk.candidates[0].content.parts[0].text
+            
+        except Exception as e:
+            logger.error(f"Gemini API流式调用失败: {e}")
+            raise APIError(f"Gemini API流式调用失败: {e}")
+    
+    @retry_on_failure(max_retries=3)
     def classify_6k_document(self, document_content: str) -> bool:
         """使用便宜模型判断6-K文件是否为季报/年报/IPO报告"""
         try:
@@ -1727,7 +1757,7 @@ class EarningsService:
         
         return None
 
-    def get_earnings_transcript_batch(self, url_paths: List[str], max_workers: int = 2) -> List[Optional[Dict]]:
+    def get_earnings_transcript_batch(self, url_paths: List[str], max_workers: int = 1) -> List[Optional[Dict]]:
         """
         并行获取多个财报会议记录
         
@@ -2257,6 +2287,110 @@ class SECEarningsAnalyzer:
             error_msg = f"处理文档时出错: {e}" if language == "中文" else f"Error processing document: {e}"
             return error_msg
     
+    def process_document_stream(self, document: Document, processing_prompt: str, model_type: str):
+        """处理单个文档 - 流式响应版本"""
+        try:
+            # 获取当前语言设置
+            language = st.session_state.get("selected_language", "English")
+            
+            # 如果文档内容为空，则下载
+            if not document.content:
+                if document.type == 'SEC Filing':
+                    # 检查是否为6-K文件
+                    if hasattr(document, 'form_type') and document.form_type == '6-K':
+                        # 6-K文件应该已经在SixKProcessor中处理过了
+                        logger.warning(f"6-K文件内容为空，这不应该发生: {document.title}")
+                        document.content = "6-K文件内容处理失败" if language == "中文" else "6-K file content processing failed"
+                    else:
+                        # 普通SEC文件处理
+                        document.content = self.sec_service.download_filing(document.url)
+                elif document.type == 'HK Stock Filing':
+                    # 港股文件处理
+                    document.content = self.hk_service.download_hk_filing(document.url)
+                elif document.type == 'Earnings Call':
+                    # 在新的流程中，内容已预先获取
+                    logger.warning(f"处理文档时发现财报记录内容为空: {document.title}")
+                    document.content = "内容未找到" if language == "中文" else "Content not found"
+            
+            # 准备prompt - 根据语言选择
+            if language == "English":
+                prompt = f"""
+                You are a professional document analyst, specialized in extracting and analyzing information from financial documents.
+
+                Document Title: {document.title}
+                Document Date: {document.date}
+                Document Type: {document.type}
+                
+                Processing Requirements: {processing_prompt}
+                Also answer similar requirements, don't miss anything
+                
+                Requirements:
+                - Carefully read the provided document content
+                - Extract relevant information according to the user's specific requirements
+                - Provide accurate, professional analysis
+                - Ensure answers come from document content, don't imagine
+                - I don't have time to read, ensure answers are direct and to the point, no need for polite conversation
+                - Always answer in English
+                - when markdown output, Escape all dollar signs $ for currency as \$ to prevent Markdown from rendering them as math.
+                
+                Answer Requirements:
+                - Start with 📍 emoji, followed by what type of document this is and its purpose, 
+                - second line Start with 💡 on next new line row, directly state conclusions, answer conclusions related to my processing requirements, all in short sentences
+                - Please provide structured analysis results, only answer key points, remember no nonsense.
+                - First sentence should state key points without pleasantries. Don't say "According to the document content you provided..." such nonsense, directly state key points
+                - Answer should start with conclusions, can use emojis to help users read, markdown format
+                - If the document doesn't contain information related to my question, just say "Not mentioned in document" period, one sentence only, no nonsense, I don't have time to read
+
+                Document Content:
+                {document.content}
+                """
+            else:  # 中文
+                prompt = f"""
+                你是一个专业的文档分析师，专门负责从财务文档中提取和分析信息。
+
+                文档标题: {document.title}
+                文档日期: {document.date}
+                文档类型: {document.type}
+                
+                处理要求: {processing_prompt}
+                有與以上要求類似的也一起回答，不要漏掉
+                
+                要求：
+                - 仔细阅读提供的文档内容
+                - 根据用户的具体要求提取相关信息
+                - 提供准确、专业的分析
+                - 確保回答都來自文檔內容，不要憑空想像
+                - 我沒時間看 確保回答直接說重點 不用像人一樣還要客套話
+                - markdown輸出，將所有表示金額的 $ 改為 \$，以避免 Markdown 被誤判為數學公式。
+
+
+                
+                回答要求：
+                - 開頭以📍这个emoji开頭， 📍後面接這是一份什麼文件，文件目的是什麼，
+                - 第二句下一行，開頭以 💡，記得換行，直接說結論，回答跟我处理要求有關的結論 都是簡短一句話
+                - 请提供结构化的分析结果，只回答重點就好，記得不廢話。
+                - 第一句就說重點不用客套。 不用說 根据您提供的文档内容... 這種廢話，直接說重點
+                - 回答要結論先說，可以使用emoji幫助使用者閱讀，markdown格式
+                - 如果文檔內沒有跟我的問題有關的資訊，就說一句 文檔內未提及 句號 一句話就好  不准廢話 我沒時間看
+
+                文档内容:
+                {document.content}
+                """
+            
+            logger.info("================================================")
+            logger.info(f"Processing document (streaming): {document.title} in {language}")
+            
+            # 返回流式响应生成器
+            return self.gemini_service.call_api_stream(prompt, model_type)
+            
+        except Exception as e:
+            logger.error(f"处理文档失败: {e}")
+            error_msg = f"处理文档时出错: {e}" if language == "中文" else f"Error processing document: {e}"
+            # 对于错误，返回一个简单的生成器
+            def error_generator():
+                yield error_msg
+            return error_generator()
+
     def integrate_results(self, document_results: List[Dict], integration_prompt: str, user_question: str, ticker: str, model_type: str) -> str:
         """整合分析结果"""
         try:
@@ -2330,6 +2464,84 @@ class SECEarningsAnalyzer:
             logger.error(f"整合结果失败: {e}")
             error_msg = f"整合结果时出错: {e}" if st.session_state.get("selected_language", "English") == "中文" else f"Error integrating results: {e}"
             return error_msg
+    
+    def integrate_results_stream(self, document_results: List[Dict], integration_prompt: str, user_question: str, ticker: str, model_type: str):
+        """整合分析结果 - 流式响应版本"""
+        try:
+            # 获取当前语言设置
+            language = st.session_state.get("selected_language", "English")
+            
+            # 构建整合提示词
+            if language == "English":
+                integration_input = f"""
+                You are a professional financial analyst, specialized in integrating analysis results from multiple documents.
+
+                User Question: {user_question}
+                Stock Ticker: {ticker}
+                
+                Integration Requirements: {integration_prompt}
+                
+                Requirements:
+                - If the content contains numbers for the same indicator at different time points, place a pivot table at the very beginning of the answer. Format: pivot table row names are different indicators, column names are the time when indicators were published, cells are the indicator numbers. Then explain below the pivot table after generation.
+                - If the content contains business descriptions for the same indicator at different time points, place a pivot table at the very beginning of the answer. Format: pivot table row names are different indicators, column names are the time when indicators were published, cells are the indicator descriptions. Then explain below the pivot table after generation.
+                - For example: row1 would be Indicator, 2025Q1, 2025Q2. row2 would be AI commercialization, Q2 expected to resume double-digit year-over-year growth, confident in achieving significant revenue growth for full year 2025
+                - table output use markdown format, ensure markdown format is correct, no errors
+                - Comprehensively analyze all provided document analysis results
+                - Identify trends, patterns, and key changes
+                - Provide deep insights and professional recommendations
+                - Use tables, lists, and other formats to enhance readability
+                - Highlight key information and critical findings
+                - This is a comprehensive summary, don't repeat detailed content from individual documents
+                - Focus on cross-document trends and correlations
+                - Always answer in English
+                
+                Document Analysis Results:
+                """
+            else:  # 中文
+                integration_input = f"""
+                你是一个专业的金融分析师，专门负责整合多个文档的分析结果。
+
+                用户问题: {user_question}
+                股票代码: {ticker}
+                
+                整合要求: {integration_prompt}
+                
+                要求：
+                - 如果內文有 同指標不同時間點的 數字，回答的最一開始 一定要放上一個pivot table，格式是 pivot table row name 是不同指標 ， column 指標公布的時間，cell 是指標的數字。然後pivot table 生成完 表格下方解釋一下
+                - 如果內文有 同指標不同時間點的 業務的描述，回答的最一開始 一定要放上一個pivot table，格式是 pivot table row name 是不同指標 ， column 指標公布的時間，cell 是指標的數字。然後pivot table 生成完 表格下方解釋一下
+                - - 舉例類似像是  row1會是 指標, 2025Q1, 2025Q2 。 row2會是 AI商业化, Q2预计将恢复两位数同比增长, 有信心在2025全年年实现显著收入增长
+                - table 都用markdown格式，要確保markdown格式正確，不要有錯誤
+                - 综合分析所有提供的文档分析结果
+                - 识别趋势、模式和关键变化
+                - 提供深入的洞察和专业建议
+                - 使用表格、列表等格式增强可读性
+                - 突出重点信息和关键发现
+                - 这是一个综合总结，不要重复单个文档的详细内容
+                - 重点关注跨文档的趋势和关联性
+                
+                文档分析结果:
+                """
+            
+            for result in document_results:
+                integration_input += f"""
+                
+                === {result['title']} ({result['date']}) ===
+                {result['analysis']}
+                """
+            
+            completion_text = "Please provide a complete, professional comprehensive analysis report and summary." if language == "English" else "请提供完整、专业的综合分析报告和总结。"
+            integration_input += f"\n\n{completion_text}"
+            
+            # 返回流式响应生成器
+            return self.gemini_service.call_api_stream(integration_input, model_type)
+            
+        except Exception as e:
+            logger.error(f"整合结果失败: {e}")
+            error_msg = f"整合结果时出错: {e}" if st.session_state.get("selected_language", "English") == "中文" else f"Error integrating results: {e}"
+            # 对于错误，返回一个简单的生成器
+            def error_generator():
+                yield error_msg
+            return error_generator()
 
 # 初始化应用
 @st.cache_resource
@@ -2542,7 +2754,8 @@ def main():
         # 如果正在处理，显示status
         current_step = status.current_status_label or (lang_config.get("processing_status", "Processing..."))
         
-        with st.expander(lang_config["status_header"], expanded=True):
+        # with st.expander(lang_config["status_header"], expanded=False):
+        with st.expander(status.current_status_label, expanded=False):
             st.markdown(f"**{status.current_status_label}**")
             
             if status.total_documents > 0:
@@ -2768,7 +2981,7 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                         earnings_status.write("🔄 Starting batch processing...")
                         
                         # 分批处理以避免过多并发请求
-                        batch_size = 6  # 每批处理6个
+                        batch_size = 1  # 每批处理1个
                         for batch_start in range(0, len(all_earnings_urls), batch_size):
                             if status.stop_requested:
                                 break
@@ -2789,7 +3002,7 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                                     _ticker, year, quarter = parsed_info
                                     earnings_status.write(f"⏳ 开始获取: {_ticker} {year} Q{quarter}")
                             
-                            # 并行处理当前批次
+                            # 顺序处理当前批次
                             batch_results = analyzer.earnings_service.get_earnings_transcript_batch(batch_urls, max_workers=1)
                             
                             # 处理批次结果
@@ -2967,7 +3180,7 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                                     _ticker, year, quarter = parsed_info
                                     earnings_status.write(f"⏳ 开始获取: {_ticker} {year} Q{quarter}")
                             
-                            # 并行处理当前批次
+                            # 顺序处理当前批次
                             batch_results = analyzer.earnings_service.get_earnings_transcript_batch(batch_urls, max_workers=1)
                             
                             # 处理批次结果
@@ -3123,16 +3336,23 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                                 ai_status.write(f"📄 正在分析: {doc.title}")
                                 ai_status.write("📝 正在构建分析提示词...")
                                 ai_status.write("🧠 正在调用AI模型进行深度分析...")
-                                ai_status.write("⏳ 等待AI响应中（这可能需要几分钟）...")
+                                ai_status.write("⏳ 开始流式响应...")
                                 
-                                # 执行实际的AI分析
-                                analysis_result = analyzer.process_document(doc, status.processing_prompt, model_type)
+                                # 执行实际的AI分析 - 使用流式响应
+                                stream_generator = analyzer.process_document_stream(doc, status.processing_prompt, model_type)
                                 
-                                ai_status.write("✅ AI分析完成！")
-                                ai_status.update(label=f"✅ 6-K文档 {i+1}/{len(processed_docs)} 分析完成", state="complete")
+                                ai_status.write("✅ AI分析开始！")
+                                ai_status.update(label=f"✅ 6-K文档 {i+1}/{len(processed_docs)} 分析开始", state="complete")
                             
                             # 清除AI状态显示
                             ai_status_placeholder.empty()
+                            
+                            # 显示文档标题
+                            st.markdown(f"### 📅 {doc.date}")
+                            st.markdown(f"### {doc.title}")
+                            
+                            # 使用流式响应显示结果
+                            analysis_result = st.write_stream(stream_generator)
                             
                             # 根据文档类型设置头像
                             avatar = "📄"
@@ -3140,18 +3360,15 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                             # 保存文档内容到临时文件
                             temp_file_path = analyzer.document_manager.save_document_content(doc)
                             
-                            # 将LLM分析结果添加到聊天历史中
-                            assistant_message = f"""### 📅 {doc.date}
-### {doc.title}
-\n\n{analysis_result}"""
-                            message_data = {
-                                "role": "assistant", 
-                                "content": assistant_message,
+                            # 将分析结果添加到聊天历史中，这样rerun时不会丢失
+                            message_content = f"### 📅 {doc.date}\n### {doc.title}\n\n{analysis_result}"
+                            st.session_state.analyzer_messages.append({
+                                "role": "assistant",
+                                "content": message_content,
                                 "avatar": avatar,
                                 "temp_file_path": temp_file_path,
                                 "document_title": doc.title
-                            }
-                            st.session_state.analyzer_messages.append(message_data)
+                            })
                             
                             # 保存结果
                             status.document_results.append({
@@ -3185,16 +3402,23 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                             
                             ai_status.write("📝 正在构建分析提示词...")
                             ai_status.write("🧠 正在调用AI模型进行深度分析...")
-                            ai_status.write("⏳ 等待AI响应中（这可能需要几分钟）...")
+                            ai_status.write("⏳ 开始流式响应...")
                             
-                            # 执行实际的AI分析
-                            analysis_result = analyzer.process_document(current_doc, status.processing_prompt, model_type)
+                            # 执行实际的AI分析 - 使用流式响应
+                            stream_generator = analyzer.process_document_stream(current_doc, status.processing_prompt, model_type)
                             
-                            ai_status.write("✅ AI分析完成！")
-                            ai_status.update(label="✅ AI分析完成", state="complete")
+                            ai_status.write("✅ AI分析开始！")
+                            ai_status.update(label="✅ AI分析开始", state="complete")
                         
                         # 清除AI状态显示
                         ai_status_placeholder.empty()
+                        
+                        # 显示文档标题
+                        st.markdown(f"### 📅 {current_doc.date}")
+                        st.markdown(f"### {current_doc.title}")
+                        
+                        # 使用流式响应显示结果
+                        analysis_result = st.write_stream(stream_generator)
                         
                         # 根据文档类型设置头像
                         if current_doc.type == 'SEC Filing':
@@ -3209,18 +3433,15 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                         # 保存文档内容到临时文件
                         temp_file_path = analyzer.document_manager.save_document_content(current_doc)
                         
-                        # 将LLM分析结果添加到聊天历史中
-                        assistant_message = f"""### 📅 {current_doc.date}
-### {current_doc.title}
-\n\n{analysis_result}"""
-                        message_data = {
-                            "role": "assistant", 
-                            "content": assistant_message,
+                        # 将分析结果添加到聊天历史中，这样rerun时不会丢失
+                        message_content = f"### 📅 {current_doc.date}\n### {current_doc.title}\n\n{analysis_result}"
+                        st.session_state.analyzer_messages.append({
+                            "role": "assistant",
+                            "content": message_content,
                             "avatar": avatar,
                             "temp_file_path": temp_file_path,
                             "document_title": current_doc.title
-                        }
-                        st.session_state.analyzer_messages.append(message_data)
+                        })
                         
                         # 保存结果
                         status.document_results.append({
@@ -3283,11 +3504,23 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
             
             # 过滤掉失败的结果
             successful_results = [res for res in status.document_results if res is not None]
-            final_report = analyzer.integrate_results(
+            
+            # 显示综合报告标题
+            st.markdown("### 📊 Summary")
+            
+            # 使用流式响应显示最终报告
+            final_report_stream = analyzer.integrate_results_stream(
                 successful_results, status.integration_prompt, status.user_question, ticker, model_type
             )
-            final_report = """### Summary\n""" + final_report
-            st.session_state.analyzer_messages.append({"role": "assistant", "content": final_report, "avatar": "📊"})
+            final_report = st.write_stream(final_report_stream)
+            
+            # 将综合报告添加到聊天历史中
+            summary_content = f"### 📊 Summary\n\n{final_report}"
+            st.session_state.analyzer_messages.append({
+                "role": "assistant",
+                "content": summary_content,
+                "avatar": "📊"
+            })
             
             report_completed_msg = "综合报告生成完毕！" if language == "中文" else "Comprehensive report generated!"
             status.add_status_message(report_completed_msg)
