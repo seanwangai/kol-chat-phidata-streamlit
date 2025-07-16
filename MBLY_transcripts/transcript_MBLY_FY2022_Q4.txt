@@ -1,0 +1,567 @@
+============================================================
+EARNINGS CALL TRANSCRIPT
+============================================================
+
+Company: MBLY
+Fiscal Year: 2022
+Quarter: 4
+Date: January 26, 2023
+Transcript Date: 2023-01-26 08:00:00
+
+============================================================
+
+[Operator]
+Greetings. Welcome to the Mobileye Q4 2022 Business Update. [Operator Instructions] Please note this conference is being recorded. I'll now turn the conference over to your host, Dan Galves. You may begin.
+
+----------------------------------------
+
+[Dan Galves]
+Hello, everyone, and welcome to Mobileye's fourth quarter and full year earnings conference call for the period ending December 31, 2022. As a matter of formality, please note that today's discussion contains forward-looking statements based on the business environment as we currently see it. Such statements involve risks and uncertainties. Please refer to the accompanying press release, which includes additional information on the specific risk factors that could cause actual results to differ materially. Additionally, on this call, we will refer to both GAAP and non-GAAP figures. A reconciliation of GAAP to non-GAAP financial measures is provided in our posted earnings release. Joining us on the call today are Prof. Amnon Shashua, Mobileye's CEO and President; and Anat Heller, Mobileye's CFO. Thanks. And now I'll turn the call over to Amnon.
+
+----------------------------------------
+
+[Amnon Shashua]
+Thank you, Dan. Hello, everyone, and thank you for joining our earning call. 2022 was a really important year for Mobileye. We executed a successful IPO at a time when this was only possible for very unique companies. I see many benefits to being public again, but most important is we have already seen a big increase in visibility of Mobileye from our customers and partners, driven by more focus and attention by the broader media and analyst. This drives incremental business opportunities by amplifying attention on our advanced solutions and we think this plays into the incremental momentum we are experiencing. Financial results in 2022 were clearly very good. Revenue grew up by 35%, adjusted operating profit grew by 25% and we generated almost $550 million of operating cash flow. More important than those headlines is that the source of our growth started to shift from pure volume to a combination of volume and higher content per vehicle. Our advanced products carry a much higher price per vehicle than our historical products, and we saw a clear evidence of that in 2022, where one-third of our revenue growth came from higher ASPs. In terms of future business generation, 2022 was a record year. Just in that year alone, we generated new business representing $6.7 billion of estimated future revenue at about $105 per unit on a content per car blended basis. This is about 3.5 times our actual revenue in 2022 and double our current ASP. Overall, we estimate that our current book of business represent over $17 billion of total future revenue through 2030. As long as our new business wins continue to outpace our actual shipments in a particular year, this number will continue to grow. Also to be clear, this number excludes our consumer AV and Mobility as a Service backlog. Beyond the high-level numbers, we saw positive business trends across all businesses. The front-facing camera, single-chip ADAS business continues to run like a machine. We grew revenue with every one of our top 10 customers in 2022, and continue to win significant new business in this segment. A key development in 2022 is that many large-volume ADAS platforms now have a variant that includes cloud-enhanced ADAS to our REM map. This volume will drive higher ASP and recurring revenue from maintenance of the map. We also saw a very significant uptick in interest and secured volume in our SuperVision product in all regions from both traditional and start-up OEMs really across the Board. There are many reasons for the increased traction. There is a big difference between a development product and a launched product. Launching SuperVision with ZEEKR in China was a major catalyst in driving interest from other OEMs. A program like SuperVision is a major commitment from an OEM in time and capital. Offering a solution that is already in production means that the investment will result in a valuable product with high probability. This is very important in the current environment. Number two, we now have the ability to demonstrate the full feature set of a SuperVision anywhere, not just in Israel. Our REM map now cover nearly all roads in the U.S. and Europe. As a result, we have been able to execute long-distance expeditions with carmakers, customers covering thousands of miles in both U.S. and Europe with little human intervention. This ability to show that the technology truly works everywhere has been critical in moving discussions to the decision phase. Mobileye's EyeQ Kit, software development tool is another important development. The ability for an OEM to take Mobileye's truly differentiated asset like surround computer vision, REM mapping and our decision-making software as is, but then customize the consumer-facing part of the system with their own software is something we couldn't offer until recently. It has served as a catalyst for strategic partnership discussions for SuperVision and beyond with many of our OEM customers, particularly one that began their own software development at the earliest. In the meantime, the competitive environment among OEMs has ramped-up with Chinese automakers and Tesla, benefiting from surround camera-based systems both in profit and technology prestige. This is creating an overall sense of urgency among other OEMs to invest in wide operational design domain, eyes-on, hands-off systems that have high probability of success in terms of performance and validation. We expect SuperVision to be a very large growth driver in 2023 and beyond, and shared our expected volume forecast in our CES presentation, which is available at our IR website. But this product also served as a launch point for our eyes-off Consumer AV product super. Because SuperVision operates across a very broad operational design domain, it makes the transition to experience of eyes-off ODDs and incremental and modular step instead of a series of moonshots. In other words, all the heavy-lifting of describing the environment in great detail, the driving policy require to maneuver the car in any traffic scenario and the requirement for high-definition maps covering all types of roads are all done in the SuperVision system. From here, adding redundancies to the perception system to take eyes-on to eyes-off becomes incremental work. The successful productization of SuperVision with ZEEKR and this concept of modularity to eyes-off has created a lot more interest from our customers to develop Consumer AV products. Essentially, every SuperVision discussion we're having now is also including top five follow-on Chauffeur eyes-off the program. We saw recent evidence in this with a premium European OEM, which kicked off a SuperVision program in Q4. During discussions, the scope of the program expanded to include a Chauffeur program that will launch in 2026 timeframe. The Chauffeur portion of this program alone represents an expected $1.5 billion opportunity through 2030. Finally, on Mobility as a Service, our plan continues to develop relationships on the supply and demand side, and then use our self-driving system to enable supply and demand to come together into a scalable business. We have many relationships on the demand side with transportation network companies and public transit operators. We also have engagement with three vehicle builders, which are developing purpose-built vehicle platforms that integrate our Mobileye Drive self-driving system. We expect to generate our first revenue in this business in 2023 and our supply side relationships have orders for self-driving systems that total an estimated $3.5 billion of future revenue through 2028. So, overall, 2022 was the year where traction for SuperVision really accelerated and this led to an increase interest from OEMs for eyes-off systems as well. Continuing the productization process of these solutions and supporting testing and launch, of course, requires resources. This is why our operating expenses growth in 2022 was unusually high and it will be again in 2023. This growth is supporting areas like growth in terms of -- in teams to support SuperVision launches with OEMs, radar and lidar productization and expansion of Mobility as a Service validation and testing site and development works of our next-generations of EyeQ chip. I would note that approximately 70% of our R&D expenses is related to products that are either just beginning to generate revenue like SuperVision or a still pre-revenue like Chauffeur, Drive and active sensor-ready product. Thank you. And I now turn it over to Anat to go through the results.
+
+----------------------------------------
+
+[Anat Heller]
+Thank you, Amnon, and thanks for joining the call, everyone. Before I begin, please be aware that all my comments on profitability will refer to non-GAAP measurements. The primary exclusion in Mobileye's non-GAAP numbers is amortization of intangible assets, which is mainly related to Intel's acquisition of Mobileye in 2017. We also exclude stock-based compensation and IPO-related expenses. Starting with a few words about the full-year. Revenue growth of 35% year-over-year in 2022 continued our consistent track record of top line growth. Compared to 2018, our revenue is up 170% and global production is down 13%. As Amnon mentioned, our advanced portfolio made a meaningful impact on average system price, which rose to $53 in 2022, up from $47 in 2021. This alone drove about 13 points of revenue growth in 2022. The increase in average system price was mainly driven by SuperVision, as well as to a lesser extent the rise in chip cost which we passed along to our customers. The addition of SuperVision to our product mix led to a certain decrease in gross margin as we deploy a full system solution which contains higher hardware content. But more importantly, SuperVision generates much higher gross profit per unit than our core EyeQ product. As a result, EyeQ and SuperVision combined gross profit per unit grew by 9% in 2022. Turning to Q4. Revenue grew 59% year-over-year. Our EyeQ related revenue was up 48% with the SuperVision product driving most of the remainder of the growth, despite being less than 1% of our overall volumes. Q4 operating margin was 38%, up from 34% in prior year. This was above our guidance expectation due to a better-than-expected revenue growth, but also due to about $14 million of R&D expenses that we expected in Q4, but shifted to 2023. Turning to 2023 guidance. We are pleased that the midpoint of our guidance remains in line with the internal expectations at the time of our October IPO, despite of our macro assumptions for 2023 coming down since spin. On the revenue side, I'll give you a sense of our assumptions. Focusing on the high-end, we are assuming EyeQ volume that is somewhat below the commitment that we've received from our customers for 2023. We want to remain conservative and acknowledged that the macro uncertainty remains elevated. That volume level corresponds to about 1% global production growth, 4 to 5 points of ADAS production growth, which is somewhat lower than the prior few years, and consistent market share. On the SuperVision side, we are assuming a bit more than 100% growth versus 2022, which was about 96,000 units. Demand is higher than this, but we are still experiencing some supply chain constraints in one particular component of the ECU. On the positive side, we have commitment from our suppliers at the level we are focusing, including a second-half run rate that supports our 2024 forecast as well. In terms of quarterly cadence, historically, our revenue has ramped up over the course of the year. This year is expected to be even more pronounced with around 41% of revenue expected in the first half of the year. On both the EyeQ and SuperVision businesses, volume and revenue are expected to be lower in Q1 2023 versus Q4 2022. This appears to be general conservatism on the part of our customers, as well as some impact from elevated purchases ahead of the EyeQ price increase that went into effect on January 1. On SuperVision, the low volume in Q1 and Q2 versus Q4 2022 is related to the key ECU component mentioned earlier. On the average system price side, we expect Q1 and Q2 to be a bit lower than Q4 due to the SuperVision constraints, but we expect to exit 2023 in the low-$60, which is an excellent trajectory. On the operating income side, there's a few things to point out. Gross profit per unit will increase again year-over-year, but the percentage gross margin is expected to be down due to the higher mix of SuperVision revenue mentioned above. On the OpEx side, as Amnon mentioned, we will continue to invest heavily in our high ROI advanced portfolio, which is only beginning to impact our results. We estimate operating expenses to grow in the low-30% range in 2023 versus 35% growth in 2022. OpEx growth rate are expected to moderate in 2024, which combined with operating leverage is expected to lead to higher operating margin during that year, also consistent with our internal expectation at the time of the IPO. Before taking your questions, I just wanted to thank my team and many others at Mobileye for supporting what is a pretty accelerated earnings timeline for a newly public company. Thank you. And we will now take your questions.
+
+----------------------------------------
+
+[Operator]
+[Operator Instructions] Our first question comes from the line of Itay Michaeli with Citi. Please proceed with your questions.
+
+----------------------------------------
+
+[Itay Michaeli]
+Great. Thanks. Hello, everybody. Just two questions, one financial and one on SuperVision. On the financial, maybe for Anat, hoping to maybe talk about what you're expecting for gross margins, kind of core ADAS and enhanced ADAS business in 2023? And then on SuperVision, hoping you could talk about what portion of customer engagements there are perhaps looking at a camera-only solution for SuperVision, as well as what you're seeing for the SuperVision Lite offering versus the full ODD SuperVision offering? Thank you.
+
+----------------------------------------
+
+[Anat Heller]
+Okay. So on the EyeQ side, we are seeing consistent gross margin through 2023. And on SuperVision side, we're seeing approximately 35% for this year.
+
+----------------------------------------
+
+[Amnon Shashua]
+Okay. I'll add a bit more that with the SuperVision there are two drivers to increase our gross margin there. One is efficiency of production, we're creating a new version, an evil version, with the lower cost, that will increase our margin. Second is the customer bundles. The launch of the SuperVision in China at the moment at highways, the urban and arterial roads would be unlocked during 2023 and that would also increase our revenue per content per car, and of course, naturally will increase the gross margin. We are targeting reaching between 50% to 60% gross margin of SuperVision kind of in the long-run. In terms of your second part of the question about camera-only, SuperVision is a camera-only plus a front-facing radar. So for example, on the ZEEKR vehicle there is a front-facing radar as well. Although we can satisfy all the functionality without the radar, but having a front-facing radar add another element of redundancy, which can improve the MTBF of the system. In terms of SuperVision Lite, this is a product offering which has been done very recently. So we don't yet have the traction for -- all traction that we have and is growing is for the full SuperVision with two EyeQ 6 and the full camera suit.
+
+----------------------------------------
+
+[Itay Michaeli]
+Perfect. That's all very helpful. Thank you.
+
+----------------------------------------
+
+[Amnon Shashua]
+Thank you, Itay.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of Mark Delaney with Goldman Sachs. Please proceed with your questions.
+
+----------------------------------------
+
+[Mark Delaney]
+Yes. Thank you very much for taking the question. With respect to the opportunity for Mobileye versus your more advanced solutions like SuperVision. Can you elaborate a bit more on the breadth and depth of the discussions you're having with OEMs to use those products relative to say 90 or 180 days ago? And if you're seeing that traction improve with just a few programs in OEMs or perhaps this is broader based?
+
+----------------------------------------
+
+[Amnon Shashua]
+As I said, we have now SuperVision design win into six carmakers, nine brands. The scope is expanding towards Chauffeur, the eyes-off system. And additional SuperVision traction we expect to come out in the second half of the year. We have customers that we haven't named yet, but I think the additional traction in the second half would be ones outside of those six OEMs.
+
+----------------------------------------
+
+[Mark Delaney]
+That's very helpful. Thanks. And one more from me please, if I could. The Company said the supply chain limit including for SuperVision and you called that a ECU component. Do you have a bit more on the steps that Mobileye and your supply chain partners are taking to alleviate that and your visibility in potentially having that supply chain constraints alleviated intermediate to longer-term. Thank you.
+
+----------------------------------------
+
+[Amnon Shashua]
+So we have an issue with one component in the SuperVision motherboard. This is why we have out of the full volume of the SuperVision, it's really tilted towards the second half of the year rather than the first half of the year. It's one component from a particular supplier, and we're confident that in the second half of the year that constraints will be alleviated and we can deliver the rest of the volume.
+
+----------------------------------------
+
+[Dan Galves]
+Yes, maybe if I could just add a couple more words on this. So in 2022, we delivered every ECU we could possibly produce. And in the fourth quarter, it was a little bit more than we had expected to be able to access. We have so much additional demand in 2023 that in order to satisfy that the supply really needed to sort of take-down the production for a period of time in order to install more capacity, so we can get to much higher levels and just really reiterate what I said in the second half, we have commitments to be at a run-rate; that would satisfy not only the 2023 demand, but also gas to a capacity where we could satisfy 2024 as well.
+
+----------------------------------------
+
+[Amnon Shashua]
+Thank you, Mark. Next question please.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of Joshua Buchalter with Cowen and Company. Do proceed with your question.
+
+----------------------------------------
+
+[Joshua Buchalter]
+Hi, guys. Thanks for taking my questions and congrats on the result. I guess, I wanted to ask first about the premium European automaker that you announced for SuperVision. Any way you can give us sort of a, I don't know, a scope first is what you're currently doing with ZEEKR and Geely and in particular, how much does moving to it sounds like hands-off, eyes-off with that program, how much can that be a material needle mover, the potential for that program? Thank you.
+
+----------------------------------------
+
+[Amnon Shashua]
+With respect to eyes-off, we announced with the ZEEKR, we streamlined the hardware at the time when we announced it, it was with six EyeQ 5 chips, we are now streamlining it to one piece of hardware called CH663, so three EyeQ 6, that will be in the 2025 timeframe. We have additional OEM with an eyes-off and an additional one, this European, which is not yet named for 2026 timeframe, and there is a potential additional one, which I believe that could be announced in the second half of the year for an eyes off-system based on the three EyeQ 6.
+
+----------------------------------------
+
+[Joshua Buchalter]
+Hi, appreciate the color. And then so I wanted to ask about your R&D and OpEx spending. You called out, it was helpful color, giving the 70% number on forthcoming product, but you have a lot of irons on the fire. And I was wondering if you could rank order where you're spending priorities, which ones are the ones that you're particularly focused and excited about between, let's say, AMAS, Consumer AV, but even bringing your own internal lidar and radar to market, as well as just broader software adoption like mapping. Thank you.
+
+----------------------------------------
+
+[Amnon Shashua]
+Our expenses is very diverse and you mentioned a number of them. We have expense on active sensors, radar, lidar, there we are working on productization middle of a 2024 timeframe, both of the radars and the lidars. So this is ongoing. We have expense on mapping on the REM mapping, this is mostly a compute. The headcount is not much increasing, it's really the compute that is increasing based on more and more programs that require mapping. We have the expense in R&D as we go forward from SuperVision to Chauffeur to Drive, which is the Mobility of the Service, that's another source of expense. We have expense on SuperVision to support those six carmakers, this is very diverse, it's hardware, just like as a Tier 1, it is software, not algorithmic software, but more infrastructure software. There's a lot going on there to support six carmakers with SuperVision, all coming around the same timeframe, starting from 2024 till 2026. So this creates also a need for investments. So, our investments are very diverse. We think that now last year 2022, we made a jump on investments, this year another jump, and it will taper off from 2024 forward.
+
+----------------------------------------
+
+[Dan Galves]
+And I'd just say, you know, the last thing I'd say on that is it's all supporting the portfolio that we've talked about for the last few months with so much value and additional content per vehicle.
+
+----------------------------------------
+
+[Joshua Buchalter]
+Got it thank you.
+
+----------------------------------------
+
+[Dan Galves]
+Thanks, Josh.
+
+----------------------------------------
+
+[Operator]
+And our next question comes from the line of Chris McNally with Evercore ISI. Please proceed with your question. Chris McNally: Thanks so much team. Quick one on just the numbers and one on orders, so just on the timing for gross profit progression in 2023, it looks like you're going to be down something like 400 basis points. And I think you've explained that that's the STM increase on the chip side. Could you just help us do, does that pass-through happen as early as Q1, Q2, obviously doesn't matter for gross profit dollars, but just for the gross profit margin walk, could you just help us on the timing?
+
+----------------------------------------
+
+[Anat Heller]
+Yes so the timing is from January 1. We are testing already over this cost that we - and those increase at the beginning of the year, we're testing it over to our customers and without additional margin, but this is the reason for a slight decrease in our margin for EyeQ.
+
+----------------------------------------
+
+[Amnon Shashua]
+Yes and then the second thing that we mentioned in the prepared remarks was SuperVision becoming a bigger mix of our revenue as a kind of a mathematical effect on the percentage margin, gross profit per unit is much higher, but gross margin is lower, but that will be a bigger effect in the second half because the volume of SuperVision is significantly higher in the second half. Chris McNally: Great. And then on the - did the Chauffeur win, obviously congrats is it to the - scale of OEM that a lot of us think that - it’s a huge deal. But can you talk a little bit about just the timing of some of these - SuperVision walked into Chauffeur. I mean, if you're talking about launches in SuperVision in '25, what's the typical sort of conversation around that transitioning to Chauffeur is it '27, is it '28? And then any idea of - we talk, we starting with level three and then working up to level four, it obviously such an important sort of part of the - later half of the decade just curious when these programs may launch?
+
+----------------------------------------
+
+[Amnon Shashua]
+Yes, so - now with taxonomy, there is no difference between level three and level four, it's been eyes-off or eyes-on system that this is what I spoke about us at the CES. So on eyes-off system with OEMs except ZEEKER that starts in 2025, the rest of the OEMs are starting in 2026. So we have quite a nice traction, as I said three OEMs and the fourth one should be - should be closed second half of this year for eyes-off systems for 2026.
+
+----------------------------------------
+
+[Dan Galves]
+Yes, because SuperVision - really serves as the baseline - the timing gap between the SuperVision launch and a Chauffeur launch doesn't have to be a significant number of years. Chris McNally: That's great. And just to confirm, in the prepared remarks, you said that most of your SuperVision conversations you're having discussion of this walk to Chauffeur?
+
+----------------------------------------
+
+[Amnon Shashua]
+Yes, yes, it's not most all every, every customer that bought and into with SuperVision. We have a meaningful indeed discussion about expanding to Chauffeur. Chris McNally: Thanks so much.
+
+----------------------------------------
+
+[Dan Galves]
+Thanks, Chris.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of Antoine Chkaiban with New Street Research. Please proceed with your question.
+
+----------------------------------------
+
+[Antoine Chkaiban]
+Hi thank you for taking my question. Maybe a quick one first, I was wondering where you stand on deploying the key mapping base features where the OTA update to declare users in China on what features that will unlock exactly what additional features we should expect in the upcoming update as well?
+
+----------------------------------------
+
+[Amnon Shashua]
+So, in China with ZEEKR about three months ago we OTAed highway assist, recently we OTA to leading customer the full SuperVision limited to highways, this is including the REM maps as part of it. And we believe that in the next month or two months, we'll be able to do the OTA for the entire fleet with full REM - with full REM capability of SuperVision for highways. And then throughout the 2023, together with ZEEKR as our map coverage we'll increase - we will start unlocking additional road types like arterial and urban.
+
+----------------------------------------
+
+[Antoine Chkaiban]
+Okay, thank you. And maybe as a follow-up - rather follow-ups so, I think one important differentiating factor that Mobileye has is that you offer an end-to-end solution, while your main competitor today offers really like a reference platform. Can you help us better understand how in practice, the integration work differs when you kick-off a development project versus when your main competitor doesn't? I'm assuming that in the case of the other offering out there, there is still some significant development work that needs to get done by the OEMs themselves, but anything you can tell us on how things typically happen in practice would be very helpful?
+
+----------------------------------------
+
+[Amnon Shashua]
+Mobileye - and the SuperVision is not - is offering an end-to-end system. So the ZEEKR as an end-to-end system, all the other SuperVision launches that I talked about the six OEMs and nine brands is still an end-to-end system. Vertical handle of an end-to-end system, I think, is crucial, because you're talking about perception you're talking about integrating with a map. The map is built together with the teams that are building the perception. So if you try to separate the map from perception to two different suppliers, you get into a sea of issues, either it will be over-engineered or be under-engineered cost-wise, it could be crazy. The fact that now the same team is integrating both the sensing both the perception and the way the map is being built and served is crucial. Then you have driving policy. The driving policy is also integrated with the perception. But again, if you try to separate that into a supplier doing the driving policy and other supply doing the perception, you end up with an over-engineered system and in some places it will be under-engineered be too conservative and too slow. So I think in such a complex system an end-to-end where everything is done by one supplier has a lot of advantages and has also not only performance advantages, but also cost advantages. Everything under one house under one chip is - it offers incredible cost advantages. But we are not shy from cooperating in other ways. For example, there are OEMs that would like to take control of the driving policy, where Mobileye provides only the perception, we're open to that. This is why we offer the EyeQ Kit, which enables the OEM or a supplier to write code on to our chip on top of our software, whether it is fusion with other sensors, whether it's driving policy, we don't resist that. But having an end-to-end system can be much more efficient than we can get down to different suppliers.
+
+----------------------------------------
+
+[Antoine Chkaiban]
+Very helpful.
+
+----------------------------------------
+
+[Dan Galves]
+Thank you, Antoine. And so our next question please?
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of Vijay Rakesh with Mizuho. Please proceed with your question.
+
+----------------------------------------
+
+[Vijay Rakesh]
+Yes hi, guys, great quarter and guide here. Just a quick question on – SuperVision just to go back to that in terms of the six OEMs outside Geely and ZEEKR, can you give us some idea of, as they ramp in the second half. And you talked about significantly higher SuperVision volume there. What kind of volumes are you looking at the OEMs outside of the two Geely and ZEEKR for the other OEMs?
+
+----------------------------------------
+
+[Anat Heller]
+Yes, I mean.
+
+----------------------------------------
+
+[Amnon Shashua]
+Yes, but do we say the number at the [bottom] no we said. We did not reveal the actual - volume, but I think. What did we revealed there.
+
+----------------------------------------
+
+[Anat Heller]
+Yes.
+
+----------------------------------------
+
+[Amnon Shashua]
+We said that - that we said that we're more than double volume.
+
+----------------------------------------
+
+[Anat Heller]
+For the half only.
+
+----------------------------------------
+
+[Amnon Shashua]
+For the overall volume.
+
+----------------------------------------
+
+[Anat Heller]
+The first half will be much weaker than the second half.
+
+----------------------------------------
+
+[Amnon Shashua]
+Yes, we're not - we're not revealing specific for quarterly. But - we talked about revenue being about 40%, 41% in the first half versus the second half. That's a combination of EyeQ and SuperVision, but yes the second-half ramp up of SuperVision is significant. Because of the new capacity that's coming online.
+
+----------------------------------------
+
+[Dan Galves]
+And overall 2022 - SuperVision will be more than double of 2022, so more than 100% year-on year growth.
+
+----------------------------------------
+
+[Vijay Rakesh]
+Got it. And then as you have these OEMs accelerate into '24, we should probably expect and you talked about kind of building capacity for that we should expect that safe to kind of grow and then pretty nicely in '24 as well, right?
+
+----------------------------------------
+
+[Amnon Shashua]
+Yes, so 2024 there will be additional OEMs it's not only ZEEKR, ZEEKR it's not - currently its ZEEKR 001. That's one brand, there's another brand of. ZEEKR coming to launch throughout end of 2023, beginning of 2024 and then there are additional Geely OEMs that are kicking-in in 2024 and then 2025. We're talking about OEMs outside of the Geely outside of the Geely Group.
+
+----------------------------------------
+
+[Vijay Rakesh]
+Got it. And just quickly on the - I know in '23 you have on the core EyeQ side you have Toyota ramping. Can you talk to what drove the win, how you were able to kind of displace incumbent, what really drove that win that will then help all of us? Thanks.
+
+----------------------------------------
+
+[Amnon Shashua]
+Win with which Toyota.
+
+----------------------------------------
+
+[Vijay Rakesh]
+Toyota.
+
+----------------------------------------
+
+[Amnon Shashua]
+With Toyota that was a design win of - two years ago I don't think we displaced anyone it was a bid and we won the bid. And the program is ongoing it hasn't launched yet.
+
+----------------------------------------
+
+[Vijay Rakesh]
+Got it, thank you.
+
+----------------------------------------
+
+[Dan Galves]
+Thank you, Vijay.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of Adam Jonas with Morgan Stanley. Please proceed with your question.
+
+----------------------------------------
+
+[Adam Jonas]
+Hi, everybody. So, was wondering if you could give a little bit of guide on CapEx, where is it going even directionally in '23? And I'm curious if operating cash flow can keep pace with growth in operating profit or does that kind of lag as well, given some of the expenses?
+
+----------------------------------------
+
+[Anat Heller]
+Yes, so we expect CapEx to be similar to the investment in 2022. Our new campus is planned to be completed during the second quarter and additional investments for completion is about $60 million. The remaining CapEx investments relates to storage, datacenters and computer equipment and such.
+
+----------------------------------------
+
+[Adam Jonas]
+Thanks, Anat. And just a follow-up, could you help quantify the shifted engineering expenses that shifted from 4Q into 2023, either in margin or dollar terms? And the same, I guess if you could, if it's possible to quantify the pull forward of volume ahead of the price increase, but mainly the engineering expense is something I would hope you could just help quantify for bridging purposes? Thanks, Anat.
+
+----------------------------------------
+
+[Anat Heller]
+Yes so it's about $14 million chip that was made.
+
+----------------------------------------
+
+[Adam Jonas]
+One four, 14 to be clear.
+
+----------------------------------------
+
+[Anat Heller]
+One four, 14 yes to be clear from this year to next year it's mostly about the NRE expenses. But it's not a very significant number out of the total OpEx mix in 2023.
+
+----------------------------------------
+
+[Adam Jonas]
+Thank you. [Foreign Language].
+
+----------------------------------------
+
+[Dan Galves]
+Thanks, Adam.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of Samik Chatterjee with JPMorgan. Please proceed with your question.
+
+----------------------------------------
+
+[Samik Chatterjee]
+Yes hi. Thanks for taking my questions. I guess, for the first one, I was just wondering if you can talk about what you're seeing on the enhanced ADAS solutions, particularly in terms of being able to upsell customers when it comes to sort of basic ADAS and nearing REM. On that, how much of, you talked about the ASP increase expecting for 2023, but how much of that is going to be driven by being able to sort of sell enhanced ADAS solution or it the basic ADAS and how are you seeing OEMs adopted at this point? Is it really more of a high-end sort of adoption or they looked a little bit more down market, and I have a quick follow-up. Thank you.
+
+----------------------------------------
+
+[Amnon Shashua]
+Beyond Volkswagen that launched a year ago with a 12 versus 2.5, we have now two additional OEMs with big programs with cloud enhanced ADAS, and it's ramping-up. I believe at the end of the day, every carmaker with a front-facing camera would include also as an option maybe higher trim option and enhanced ADAS, because it doesn't add any hardware to the mix, it's just a software update and it makes a lot of sense. But by increasing significantly increasing the ADAS capability by having the data from the cloud, about where the landmarks are, the drivable path location of the traffic lights, association of traffic light, drivable path, all of this creates new opportunities for enhancing driving assist at quite a reasonable cost of few tens of dollars for car per year, something like that.
+
+----------------------------------------
+
+[Samik Chatterjee]
+Okay and for the follow-up. We get a lot of questions about sort of how to think about performance in the recession and if the backdrop was to get worse. I know you talked about sort of tapering some of the OEM demand that you're seeing in terms of volumes. But how are you sort of thinking about the likelihood of pushouts, particularly a program, the plan towards the end of the year, pushing out timelines in terms of launches or adoption of certain programs. And also how would you sort of flex your OpEx in this scenario that macro does being a bit worse? Thank you.
+
+----------------------------------------
+
+[Dan Galves]
+Yes so, I mean - this is Dan. Obviously, we're susceptible to swings in global production a bit by, as you've seen in the past years we're growing so much faster than overall production, that is not as big of an impact to us as probably to others. We acknowledge kind of the risks around production and that's why we set our forecast to basically flat to 1% global production growth, even though - and set our volume forecast below the orders and commitments we've gotten from our customers. We're definitely not hearing about any kind of like push-out of programs or anything like that and also we have the driver of adoption growth that wouldn't impact us too much as well, but not hearing, just to be clear, not hearing anything about that. So overall like, we've done well in all kinds of environments over the last 10 years. And yes, that's so that's - and in terms of flexing operating expenses, I don't think we would. I think that our business is built for the long-term to drive content per vehicle growth to drive new solutions for the next 10 years plus. So, I don't think we would pull-back on operating expenses.
+
+----------------------------------------
+
+[Samik Chatterjee]
+Got it thank you. Thank you very much.
+
+----------------------------------------
+
+[Dan Galves]
+Thanks, Samik.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of Luke Junk with Baird. Please proceed with your questions.
+
+----------------------------------------
+
+[Luke Junk]
+Good morning. Thanks for taking the questions. First, wanted to ask so we've talked about SuperVision quite a bit, cloud-enhanced ADAS as well, I'm wondering about EyeQ Kit if we could discuss the evolution of those conversations with customers. How that's developed over the past six-plus months, let's say. And could it or has it been intersecting with SuperVision at all with these customers?
+
+----------------------------------------
+
+[Amnon Shashua]
+Yes, indeed. All the advanced system Chauffeur and SuperVision, EyeQ Kit comes as a critical component, especially when you talk about the Chauffeur, some of the SuperVision programs include also EyeQ Kit some do not. But EyeQ Kit is becoming a major component in our discussions of advanced system. So advanced system is something beyond the SuperVision and beyond.
+
+----------------------------------------
+
+[Luke Junk]
+Thank you for that. And for my follow-up, I just wanted to ask a question on near-term expectations. So in light of the component issue that you said with SuperVision, which sounds like it's, just timing and the timing of expenses, are there any additional guardrails we should be keeping in mind when it comes to near-term especially first quarter expectations? Thank you.
+
+----------------------------------------
+
+[Dan Galves]
+Can you repeat the question, Luke? Sorry about that.
+
+----------------------------------------
+
+[Luke Junk]
+Yes, sorry about that. So the question is in terms of the first quarter, on the financial side of things, so clearly want to be looking at timing around SuperVision and component availability expense timing as well around R&D. Just wondering if there's, any additional guardrails or things that would be specific to the first quarter we should be keeping in mind beyond just the revenue waiting first half versus second half, let's say? Thank you.
+
+----------------------------------------
+
+[Dan Galves]
+Yes I mean, I think we covered that. We think Q1 revenue will be below Q4. We're not going to get more specific than that, and kind of talked about the reasons I mean, every year we have more revenue in the back half versus the first-half we do think it's going to be a little bit more pronounced this year, because of the constraints on SuperVision supply in the first-half as well as. We do think that there was some additional buying of EyeQ before the price increase, which I think is natural, we don't think it was major, but that's our read of why Q1 is a little bit below Q4, I hopefully that gives you enough information. Thanks, Luke.
+
+----------------------------------------
+
+[Operator]
+And our next question comes from the line of Rajvi Gill with Needham & Company. Please proceed with your question.
+
+----------------------------------------
+
+[Rajvindra Gill]
+Yes, thank you and congratulations on great results. A question on the ASPs you mentioned that third of your revenue growth last year came from higher ASP growth, and this appears to be a very strong kind of investment thesis of your ASPs kind of move higher. How do we think about the balance between kind of unit growth versus ASP growth as you kind of ramp-up more of the SuperVision products?
+
+----------------------------------------
+
+[Amnon Shashua]
+I mean, I think - you want to take that?
+
+----------------------------------------
+
+[Anat Heller]
+So and that - there is a big difference between ASP of EyeQ and SuperVision therefore when you're going with the volume of SuperVision, you don't need to grow a lot in order to produce these - or generate this high revenue. So there's a big difference there and we think that as we go further, with a higher SuperVision in the mix, you will see this ASP continue to grow.
+
+----------------------------------------
+
+[Dan Galves]
+Exactly I mean, I think we have a lot of visibility on content per vehicle growth the design-wins that we achieved in 2022 came in at $105 per unit. On a blended basis, right, that's a mix of base EyeQ, cloud-enhanced ADAS, SuperVision. SuperVision was definitely the biggest contributor to the year-over-year growth in ASP that we saw in Q4. Even though it was 0.5% of the volume and like we said in the prepared remarks. We see a trajectory to the low 60s in the back half of 2023, still with really one customer, plus an additional Geely brand in the back half. So a very powerful driver and the fact that Chauffeur is becoming a bigger part of the discussions with OEMs, brings even more potential upside in the future. It takes time to play out like everything in this business, but we're feeling really good about the content per vehicle trajectory.
+
+----------------------------------------
+
+[Rajvindra Gill]
+Appreciate that. And for my follow-up, a lot of the questions we receive from investors is, trying to analyze the evolving competitive landscape with very large semiconductor suppliers, as well as some niche competitors that are developing certain types of computer vision application? So I'm wondering as you are increasing the content per vehicle as you're adding and kind of upgrading and upselling your customers to higher levels of autonomy, how do you currently see the competition and how do you foresee it evolving as OEMs going to adopt higher levels of autonomy? Thank you.
+
+----------------------------------------
+
+[Amnon Shashua]
+I think when you go to those, high level of complexity of systems, the semiconductor is really a small part of the mix. You have so much on top of the semiconductor. You have the perception software, the driving policy software, the control of the car software, the mapping, the integration of all of them together it is way, way beyond a semiconductor business even when you talk about the basic ADAS, which is a front-facing camera with a chip behind it. The optimization and the economy of scales over the last decade of this particular product, makes it very, very unlikely to a newcomer to gain market share. It's highly optimized the validation as it's very, very expensive, requires hundreds of petabytes of data to properly validate. And if you don't have any disrupting new idea there, being able to take market share in that particular highly optimized business is very, very unlikely and less incumbent for some reason stops to deliver and I don't see us stopping to deliver. So really the game in terms of market share is on the complex systems, SuperVision and beyond. I think there Mobileye is clearly at a very, very leading position a SuperVision type of a product, I don't see anything outside of the Tesla FSD that even comes close to it. And we are having a very strong traction for it, more and more carmakers more brands. Chauffeur is another step-up. So this is where the competitive game is going to be not on the low end ADAS. And there it's way beyond a semiconductor business.
+
+----------------------------------------
+
+[Dan Galves]
+Thank you, Rajvi.
+
+----------------------------------------
+
+[Rajvindra Gill]
+Appreciate that. Thank you.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from the line of John Murphy with Bank of America. Please proceed with your question.
+
+----------------------------------------
+
+[John Murphy]
+Hi, guys just two quick ones. First, if you could just discuss exactly what on with the January price hike, so we can understand why folks may have pre-bought in front of that, just to understand how big that is? And then the second one, Amnon, as you're making this progress with SuperVision as far as book business and discussions, are the customers just kind of throwing up their hands and saying, listen, we just can't do this ourselves or these other partners. So we're just kind of handing the keys and becoming exclusive with you or are they sort of parallel processing other systems and what - how is that developing?
+
+----------------------------------------
+
+[Amnon Shashua]
+I don't think the story is so dramatic as to handling the key, all right? OEMs do what makes the most sense. They want to deliver a product, they want to deliver a competitive product, they need to compete with other OEMs, they need to provide value to the customers and they see what Mobileye is doing. I think the launch of the ZEEKR SuperVision created a kind of a significant moment. Because it's one thing to show a development system and other thing is to show production system doing something very impressive. So it's not that OEMs decided to throw in the towel, it's simply a natural evolution of a competitive landscape. You need to be able to deliver brands with the best technology and use the suppliers for it. The EyeQ Kit allows the carmaker - I think, the EyeQ Kit was a very important moment here. It allows the carmakers not to completely tweak our system at the black-box, but to add to it their own software and to create further differentiation, but trying to replicate what Mobileye has been doing, personally I don't think it makes sense, really, because, I know the amount of investments that's being done. And this kind of investments cannot be done just through money. There is a time factor forward - a significant time factor forward. So I think that the ZEEKR launch created kind of a reality check in many of our OEM partners.
+
+----------------------------------------
+
+[Anat Heller]
+And about the EyeQ talk…
+
+----------------------------------------
+
+[Amnon Shashua]
+Yes in terms of the EyeQ costs, we're talking about a…
+
+----------------------------------------
+
+[Anat Heller]
+$1 to $2 of an increase.
+
+----------------------------------------
+
+[Amnon Shashua]
+$1 to $2.
+
+----------------------------------------
+
+[Anat Heller]
+And it's not a significant impact in terms of buying ahead now before this slight increase.
+
+----------------------------------------
+
+[John Murphy]
+Thank you very much.
+
+----------------------------------------
+
+[Dan Galves]
+Thanks, John. This has to be all right - this is going to be our last question, [Somali].
+
+----------------------------------------
+
+[Operator]
+No problem. Our last question comes from the line of Steven Fox with Fox Advisors. Please proceed with your question.
+
+----------------------------------------
+
+[Steven Fox]
+Hi, good morning and thanks for squeezing me in. Two questions if I could, first of all on at CES the conversation around your radar innovations were pretty interesting. I was wondering beyond just the technology roadmap. What else is going to drive your ability to start disrupting in that product space? I guess you're talking about going to market in 2024 to trying to win new business. And then secondly, as you it's sort of right-sized for the volumes needed under SuperVision by the end of this year with your manufacturing partner is that when we should start thinking about gross margins and SuperVision, improving or do we need more volumes beyond like end of calendar '23 to start seeing that improvement? Thank you.
+
+----------------------------------------
+
+[Amnon Shashua]
+Okay, I'll start with the second half of your question the gross margin in terms of the cost of production is not volume-dependent. We simply did another spin-off the - off the hardware. Was a highly - was better, optimize the component, so that would reduce our cost. Another part of the increasing our gross margin of SuperVision is higher bundled. Once the bundles, once software bundles will include beyond highway that - increase our gross margin, was it first half.
+
+----------------------------------------
+
+[Anat Heller]
+Radar.
+
+----------------------------------------
+
+[Amnon Shashua]
+The radar it's important to mention that our motivations for building those radars is not just to enter into a new market place was to create a very streamlined, eyes-off a system where you don't need a 360 degree awareness from ladders and because that is expensive. We want to limit the ladder, only for front-facing and the remaining 360 to be handled by imaging radars and those imaging radars that we're developing really cutting-edge in terms of. Now 48-by-48 channels, 100 DB of sensitivity and they can create an end-to-end autonomous driving experience as another layer of redundancy. And that would considerably reduced the cost - of and eyes-off a system. I'm talking about an eyes-off with the full capability, full ODD.
+
+----------------------------------------
+
+[Steven Fox]
+Great, that's very helpful. Thank you so much.
+
+----------------------------------------
+
+[Amnon Shashua]
+Thank you.
+
+----------------------------------------
+
+[Dan Galves]
+Thank you. Thanks, Steven. Thanks everyone for joining our first earnings call as a public company and we will see you next quarter. Thank you again.
+
+----------------------------------------
+
+[Amnon Shashua]
+Thank you.
+
+----------------------------------------
+
+[Anat Heller]
+Thank you.
+
+----------------------------------------
+
+[Operator]
+And this concludes today's conference and you may disconnect your lines at this time. Thank you for your participation.
+
+----------------------------------------
+

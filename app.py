@@ -34,6 +34,9 @@ from urllib.parse import urljoin
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 
+# 配置选项：是否保存transcript文件到磁盘
+SAVE_TRANSCRIPT_FILES = os.getenv("SAVE_TRANSCRIPT_FILES", "false").lower() == "true"
+
 # 第三方库
 from sec_edgar_api import EdgarClient
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
@@ -1830,13 +1833,16 @@ class EarningsService:
                 # 解析日期
                 parsed_date = self.parse_date_text(fiscal_info.get('date'))
 
-                # 保存文件
-                txt_filename = self._save_transcript_as_txt(
-                    transcript_data,
-                    fiscal_info,
-                    f"transcript_{ticker}_FY{fiscal_info.get('fiscal_year', year)}_Q{quarter_num}.txt"
-                )
-                html_filename = self._save_raw_html(response.text, ticker, fiscal_info, quarter_num)
+                # 保存文件 (可选)
+                txt_filename = None
+                html_filename = None
+                if SAVE_TRANSCRIPT_FILES:
+                    txt_filename = self._save_transcript_as_txt(
+                        transcript_data,
+                        fiscal_info,
+                        f"transcript_{ticker}_FY{fiscal_info.get('fiscal_year', year)}_Q{quarter_num}.txt"
+                    )
+                    html_filename = self._save_raw_html(response.text, ticker, fiscal_info, quarter_num)
                 
                 # 返回结构化数据
                 return {

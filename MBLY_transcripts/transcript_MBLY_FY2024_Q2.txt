@@ -1,0 +1,302 @@
+============================================================
+EARNINGS CALL TRANSCRIPT
+============================================================
+
+Company: MBLY
+Fiscal Year: 2024
+Quarter: 2
+Date: August 1, 2024
+Transcript Date: 2024-08-01 08:00:00
+
+============================================================
+
+[Operator]
+Greetings, and welcome to the Mobileye 2Q '24 Earnings Call. At this time, all participants are in a listen-only mode. A brief question-and-answer session will follow the formal presentation. [Operator Instructions] As a reminder, this conference is being recorded. It is now my pleasure to introduce your host, Dan Galves. Thank you, Mr. Galves, you may begin.
+
+----------------------------------------
+
+[Dan Galves]
+Thanks, Kat. Hello, everyone, and welcome to Mobileye's second quarter 2024 earnings conference call for the period ending June 29, 2024. Please note that today's discussion contains forward-looking statements based on the business environment as we currently see it. Such statements involve risks and uncertainties. Please refer to the accompanying press release, which includes additional information on the specific factors that could cause actual results to differ materially. Additionally, on this call, we will refer to both GAAP and non-GAAP figures. A reconciliation of GAAP to non-GAAP financial measures is provided in our posted earnings release. Joining us on the call today, as usual, are Professor Amnon Shashua, Mobileye's CEO and President; Moran Shemesh, Mobileye's CFO. Also joining today for the Q and A session is Nimrod Nehushtan, Mobileye's Executive VP of Business Development and Strategy. Thanks. And now I'll turn the call over to Amnon.
+
+----------------------------------------
+
+[Amnon Shashua]
+Hello, everyone, and thanks for joining the earnings call. Starting with the results, both Q2 and the first half were closely aligned with our outlook provided back in January. EyeQ volumes in Q2 more than doubled versus Q1. And based on various sources of information we have reviewed, we believe inventory levels are back to normal with potential [some] residual in China. SuperVision volumes were also aligned with our original outlook, with 70,000 units for the first half of the year. All in all, revenue for Q2 stands at $439 million, which is 84% growth over Q1 and 3% decrease year-over-year. Adjusted operating margin also recovered significantly to 18% compared to minus 27% in Q1. More details on the results of the quarter will be covered by Moran. As we look forward to the second half of the year, we face near-term volume challenges stemming from market dynamics almost exclusively related to China. This has led to a reduction of customers' outlook in both ADAS and SuperVision. On ADAS, we faced three unexpected factors. Number one, global production forecasts have weakened, which has disproportionately impacted our core customers due primarily to continued share losses in China. Number two, we have seen a decline in orders for the second half of 2024 from Chinese OEMs compared to what these customers were indicating as of our last update. Number three, the delay of a high-volume ADAS launch outside of China is also meaningful headwind, although smaller than the first two. Turning to SuperVision, despite higher conviction on a reinforced competitive position for Mobileye in China in the mid- and long-term, we're seeing short-term volume headwinds. Second half volumes are expected to be lower than our forecast back in January due primarily to increased U.S. and European tariffs on Chinese-produced vehicles. We also have reduced our expectations for volumes in China itself due to uncertainties around market dynamics and reduced forecasts from our customers. Overall, we see the current dynamics almost entirely isolated to China, where the market is undergoing a reshuffle process and is adapting to several macro developments. We believe our long-term position in China is [Technical Difficulty] among major Chinese OEMs with diverse product portfolios and aspirations for global expansion, as illustrated by our press releases announced today. We expect key positives with this new development, once completed, be as follows: acceleration of SuperVision enhancements and adaptation to the Chinese market through DXP, Zeekr to adopt an EyeQ6 based version of SuperVision for the next generation of Zeekr 001 and additional models domestically and globally, and paving a path for Robotaxi collaboration. Ultimately, Mobileye's long-term growth outlook hinges on our prospects to lead the path of next generation ADAS and solve autonomy while offering a spectrum of product variants appealing to the broadest audience of car makers possible. As a final topic, I'll highlight some important details of how the EyeQ6 platform represents a leap forward towards these goals and helps position us as the only company in the world that can support all four consumer vehicles categories and Robotaxis as well. As the global OEMs are emerging from a major replanning process, combustion engines versus EV, China versus non-China, buy versus build for autonomy, we are seeing increased clarity on future ADAS and AV segmentation around four distinct categories. Number one, emerging market ADAS as the future growth driver for the 25 million or so vehicles sold today that don't have any ADAS. These systems will require lower price for less functionality, yet with high performance, which is where we excel. Number two, developed market ADAS. Recent guidance on future regulations continue to push the envelope on performance, which is a significant positive for us. It's a key factor in the success of EyeQ6 Lite, which has already been nominated for 50 million units of future business, is involved in many current RFQs and is in -- and is progressing towards design wins across all major customers. Number three, mid-trim surround ADAS. This is a brand new growth driver that fits in between regular ADAS and SuperVision for mass market segments. The OEMs have two goals here. First, enable price competitive hands-off on highway function as the next standard. Second, to prepare for the increased safety requirements that will not be satisfied with the traditional front-facing camera alone. Number four is premium full-surround ADAS/AV, SuperVision and Chauffeur category, where OEMs continue to pursue aspirational technology to deliver hands-free driving all road types and maintain a path to eyes off where OEM see huge value for consumers. We view the emergence of category three as an extremely important as a driver of significant medium-term ASP growth within the mass market segments. And the RFQ volumes are very high. We are currently already responding to four RFQs representing over 19 million future units supported with a single EyeQ6 High with pricing that is approximately four times our current ASP and with similar gross margins to the Company average. To put this value into context, the life revenue value of these RFQs from just four OEMs is already about double the value of all the combined ADAS RFQs we're currently pursuing with more than 70 OEMs. On SuperVision and Chauffeur specifically, we have made substantial progress across many predevelopment engagements and we believe we are on track for major design wins by year-end 2024, with a strong pipeline of more to come in 2025. We currently have advanced product wins or are in advanced discussions with 14 OEMs, representing approximately 52% of industry production. Within that number, two of the OEMs are currently only pursuing surround ADAS category, I mentioned above, and two are pursuing both SuperVision and Chauffeur and surround ADAS. We're also seeing accelerated interest in our drive platform, which serves the mobility as a service market. The Volkswagen commercial vehicle program is progressing nicely. Zeekr is looking to develop with us in this area. And there is an additional major OEM from Japan, where we continue to progress through pre-award testing activities. We believe that we are in the inflection point of becoming the clear market leader in these initiatives, both technologically and commercially. And we want to use this opportunity to shed some more light in our recent progress, especially one of our most groundbreaking initiatives, Mobileye [Brain6]. Brain6 has been at the heart of our EyeQ6 product line since we began that development several years ago and it represents a significant leap forward in autonomous driving technology. This compound AI backbone is not just an incremental improvement, it's a transformative development designed to address the complexities and the demands of autonomy at scale. Let's dive into what makes Brain6 truly exceptional. First is performance. Brain6 is powered by sophisticated combination of state-of-the-art generative AI networks. These networks, each with a specialized focus, work in concert to tackle the inherent challenges of autonomous driving, such as the long tail [Technical Difficulty] and input bias generalization error trade-off. By leveraging this multifaceted approach, Brain6 ensures the level of performance and robustness that is unparalleled. During Q2, we began online testing of the EyeQ6 platform at scale as well as data-driven offline simulations. We now have a line of sight to a vision-only system, which we believe will be at least two orders of magnitude better than anything else available in the market today, deployed in all markets. Moreover, EyeQ6 products are designed for flywheel product improvement by continuously aggregating feedback from the fleet and improving the product. Cost efficiency. We understand that the path to widespread adoption of autonomous driving technology hinges on cost effectiveness. [Technical Difficulty] has been meticulously designed to operate efficiently with a cost effective inference computer. This synergy between Brain6 and our EyeQ6 platform not only drives down cost, but also maximizes value for our partners and customers. Brain6 enables our customers to offer eyes-off products at 50% of the MSRP, compared to Tesla FSD 12 and hands-off at 25% of the MSRP. Modularity. One of the most exciting aspects of Brain6 is its modular architecture. This design allows for the seamless creation of drive -- of derivative products, including separate perception layers and adaptation to various sensor configurations. Our modular approach is intended to ensure that Brain6 can be customized to meet the diverse needs and preferences of OEMs, offering them unparalleled flexibility and adaptability. Moreover, it opens up new business models in tangential areas such as infotainment and driver experience. More on that on our upcoming investor day later in the year. Finally, controllability. In the realm of autonomous driving, control and transparency are paramount. Brain6 architecture incorporates robust guardrails and checkpoints, allowing for precise oversight and control of the system. This design not only imposes clear do's and don'ts, but also provides transparency in decision-making processes, thereby enhancing trust and reliability in our solution. In our view, what sets Brain6 apart from the competition is its integration with mobilized unique assets, namely REM crowdsourced mapping and our extensive data lake. While EyeQ5 products, REM is used explicitly as a map, in EyeQ6, Brain6 leverages insights from our REM global database, which includes data from over 6 million vehicles amassing tens of millions of miles daily. This crowdsourced mapping not only teaches Brain6 how to interpret road conditions everywhere, but also provides invaluable driving behavior insights. Furthermore, Brain6 is backed by hundreds of petabytes of data collected through years of collaboration with OEMs around the world. This deep reservoir of real world data is intended to ensure that Brain6 is not only advanced in its current capabilities, but that it is also continuously evolving to meet these challenges and scenarios in autonomous driving with uniform performance everywhere on the planet. In summary, in the past six months, we managed to successfully advance Mobileye's position as the leading technology provider across four growth categories as evidenced by, one, being the only company with design wins across all four segment categories mentioned above; and secondly, significant increase in the amount of business engagement towards nomination. We view Brain6 and EyeQ6 system-on-chip as a technology linchpin that enables us to efficiently execute and deliver products across all four segments, providing ultimate versatility to our customers and synergies from delivering across all segments from the same technology backbone. As evident, we are on track to deliver production hardware in vehicle prototypes and SuperVision, Chauffeur and Drive in our production program with Volkswagen Group by the end of the year, in parallel, while at the same time leveraging the synergetic architecture of our EyeQ6 product family. We're excited about the potential of Brain6 and we'll provide more details and demonstrations at our Capital Markets Day planned for December this year. I now turn the call over to Moran.
+
+----------------------------------------
+
+[Moran Shemesh]
+Thank you, Amnon, and thanks for joining the call everyone. Before I begin, please be aware that all my comments on profitability will refer to non-GAAP measurement. The primary exclusion in Mobileye's non-GAAP numbers is amortization of intangible assets, which is mainly related to Intel's acquisition of Mobileye in 2017. We also exclude stock-based compensation. Starting with Q2 results. They were closely aligned with the Q2 outlook we provided back in January. EyeQ volumes more than doubled versus Q1 as we projected. Our Tier 1 partners digested most of the excess inventory in Q1 and that resulted in significantly higher volumes in Q2. As of the end of Q2, we believe inventory levels at our customers are almost fully back to normal, based on customer discussions and inventory reporting from larger Tier 1, our own analysis of supply and demand and the large increase of volume in Q2. SuperVision volumes worth 31,000 in Q2 as expected. As compared to Q1, gross margin recovered significantly based on three factors. Number one, higher single-chip EyeQ revenue as a percentage of the total as inventory normalized. Number two, normalization of regional mix within EyeQ of most of the excess inventory at our Tier 1 customers was in North America and Europe, where prices and margins tend to be higher than China. Number three, SuperVision gross margin rose to slightly above 40% due to conversion to the next-generation main controller, which is lower cost. Adjusted operating margin also recovered significantly to 18% versus minus 27% in Q1 due to gross profit conversion and higher revenue, partially offset by substantially higher operating expenses. On a year-over-year basis, operating margin remains well below Q2 2023 due to approximately $40 million higher operating expenses across a similar revenue base. Before moving to guidance, I'll make an overarching statement on operating expenses. It's important to note that our R&D expenses and sales and marketing as well are primarily related to technology development, promotion and program execution of our EyeQ6-based hardware platform and Brain6 software support advanced solutions like surround data SuperVision, Chauffeur, and Drive. All evident points to significant scaling of these products starting in mid-2026, with the EyeQ6 based [Technical Difficulty] program growing with many other customers beyond that. We must continue to execute now on the core technology platform in general and customer programs specifically. Therefore, our operating expenses will not flex based on changes to current revenue levels. However, after the accelerated pace of development over the last several years, we do expect the trajectory of OpEx growth to slow down, which will enable significant operating leverage as the advanced products begin to scale. In particular, I see the rise of the new surround data segment as important to operating leverage as it adds strong content per vehicle growth driver in addition to SuperVision and Chauffeur. Turning to updated guidance. At the midpoint, we are reducing the outlook for both full year 2024 revenue and adjusted operating income. The adjustments are almost exclusively volume-related for the reason that Amnon went through. Our EyeQ volume guidance is reduced to $28 million to $29 million from $31 million to $33 million previously. And SuperVision volumes are reduced to 110,000 to 130,000 as compared to 175,000 to 195,000 previously. In terms of proportion, the lower EyeQ volume, offset by some ASP improvements, accounts for approximately 70% of the lower revenue expectation with SuperVision accounting for the remainder. A bit more detail on our volume expectation. At the midpoint, EyeQ volumes are expected to total to about $17.5 million in the second half of 2024, with a little below 50% of that expected in Q3. SuperVision volumes are expected to total approximately 50,000 in the back half, with a little above 50% expected in Q3. The higher level in Q3 versus Q4 reflects uncertainties and conservatism related to market dynamics in China and with respect to tariffs. In terms of adjusted operating expenses, we've looked at everything we consider discretionary and reduced our full year forecast by about $20 million. We now expect year-over-year growth of approximately 23% as compared to our prior outlook of 25% growth. With respect to operating cash flow, the $70 million we generated in the first half was higher than adjusted net income. We expect this dynamic to continue in the second half. Lastly, in terms of tax rate, we assume a non-GAAP effective tax rate of between 17% and 19% for 2024 in comparison to our prior expectation of 15% to 17%. We have some tax items that do not adjust based on pretax profit levels. So, the tax rate for 2024 is being mathematically pushed up due to the reduced profit outlook. Thank you. And we will now take your questions.
+
+----------------------------------------
+
+[Operator]
+[Operator Instructions] At this time, we are limiting participants to one question and one follow-up question. One moment please while we poll for questions. Our first question comes from George Gianarikas from Canaccord Genuity. My apologies. It looks like it's Ananda Baruah from Loop Capital Markets.
+
+----------------------------------------
+
+[Ananda Baruah]
+Yes, I guess I can do one and a follow-up here. So just with regards to the China dynamics, could you provide me context the degree to which, I guess, like lower level Chinese competition you're seeing also? And is that having any sort of impact? And if it is, what's the thought process around that? And then I have a follow-up as well.
+
+----------------------------------------
+
+[Nimrod Nehushtan]
+Okay. Thank you. I think China automotive is a very volatile market. The dynamics are currently different from global markets at large. For one, the balance between cost and performance trade-off is skewed mainly due to lack of testing governance for clear and testable KPIs of base ADAS functions like AEB. This is opposite to the ongoing trend in the U.S. and Europe, where we see a considerable sustained expansion of ADAS safety requirements, such as the GSR mandate in Europe, FMVSS 127 in the U.S., new criteria for Euro NCAP ratings in 2026, 2028, all of which serve as tailwinds for increased content, multi-camera requirements, higher performance bar which is where Mobileye shines. We believe that our stable ground in China in the near term is primarily amongst major Chinese OEMs with global sales and with [CK Global Solution]. On top of that, I think that we see current volatility as short-lived. Eventually, we believe regulatory governance will follow the trends we see in the global markets. So our focus is to prepare the grounds for when the market will stabilize. This includes further localization of our technologies in China by establishing strong collaborations with local industry players like the PR we announced this morning with Zeekr. This would enable us to build long-lasting infrastructure in China that will not only promote our solutions for China, but will also support our global OEM customers that are selling cars with our solutions into China. In addition, we're also preparing entry-level EyeQ chip for emerging markets with just the right compute for the most basic ADAS requirements. So I think, all in all, this volatility is short-lived. And we're doubling down on investment of China because it is very important also for our other customers, Western customers selling into China. And we'll come up with a lower cost solutions down the road somewhere around beginning of 2026. And that will also cater just the right compute. Yes.
+
+----------------------------------------
+
+[Ananda Baruah]
+That's super helpful. And you actually touched on what my follow-up was going to be, just the context this morning that we should be aware of around the Zeekr collaboration that was announced. We've read the press release, but would just love to get your additional context on the structural importance of that announcement.
+
+----------------------------------------
+
+[Amnon Shashua]
+Next question please.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from George Gianarikas from Canaccord Genuity.
+
+----------------------------------------
+
+[George Gianarikas]
+So maybe if you could please just give us a little bit of a time line ramp for some of the RFQs that you discussed about the third emerging segment. When do you suspect that could start hitting the P&L and maybe we could see some win announcements?
+
+----------------------------------------
+
+[Nimrod Nehushtan]
+Thanks, George. So maybe just to recap this category. So what we have seen in the past couple of quarters is the development of a new category in the passenger vehicle segment. Traditionally, OEMs are looking for solutions for three different categories that they have. Entry is for low-cost solutions that kind of have regulation-certified and nonperformance. Premium is high-end functionality, which we -- what we see today is hands-off everywhere or eyes-off in highways. And recently, there is a push for a new generation for the mid-trim. This is the high volume but still affordable prices segment. Now there are two driving forces for this category development. Number one is the push from OEMs that want to simplify architecture, consolidate and improve their cost structure in the car, but still offer a new generation of comfort features in ADAS. The second driving force is the pool from regulation. So seeing the latest road map from NCAP and [NITA] really drives the industry to add more sensors and more sophisticated software to be at the top of the line in terms of safety ratings and all the global standards. Now these two driving forces really, in combination with latest technology that we've been able to demonstrate to automakers that are truly unique to Mobileye, really opened the door and in a very short amount of time, we've been able to generate RFQs from four carmakers only in the process of one or two quarters. These are a few targets end of '26 or 2027 SOPs. So the ramp up will most likely start at the second half of '26 and early 2027. As mentioned by Amnon earlier, the volumes of these RFQs are significant and combined with the tailwind in the ASP, the revenue potential is significantly higher than our entry ADAS today. Important to say that the OEMs are considering this as an expansion of the entry level as opposed to a kind of a down -- derivative of the SuperVision segment. So these are living side-by-side with SuperVision and Chauffeur and not instead of SuperVision and Chauffeur. And one of -- or at least two: of the RFQs that we have are with customers who are, in parallel, continuing to work with us on SuperVision as well. So we consider this to be an expansion of our entry level as opposed to cannibalizing potentially from SuperVision, which is a very, very important development for us.
+
+----------------------------------------
+
+[George Gianarikas]
+And maybe as a follow-up, you mentioned in the press release that you have significant wins to announce for SuperVision and Chauffeur in the second half of this year. I'm curious as to what the appetite is from particularly Western OEMs to adopt advanced autonomy solutions given what appear to be sort of subdued take rates from FSD -- from Tesla's FSD offering so far?
+
+----------------------------------------
+
+[Nimrod Nehushtan]
+Yes. So as we mentioned at the beginning of this call, we continue to make progress across all of our business development activities with OEMs. This includes OEMs from all markets practically. The driving forces for them are -- I think it's evident today that the next big differentiator will be intelligent driving. And you see this in China, where some of the -- or at least the most innovative Chinese OEMs are continuing to make progress and invest more in better and more advanced intelligent driving offerings and in Tesla as well. Now I think OEMs understand that two to three years from now, performance will continue to improve. Potentially, if they can get to the right price point, which is what Mobileye can offer, they can offer this function to consumers at a very attractive price point and very -- in a reliable and high level of performance, which will then have a high take rate as opposed to having maybe not optimal performance at a high price, which is mostly what you see today that can have a negative impact on take rates. So it's still -- even though today, you might have some data on Tesla take rates, there is a realization that two to three years from now, which is where OEMs would like to launch these systems, as performance continues to improve and as reliability of these systems continue to improve and prices can go lower, which is where Mobileye is unique, there will be a very, very good demand from consumers to these systems. Just to give you an evidence to this. One of our engagements with these OEMs is actually with one of the OEMs that did not [Technical Difficulty] business with us for the next generation, and we reached out to them and did some demonstrations. And during the course of these demonstrations, they really opened the new opportunity that was not planned for them for 2027 because they realize that there is a path for very affordable, high level of performance in two years and they have to compete in the United States. They have to compete in China. And they consider Mobileye is the only global solution that have the best price versus performance ratio.
+
+----------------------------------------
+
+[Amnon Shashua]
+I'll also add to what Nimrod said is that, in order to be an effective player, we need to have technology on the road, not just development and testing. And this is one of the big advantages of Mobileye. We are the only Western supplier that has this category of SuperVision in China. And we are gaining a lot and lot of experience. This experience will be translated into the global markets. So this experience is something that takes time. Now you cannot just sit in the lab and develop cool algorithms and expect that on day one, when you launch a system, everything will be perfect. And this is a great advantage of Mobileye's SuperVision that it's on the road. Today, we're gaining a lot and lot of experience.
+
+----------------------------------------
+
+[Nimrod Nehushtan]
+And I think just to add one last comment to this question. Just to support with evidence, just by seeing the number of engagements that we have today compared to a year ago, there is an obvious progression in the market towards these technologies and not just the quantity, but also who are the OEMs that we're engaged with. We are talking about the, let's say, global OEMs incumbents in the top 10 in vehicle production that have -- now this is not just niche OEM start-ups that have -- want to create a differentiating angle. So the pragmatist OEM incumbents are looking for these technologies and we see a growing number of those that are approaching us and investing a lot of resources into promoting the nomination for these systems.
+
+----------------------------------------
+
+[Dan Galves]
+Thank you, George. Next question, please.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from Antoine Chkaiban from New Street Research.
+
+----------------------------------------
+
+[Antoine Chkaiban]
+So yes, I believe you lowered your SuperVision 2024 shipments projections by 70,000 at the midpoint. So could you maybe provide some more color on how that splits between the various customers impacted by the tariffs and how this lower 2024 baseline will impact the ramp-up SuperVision systems in '25, '26, maybe by telling us what proportion of the systems that you expected to ship in those years are impacted by the tariffs? And I have a follow-up.
+
+----------------------------------------
+
+[Amnon Shashua]
+Look, our ability to make accurate forecast for SuperVision is being challenged by the volatility in China. Some of our platforms like Polestar 4 and Zeekr 001 are being exported to global markets, but the ramp up is taking longer than we initially forecasted, partly due to the recently imposed targets in U.S. and Europe. Additionally, we anticipate that down the road, our SuperVision solution on Zeekr models may not necessarily be standard. Although no indication of that is baked into the forecast from Zeekr, we still believe that taking this conservative approach would be prudent. So we believe that this volatility is short-lived, but would likely sustain into 2025 and until we see more SuperVision models launched in global markets. So this volatility is really inherent in two things. One is that we have a small number of models with SuperVision. So everything is volatile. Second, China automotive is very, very volatile. It's very difficult to make a forecast -- accurate forecast. This is why we took the conservative approach. So we took what would be the worst case for 2024, such that we don't need to again change guidance throughout this year. So our guidance does not reflect our optimistic view. It reflects our worst case view of SuperVision because of this heightened volatility that most of it is not in our control.
+
+----------------------------------------
+
+[Antoine Chkaiban]
+So maybe on the 14 OEMs that you're working with, I believe the number was the same last quarter, can you maybe update on the likelihood of conversion with those 14 OEMs? How has that changed over the last 90 days?
+
+----------------------------------------
+
+[Nimrod Nehushtan]
+Yes. So I think what we have -- in all of these programs, we continue to make progress and we move in the right direction on the access towards nomination. As we mentioned in previous calls, the process of nominating this system is relatively complicated and involves many different activities starting from technically evaluating the system, building prototypes, doing global expedition and performance evaluations, reviewing the architecture changes that are needed by the OEM, et cetera. In addition to this, there is obviously the commercial part that needs to be negotiated and discussed and agreed to get to the right price point, the investments needed in order to build this program. And especially when we talk about incumbent [Technical Difficulty] that have dozens or even hundreds of different vehicle models, it also incorporated into their plans to launch cars in the future, which inserts another challenge or at least another question that they need to answer, I should say. So the fact that it takes a few months or a year, but in some cases, more than years to converge these activities, I think it's natural given the magnitude of decision. At the same time, having made these decisions, it's very likely that the selected solutions will continue to be the backbone for this OEM for many years to come. So we believe that we are now in the process of acquiring these OEM partners for our next-generation platforms. But once we do this in the next few months, as we have announced, we believe it will give us stability for years to come afterwards in terms of locking ourselves as the technology provider for a very good portions of the -- out of the top 10 OEMs in the world today. So in terms of likelihood and to quantify this into percentages, I think it's a little bit complicated. But what we have seen in the past quarter are only positive developments towards nomination.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from Joe Spak from UBS.
+
+----------------------------------------
+
+[Unidentified Analyst]
+Hi, this is [Gabriel] on for Joe. So I think you just mentioned that the SuperVision [Lite] RFQs are incremental to the base business, so customers are not choosing this over SuperVision. But again, the 14 OEM number hasn't changed from the prior quarter and now two of those 14 are only saying SuperVision Lite. So did those two OEMs drop off and were replaced by the two new SuperVision Lite wins? Or was the last 14 OEMs inclusive of these two as well?
+
+----------------------------------------
+
+[Nimrod Nehushtan]
+So the last 14 was inclusive of these two. And it's more of a -- we're now having defined this category more explicitly and more precisely, we wanted to also align the number that we're disclosing to be consistent with this definition.
+
+----------------------------------------
+
+[Amnon Shashua]
+And we don't call it SuperVision Lite.
+
+----------------------------------------
+
+[Nimrod Nehushtan]
+Yes.
+
+----------------------------------------
+
+[Unidentified Analyst]
+Okay. And just a follow-up on the Zeekr question. What does this accelerated integration of your technology exactly entail? What's the time frame to getting on these vehicles? And I know you mentioned earlier your confidence to win further business with domestic Chinese OEMs. But are you still seeing a large focus on in-house developments within that region?
+
+----------------------------------------
+
+[Amnon Shashua]
+First as a background, launching SuperVision with Zeekr in China was really a critical [Technical Difficulty] for us because it was a proof point for global OEMs to see our capacity, our capability and the key factor in winning, for example, the Volkswagen Group deal and which led to many other current development engagement. So we are continuing to double down on investments in China because it's super, super important to have a global solution, right? It's not just the Chinese market. It's the fact that we have a global solution. Now we are the only Western supplier of a system in this category and this says a lot about the challenges in operating in China. So we believe that if we bolster our relationship with Zeekr and the Geely Group as a whole, it will benefit both parties. It will allow REM to be more standardized. It will allow helping localizing our solution because complying with the Chinese data regulation is very, very challenging. So if we can get help in that area in terms of localizing the solution, I think it will benefit both parties. There are also some commercial details, but they are not material to Mobileye's operations. And of course, we announced that we're targeting together also activity on Robotaxi, kind of the extension of what we are doing with the Volkswagen ID Buzz. We'll also be going to collaborate with Zeekr on this kind of technology. It will also help us to expand considerably the amount of vehicles sending us data. So it's all positive, both in terms of upgrading the SuperVision solution we have in localizing it into China and bolstering our global solution. I'll just give you an anecdote. When we look at one of the metrics, meantime between critical events, when we test -- and this we did, by the way, with one of our partner OEMs. When we test our SuperVision vehicle in the U.S., where we have very, very good coverage of our REM maps, the meantime between critical events is about 50 hours, right? In China, it's much less than that. So -- and this is because we haven't yet finished the localization, the REM coverage is not as good as we have outside of China. So if we can localize our solution more effectively, we can get a system that is really unparalleled. And this is with the old technology of EyeQ5 technology. Imagine what we will do when we'll start launching EyeQ6 technology.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from Aaron Rakers from Wells Fargo.
+
+----------------------------------------
+
+[Unidentified Analyst]
+This is [Jake] for Aaron. I was wondering if you could talk about the progress you're making on the SuperVision domain controller and just maybe the trajectory of the gross margin uplift you're expecting to see from that?
+
+----------------------------------------
+
+[Amnon Shashua]
+So we have considerably reduced cost of our main controller with the EyeQ5 chip. Kind of the goal -- we always said that the goal is to reach a 50% gross margin on the entire solution. And we are close to it. We're about 44% now, something like that. And there is more to optimize. The EyeQ6 system that we're building now for the Volkswagen Group and for all the engagements that we are working on for nomination will not be more expensive. So it's really highly optimized. And we'll even have a better gross margin. It's more optimized in terms of gross margin. So I think that the 50% -- 50%, 55% gross margin on Tier 1 position is really achievable.
+
+----------------------------------------
+
+[Unidentified Analyst]
+Great. And then maybe just going back to the traditional ADAS business. Have you seen any change, any significant change in adoption rates on lower level ADAS over the last few quarters, especially at Chinese OEMs?
+
+----------------------------------------
+
+[Amnon Shashua]
+Yes, indeed. And this is what we reported. The second half, we see a decline in terms of shipments of the second half of the year. Now it could come from multiple sources. One of them is some residuals of inventory that -- we don't have 100% visibility to what is going on in inventory. Some of it is -- could be a market share loss where we get desourced and with a local solution instead of ours. As I mentioned in the opening, the cost performance optimization is quite skewed in China because of lack of testing governance, which is really opposite of what's going on in the West, right? In the West, the testing governance is increasing, the envelope is increasing. Today's system that have five-star rating in 2026, 2027, will not have five-star ratings. You need to add either more sensors, more compute. The bar is rising. In China, there is still no governance of testing. I believe it's temporary. I believe that they will align with the global markets in terms of testing. And by doing that, the cost optimization trade-off would be balanced. And therefore, we'll regain market share. The bolstering of localization we're doing with Zeekr, I think, will also help our ADAS. Once REM is completely with full coverage, it helps also our cloud-enhanced ADAS. A few months ago, we announced that with Chery in China, we have a program -- we're launching cloud-enhanced ADAS. So this could increase and expand our position in ADAS in China in the midterm. And we're also coming up with lower-cost chips, which are dedicated to emerging markets. So they have much less compute, but good enough to do the really basic, basic ADAS that is needed in those emerging markets. So I believe that the volatility we are seeing now, first of all it is real, but it is short-lived.
+
+----------------------------------------
+
+[Nimrod Nehushtan]
+I just want to add to this that globally in terms of take rates of ADAS, what we have seen, which is a very positive development, there is a pull from the market from consumers in markets that today have very low, almost zero ADAS adoption rates. Areas like South Africa and India and some countries in Asia are really picking up in terms of increasing ADAS take rates. And these are today, let's say, 25 million to 30 million cars per year, which is 1/3 of vehicle production that today have no ADAS at all. And we see this number will continue to drop and ADAS adoption rates will continue to increase. And we are very well positioned to benefit from this increase and to have higher adoption rates of ADAS. And in developed countries like Europe and the United States, we don't see -- again, the take rates are almost 100% today because the regulation and the trend in regulation is only to add more content and to increase the requirements.
+
+----------------------------------------
+
+[Amnon Shashua]
+And there is another component that I missed in terms of the China ADAS. Our legacy customers, Western customers, some of them are losing share in China. This also affects us. So this also affects the volume of shipment of chips into China because of loss of market share of our Western OEMs. You wanted to say something more?
+
+----------------------------------------
+
+[Moran Shemesh]
+Yes, for the non-Chinese OEM, just one I'm going to mention, the gap we are seeing from initial indications from the beginning of the year to the new order is very much consistent with the industry trend. It was pretty focused on specific OEMs. For the rest of the non-Chinese OEMs, more than half of them didn't have any reductions. And that's also aligned with industry trend. So it's important to mention also for our non-Chinese OEMs. It was very much focused on where we saw the market trend going down for them [indiscernible] in China, for example.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from Adam Jonas from Morgan Stanley.
+
+----------------------------------------
+
+[Adam Jonas]
+So Mobileye's CapEx investments are kind of running at around $100 million a year right now. Some of your competitors in autonomy are investing many billions a year, particularly on compute. And I'm wondering, do the developments in AI and machine learning recently change how much capital Mobileye feels it needs to allocate towards compute? For example, developments like Brain6, does that change the quantum of CapEx investment needs at Mobileye in a material way that you'd like to communicate today?
+
+----------------------------------------
+
+[Amnon Shashua]
+Well, yes, indeed. It's not in the billions of dollars. I don't think we need those billions of dollars of investments. But definitely -- we're spending close to $100 million in cloud compute, just to be kind of transparent. But recently, in the past six months, we have been investing in much more on-prem, the H100 and A100s nodes. We have been investing quite a lot there. And we're investing for our needs, not just -- now say that we are buying tens of thousands of H100 and who knows what's with them. We're not going to be a cloud provider. So we are investing in what we need in terms of the generative AI models that at the end of the day, they fit into a limited capacity chip no matter how strong your chip is in a car, it's still limited capacity. So this drives the size of the networks. And as I mentioned before, if you look at our old technology, the EyeQ5 technology, which does not yet have generative AI there, if you look at the meantime between critical events that we have testing in the U.S., it's about 5x better than the latest version 12.5 that I see in the small amount of data that has been released so far. So it's not that we are trailing behind and we need to catch up. And we have -- with the EyeQ6, with the Brain6, where we have lots of generative AI components, all our testing, online and offline testing so far, show that we'll get two orders of magnitude improvement. So we're talking about just the camera built system, more than 1,000 hours of meantime between critical events. So yes, we have increased our investments, but I don't see the need to invest billions of dollars.
+
+----------------------------------------
+
+[Adam Jonas]
+Two orders of magnitude, that's incredible. Mobileye is at the cutting edge -- a bleeding edge of computer vision and AI clearly. And you've been doing this for decades. As you know, Amnon, there are obvious dual-use military applications for these technologies and you're also aware that autonomous weapon systems is increasingly gaining a lot of momentum due to the evolution of the types of technologies that you and your company are driving forward. It does seem that targeting objects may be easier than avoiding objects, one could argue. The U.S. has banned NVIDIA and others from selling leading-edge chips into China. Do you not see a risk of similar intervention to the types of technology that you provided China, I mean, really advanced 100x improvements on AI and physical applications? And considering that you're a controlled-U.S. entity, is that a stupid question, Amnon?
+
+----------------------------------------
+
+[Amnon Shashua]
+No, it's not a stupid question, not at all. I don't think that anything stupid could come out of you. But...
+
+----------------------------------------
+
+[Adam Jonas]
+I think I would disagree actually.
+
+----------------------------------------
+
+[Amnon Shashua]
+But let's put things in context. NVIDIA [Orin] chip is about 250 TOPS, tera operations per second. And EyeQ6 is 50, 60, right? So we're not talking about the same league in terms of high-performance computing. So I don't think that there is any need to kind of ban a chip of this category in terms of tera operations per second. I think what we excel is embedding software and hardware. We can provide -- we can solve autonomy without a brute force in terms of tera operations per second. So I believe that this really puts us not in the short list of chips that should be banned by the U.S. because it's not really high-performance computing when you measure the metrics of what high-performance computing is.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from Steven Fox from Fox Advisors.
+
+----------------------------------------
+
+[Steven Fox]
+I think I had a little bit more of a here and now type of thing, which is the multinationals that are losing share in China, it seems like it's becoming a bigger and bigger risk factor for the business and giving your relative wins. Can you sort of isolate in on that a little bit more? How much should we worry about it, not just for how you adjust the numbers this year, but beyond this year? Like if that becomes a bigger trend, how do you offset that?
+
+----------------------------------------
+
+[Nimrod Nehushtan]
+Yes. So it is a trend that we're closely monitoring as with other indicators that we keep track of. It's important to say that in China, our presence is comprised by our footprint in the joint ventures that Western have with the Chinese entities, by our presence in Western OEMs that sell directly in China, and by our presence in the Chinese OEMs. Our presence in the Chinese OEMs, although we have disclosed today some headwinds, still remains stable amongst some of the OEMs, especially the bigger ones that have global needs that look for uniform solution. And we still have strong relationships with some of the local Chinese OEMs. When it comes to the, let's say, the competitiveness of the Westerns, you can assume that they also are aware of this challenge and they work very hard to improve the competitiveness. And we don't currently see a trend that can further exacerbate compared to what it is today. But what we are doing is to improve our presence in China as I disclosed today in the press release, to make sure that our products are as competitive as possible in China so that we can be the best solution for any -- all entities in China, Chinese OEMs and Western OEMs, so that we can have a good business in China, regardless if it's Western or Chinese.
+
+----------------------------------------
+
+[Steven Fox]
+That's helpful. Any chance you could give us a sense for -- on the new wins that you won? What percentage of units is tied to Western OEM built in China, just so we can maybe get an idea on that risk going forward?
+
+----------------------------------------
+
+[Nimrod Nehushtan]
+Yes. So we don't have these numbers exactly from our customers. We don't really know because the OEMS don't really know themselves how many cars they're going to sell in China and globally as it can vary. But generally, you know our customer base and you can -- the numbers are public and you can do the math in terms of their market share and our derivative market share as a consequence.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from [Lu Misiosio] from Daiwa.
+
+----------------------------------------
+
+[Unidentified Analyst]
+I guess I have one financial question and maybe one strategic visionary one. Can you sort of help paint us a picture for what 2025 is going to look like? You've already commented about 2026 about the second half ramp. But then there is a lot of questions about continued push-outs. So just maybe not guidance, but give us some thought about how things will improve for you all in 2025, 2026 and maybe even into 2027 as you comment about that? And then I have one follow-up.
+
+----------------------------------------
+
+[Amnon Shashua]
+Okay. So regarding 2025, we cannot say much now because our planning process is only beginning. But we can say that we believe that the China volatility would persist during next year. We believe that inventory levels will be normalized. So all the shipments that we lost this year, we will see them next year. So inventory will be normalized. And we are closely monitoring the ramp up of SuperVision platforms and we'll have more to say closer to the end of the year for 2025. 2026 and 2027 is a completely different picture because then, Western OEMs with SuperVision are coming out and also Chinese OEMs with the global experts with SuperVision are also coming out. So I think 2026 would be completely different in terms of reducing volatility of SuperVision forecast, much higher volumes of SuperVision compared to 2025. And 2027, even further ramp up of programs that started in 2026 and additional programs that will come in 2027, assuming that we'll get the nominations, but we are very hopeful that we'll get those nominations in the coming months. So it's really the next six months and 2025, which is quite volatile and the volatility is exclusively focused in China.
+
+----------------------------------------
+
+[Unidentified Analyst]
+Okay. And then my follow-up -- and that's very helpful. When you look at the adjusted operating margin cut on a full year basis that you have in your press release, can you just help us understand, where is that being hit the most? Is it gross margin is really being impacted the most and OpEx is sort of flat on a going basis, or is OpEx going up too? Just trying to understand as we model this out how the new numbers are going to impact how we model it.
+
+----------------------------------------
+
+[Moran Shemesh]
+Yes. So I think that for Q2, I mentioned that having a similar revenue base year-on-year with much larger operating expenses, that's the bigger driver for operating margin being lower and not -- we haven't changed our estimation on gross margin in this update. So gross margin is aligned with our expectations from beginning of the year. The operating margin is just an outcome. We reduced the better operating expenses $20 million, but revenue reduction was much higher. So that's the reason for operating margin. And I also say for 2025 -- this year, we have 23% growth in operating expenses. We will not have that meaningful growth in 2025 in terms of OpEx, to kind of balance it out with the revenue new numbers.
+
+----------------------------------------
+
+[Amnon Shashua]
+Yes. So we had a significant OpEx increase in 2024. All the programs that we have won, becoming a Tier 1 supplier for some of the programs, all the investments that we are doing to meet, let's say, new technology launch that will be in 2026. So we did a major increase in OpEx in 2024. We don't see this happening in 2025. So I think we have what we need to go forward to execute and see any meaningful -- as Moran said, any meaningful OpEx increase in 2025.
+
+----------------------------------------
+
+[Operator]
+This concludes our question-and-answer session. I would like to turn the floor back over to Dan Galves for closing comments.
+
+----------------------------------------
+
+[Dan Galves]
+Thanks, Kat, and thanks to the executive team and all the audience for participating in this call. We'll talk to you next quarter. Thank you.
+
+----------------------------------------
+
+[Operator]
+This concludes today's teleconference. You may disconnect your lines at this time. Thank you for your participation.
+
+----------------------------------------
+

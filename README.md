@@ -52,6 +52,14 @@
 - 本地缓存管理
 - 会话状态持久化
 
+### 9. Transcript文件保存配置
+- 默认情况下，transcript文件不会保存到磁盘（节省存储空间）
+- 可通过环境变量 `SAVE_TRANSCRIPT_FILES=true` 启用文件保存功能
+- 保存的文件包括：
+  - HTML原始文件（用于调试和重新解析）
+  - TXT清洁版本（用于阅读和分析）
+- 文件保存到 `{TICKER}_transcripts/` 目录下
+
 ## 使用方法
 
 ### 环境配置
@@ -76,6 +84,12 @@ DROPBOX_DATA_URL = "your-dropbox-url"
 DROPBOX_DATA_URL_KOL = "your-dropbox-kol-url"
 ```
 
+4. 配置Transcript文件保存（可选）：
+```bash
+# 如果需要保存transcript文件到磁盘，设置环境变量
+export SAVE_TRANSCRIPT_FILES=true
+```
+
 ### 启动应用
 ```bash
 streamlit run app.py
@@ -90,7 +104,14 @@ streamlit run app.py
 ### 纯对话模式使用
 1. 访问 `/chat`
 2. 选择想要使用的模型
-3. 开始对话（Gemini 模型支持图片上传）
+3. 开始对话
+
+## 性能优化建议
+
+### Transcript文件管理
+- **生产环境建议**：保持 `SAVE_TRANSCRIPT_FILES=false`（默认）以节省存储空间
+- **开发/调试环境**：设置 `SAVE_TRANSCRIPT_FILES=true` 以便调试和测试
+- **定期清理**：如果启用了文件保存，建议定期清理旧的transcript文件
 
 ## 目录结构
 ```

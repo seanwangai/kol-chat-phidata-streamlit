@@ -1,0 +1,317 @@
+============================================================
+EARNINGS CALL TRANSCRIPT
+============================================================
+
+Company: MBLY
+Fiscal Year: 2023
+Quarter: 3
+Date: October 26, 2023
+Transcript Date: 2023-10-26 08:00:00
+
+============================================================
+
+[Operator]
+Greetings, and welcome to the Mobileye Q3 '23 Earnings Call. At this time, all participants are in a listen only mode. A brief question-and-answer session will follow the formal presentation. If anyone should require operator assistance during the conference, please press star zero on your telephone keypad. As a reminder, this conference is being recorded. It is now my pleasure to introduce your host, Dan Galves, Chief Communications Officer. Thank you, sir. You may begin.
+
+----------------------------------------
+
+[Dan Galves]
+Thanks, Kyle, and hello, everyone, and welcome to Mobileye's Third Quarter 2023 Earnings Conference Call for the period ending September 30, 2023. Please note that today's discussion contains forward-looking statements based on the business environment as we currently see it. Such statements involve risks and uncertainties. Please refer to the accompanying press release, which includes additional information on the specific factors that could cause actual results to differ materially.  Additionally, on this call, we will refer to both GAAP and non-GAAP figures. A reconciliation of GAAP to non-GAAP financial measures is provided in our posted earnings release. Joining us on the call today are Professor Amnon Shashua, Mobileye's CEO and President; and Lauren Shamash, Mobileye's CFO. Thanks, and now I'll turn the call over to Amnon.
+
+----------------------------------------
+
+[Amnon Shashua]
+Thanks, Dan. Hello, everyone, and thanks for joining our earnings call. Before going through our business commentary, I'll make a few comments about the situation in Israel. Israel is now at war. The current effect on Mobileye are twofold. First, roughly 9% of our employees are currently serving in the ID of reserves with their teammates gladly working longer hours to compensate. Second, we are allowing more flexibility to work from home. I see no material impact on our operations. Mobileye does not have any production facilities in Israel, now customers in Israel. Furthermore, there has been no material effect on our operations and ability to develop, test, perform business activities or meet our objectives as a result of the war. Okay. Turning to our results in Q3. Moran will provide more detail, but at a high level, Q3 was another excellent quarter. On a year-over-year basis, we grew the top line 18% adjusted operating income grew 27% and adjusted net income grew 59%. Operating cash flow on a year-to-date basis have been impacted by investments to rebuild our strategic inventory of EyeQ chips, which we had used to maintain steady supply during the chip crisis. If you adjust for that investment in inventory, which is now largely complete. Operating cash flow has also grown very strongly so far in 2022. Another third quarter financial highlights is the 34% adjusted operating margin. The beat versus consensus here was driven primarily by costs, some of which was related to macro factors by currency and some related to planned cost efficiency initiatives. Turning to our product portfolio, our bookings so far in 2023 put us on track to outperform the $6.7 billion of future revenue from design wins we generated in 2022, which was by far a record year. We'll have more details on that at TS in January. We're having a tremendous amount of success with our EyeQ kit-based product portfolio. The diverse platform supports everything from basic ADAS to SuperVision, to chauffer, to mobilized drive, and we're excited to launch the first EyeQ kit ADAS program in early 2024, consistent with the time line we laid out several years ago. While SuperVision continues to be a major focus, I would note that we continue to add a very high number of basic and cloud-enhanced ADAS programs. On the cloud enhanced side, these deals are at significantly higher prices than current ADAS and typically include REM, REM data sharing agreement. This will reflect -- this would result in a very meaningful expansion of the OEMs that contributes rem-mapping data in the coming years, improving mac-refresh times and diversifying the data sources. In addition, we added our first SuperVision light customers this week, a system based on a single IQ-6Hichip with a reduced configuration of cameras that supports hands-free limited to hybrids. The design win is from a large global OEM with plans to equip the systems on high-volume vehicles. We also had some important SuperVision and chauffer design wins in Q3 we added FAW as a customer with what is relatively near-term start-up production date of late 2024 for the first of many SuperVision vehicles and a year later with the first chauffer vehicle. More on that in a minute. We also added a chauffeur program with Pollstar for SOP in late 2025. The Mobilized drive Mobility as a Service side the various key components towards scale are progressing on schedule, including our software stack, the IQ6 high-based compute engine and the imaging radar. Our vehicle platform partners are also making progress. Recently, our strategic partner, Volkswagen Commercial Vehicles as well as Hollow demonstrated our technology in their vehicles in Hamburg for the German Minister of Transport, the test indicated strong support to deploy this technology to improve transportation efficiency with the goal to put up to 10,000 autonomous shuttles on the road of Hamburg by 2030. But what I believe was the most important development in Q3 was the delivery of highway SuperVision software to an over-the-air update to more than 100,000 weaker vehicle owners in late August, with Navigate on Autopilot feature providing handoff navigation from point A to point B. This was an extremely critical proof point in front of our OEM customers. It's one thing to demonstrate technology on a fleet of test vehicles. It is a completely different level of product validation to deliver an eye on hands-free system to 100,000 consumers. Feedback has been outstanding, with media in China consistently noting that the ZEEKR system outperformed strong competition despite significantly lower sensor content and a fraction of the compute level. Out of the more than 1,000 beta users who use the system a couple of months before the broad rollout, 95% of them said they plan to buy the system after the 12-month trial period that ZEEKR is offered. I can't emphasize enough that this over-the-air update amplified a flywheel dynamic that's been developing for the last year or so. The industry has noticed a higher pace of innovation and a significant growth in demand in China for systems that take over more and more of the driving. This creates higher pressure among all OEMs to develop competitive hands-free systems. To generate value from software but also not to fall behind. This pressure forces more emphasis on pragmatic factors like time to market, cost and performance as opposed to the desire to in-source this creates higher demand demo OEMs for the Mobileye product, which offer clear advantages in time-to-market cost and performance. Deploying the software in more than 100,000 consumer vehicles and receiving many accolades in the world's most competitive market, clarified our ability to deliver and serve as the final component in the flywheel. We felt the impact of this proof point immediately. The successful rollout led directly to the FAW design win and an acceleration of progress towards potential design wins with other key prospects. What I mean by acceleration is that there is an increased urgency to converge towards production programs. This is reflected as more clarity from customers on next steps, for example, the clear deliverables, time line and approval processes. While the design win process rarely moves as fast as we want, we expect that we'll have more news on SuperVision and chaffeur over the next 5 months. I'll put some numbers against it. Last quarter, we disclosed that we either have already booked design wins or were in advanced stages for SuperVision and or chauffeur design wins with 9 OEMs representing 30% of global automotive production. That number is now 10 OEMs, representing 34% of auto production. If we go back to the beginning of 2023, that number would have been 3 OEMs representing 9% of the industry. This group does not include any low-volume brands or early-stage start-ups and it's growth geographically. It's one U.S. OEM, 2 European OEMs, 4 Chinese OEMs and 3 agents OEM’s We're also very encouraged that we have received meaningful interest from the next wave of OEMs that represent an incremental 15% of global auto production. While not at the point that we would call these advanced stages, the initial work looks very promising. Before turning it over to Moran, I'll close with a few words about China and FAW. I traveled to China with our executive team in September to meet with several key customers. It's not an exaggeration to say that this market is moving at light speed towards putting eyes on hands-free systems on the road. Premium ADAS is a huge selling point in marketing materials, the media is extremely knowledgeable about the technology and consumers demand it. There is so much traffic congestion in China, and consumers are tired of battling it on their own. They want cars to battle the traffic for them. I can see the potential for 15%, 20%, 25% of cars sold in this market to have supervision like capability a few years from now. So it's very important for us to win there, and we are winning. Of the group of 10 OEMs I mentioned before, four are China-based Gili Group, FAW and 2 other significant automakers. We also have opportunities to expand with existing customers. The Zeekr Mobileye collaboration has been very successful and is leading to opportunities for additional Zeekr vehicles as well as from other brands in the Jelly Group. This could add significant volume in the near future. And the FAW relationship is key for us. A government-owned automaker, choosing a non-China partner in this highly strategic technology area is the next level validation in front of other China OEMs. It's also a very broad program. FW is going all in on supervision. The stand-alone car brands have a very robust product cadence starting in late 2024 and every vehicle model launched from that time on will include supervision. There is also ambition to sell the resulting platform into their JV brands as well, which would increase the volume opportunity by a factor of 5. Thank you for your time and interest in Mobileye. I will turn the call over to Moran.
+
+----------------------------------------
+
+[Moran Shemesh Rojansky]
+Thanks, Amnon. So thank you, Amnon, and thanks for joining the call, everyone. Before I begin, please be aware that all my comments on profitability will refer to non-GAAP measurements. The primary exclusion of mobilized non-GAAP numbers is amortization of intangible assets, which is mainly related to into acquisition of Mobileye in 2017. We also exclude stock-based compensation, starting with Q3 results. We had an excellent quarter with revenue up 18% and adjusted operating income up 27% year-over-year. Overall, IQ and division volumes increased about 16% and with the remainder of the growth related to higher IQ ASPs and some initial small mobility as a service revenue that was related to self-driving systems shipped to customers for installation on test vehicles. Supervision shipments were 29,000 units in the quarter, which was in line with expectations. These units were primarily for Zeekr 001 and, to a lesser extent, Zeekr 009. Although in Q3, we also had some initial deliveries for the SmarTone and Postal 4, supervision gross margin improved somehow as compared to Q2 due to lower overhead per unit on the higher volume. Looking ahead, we expect 2 catalysts to drive further improvement in supervision gross margin over the course of 2024. Number one, in collaboration with our supply chain, we are introducing the second generation of the supervision domain controller, which we expect will result in meaningful cost savings. We plan to begin the transition to this new controller in late Q4 and into early Q1. We will share the savings with our customers by modestly lowering average selling prices but the net result is expected to be an improvement to gross margin beginning in Q2 and more meaningfully in Q2 of 2024. Number two, as Amnon mentioned, the rollout of navigation pilot software to Zeekr vehicles in August very well, any existing Zeekr owner or a new buyer through December 31 this year, we'll get a 12-month free trial of this offer. After this period, the consumer will need to choose whether to pay an incremental cost to continue to utilize the supervision feature. We will receive meaningful software revenue for any consumer that chooses to keep the software. This should lead to an incremental boost of supervision gross margin in the back half of 2024. Turning to operating expenses. They were again lower than expected in Q3, which combined with the strong revenue growth led to a robust adjusted operating margin of 34%, up about 3 points versus Q3 2022. Approximately half of the lower-than-expected costs were again related to lower-than-expected payroll costs driven by depreciation on the shekel. This is a meaningful driver of cost for us due to payroll and related expenses being the majority of our operating expenses and the significant majority of our employees being in Israel. Payroll expenses were actually slightly lower in Q3 than compared to Q2 despite higher head count. The remainder of the lower-than-expected costs primarily related to timing of certain expenditures over general efficiencies we achieve. In terms of cash flow, we had a strong quarter compared to Q2, but continue to invest a significant amount in rebuilding our strategic inventory of IQ chips which was largely consumed in 2021 and 2022 during the supply chain crisis. As of the end of Q3, we have almost reached our target of approximately 6 months of strategic inventory so cash used for restocking should be significantly lower in the next few quarters. When adjusting for cash consumable inventory year-to-date, in 2023, our operating cash flow conversion as a percentage of adjusted net income remains very high. Capital expenditures in the quarter were consistent with our unchanged view. This CapEx for the 2023 calendar year should be roughly similar to 2022. Turning to the guidance. As we look ahead to Q4, IQ volumes are tracking in line with our prior guidance. At the midpoint of our guidance, IQ volumes are expected to be a bit more than 20% above Q3 levels with ASP down a bit sequentially due to a mix. I would just note this implies a record level of quarterly IQ volume and importantly, should not be used and the starting point for estimated 2024 volume within core due to full year 2023 and apply a growth rate to that when thinking about 2024 and consider that the high volume would lead to some hangover effect in Q1, similar to the dynamic in the first quarter of 2023. Turning to supervision. Imply Q4 volumes based on the midpoint of the guide for 2023 is approximately 37,000 units. This should bring us to around 102,000 units for the full year of 2023. Which is towards the low end of the 100,000 to 115,000 we incorporated in our guidance at the time of our April earnings call. This fine-tuning of the shipment forecast is what led us to modestly adjust our 2023 revenue guidance. The consumer demand for Zeekr 001 and 009 was well aligned with our shipment levels in Q3. Continuation of this plus incremental volume for new products like SmarTone Poster 4 Zeekr 001 shipments to Europe support the growth in volume from Q3 to Q4. As these new products ramp up and we had a fixed vehicle in Q1, the Volvo M190, we are set up well for continued sequential growth in 2024. Based on our assumption for mix and volume, we accept Q4 gross margin to be consistent with Q3. We expect operating expenses for full year 2023 to be about 13% on a year-over-year basis. In 2024, we expect operating expenses to grow at a higher rate, assuming some normalization in the relative value of the Israel literacy as well as the ramp-up of project spending related to expected new supervision and so far program. Lastly in terms of tax rate, we continue to expect an effective tax rate in the 12% range for the year. Thank you, and we will now take your questions.
+
+----------------------------------------
+
+[Operator]
+[Operator Instructions] Our first question comes from Joshua Buchalter with TD Cowen. Please go ahead.
+
+----------------------------------------
+
+[Joshua Buchalter]
+Hey, guys. Thanks for taking my question and most importantly, I hope everyone is doing safe and your families are okay in Israel. To start, you mentioned the 10th OEM, and I believe it's the first time you explicitly have called out a U.S. OEM. Can you -- for supervision, can you please -- can you confirm whether or not those are the same thing and also provide any details on the scope or timing of how that would wrap into the model. Thank you.
+
+----------------------------------------
+
+[Amnon Shashua]
+Well, that's as I mentioned in the script, I believe in the next 5 months, things will play out. I would say that the percentages of turning those remaining OEMs into design wins range from 99% confidence to 50% confidence depending on which OEM we're talking about. And in the next 5 months, we will -- I think we'll be a much -- we'll have much more clarity. And as I mentioned, it's kind of a global spread from the U.S., Asia, China, it's really global. Starting from just the Gilly Group a year ago to now really a global spend.
+
+----------------------------------------
+
+[Dan Galves]
+Josh, this is Dan. Just to clarify, the incremental OEM was not the U.S. OEM. The U.S. OEM was in this group as of last quarter as well, and we continue to progress and feel good about that customer. Q – Josh Buchalter: Got it. And then in the guidance for the full year, you kind of called out SuperVision that's driving the very modest tick down at the midpoint for revenue. Has anything changed with how you're thinking about 2024? And can you walk us through what are the drivers of that? What -- is there a new vehicle model, or was it volumes at the 001 that's changing things? Thank you
+
+----------------------------------------
+
+[Amnon Shashua]
+The new vehicle volumes for 2024 is expansion of the ZEEKR 001, expansion of 0.9 of ZEEKR. We have post-F coming out we have smart #1 coming out. We have the Volvo EM 90 coming out towards the end of 2024, we have the SAW brand coming out. And there is a certain, I think, high probability that we'll have another OEM in China that will also launch end of 2024. Q – Josh Buchalter: Got it. Thank you.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from Itay Michaeli with Citi. Please go ahead. Q – Itay Michaeli: Great. Thanks. Hi, everybody, good afternoon. Just 2 questions for me. First, on the new wave of automakers expressing interest, can you maybe just share one, how many automakers are in that second wave? And two, to what extent these automakers have existing sort of in-house operations for advanced Level 2 plus and a second question, just on the SuperVision Light award. Hoping you could share just the ASPs and expected start of production for that program. Thank you.
+
+----------------------------------------
+
+[Amnon Shashua]
+Okay. So I'll start with the second question. The SuperVision Light when we are a Tier 1, it's about 60% of the revenue compared to SuperVision. When we are a Tier 2 with a few hundreds of dollars revenue. In this particular program that we won; we are in Tier 2. So, we supply only the EyeQ 6 chip just like in any Tier 2 relationship. It's a really high-volume global brand. And I think it offers a new level of kind of the intermediate premium in which the SuperVision capabilities would be limited only to highway, but still the very, very high hand-off capabilities. The SuperVision allows you to expand way beyond the highway arterial roads, urban roads and also be the basis for Chauffeur at a later stage. So, this allows us to have an entry point to medium and low segment car brands, car models and this is a very important win. As for your first question, the next wave is 15% of the global auto production that I mentioned, it's about 4 OEMs. And they don't have anything comparable to a SuperVision. And they're starting to notice that the SuperVision like system is really the next premium in the coming years. I believe that eventually, every carmaker would offer a SuperVision like product in the coming 2, 3 years. Q – Itay Michaeli: That's very helpful. Thank you.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from Joseph Spak with UBS. Please go ahead. Q – Joseph Spak: Thank you, everyone. The first question is I know your solution is technically powertrain agnostic. But as we're hearing about some program delays on next-generation EVs. I guess not in China, where I know a lot of your wins are today. But if there is sort of a pushout, does that at all change your trajectory on SuperVision, or do you think there's an opportunity to maybe add more features, whether it's cloud-enabled ADAS or whatnot to existing programs?
+
+----------------------------------------
+
+[Amnon Shashua]
+Cloud-enhanced ADAS is progressing on a separate track we have 2 already that we mentioned last quarter, which are responsible for $1 billion revenue till the end of the decade, and we have 4 more in the pipeline ready to be signed in the next few months. So that's a separate track. SuperVision, start of production. If there are delays, it's weeks or a few months. It doesn't change materially forecast in terms of the revenue per year. And as we get more design wins, our kind of weakness towards one particular program that's delayed or not becomes much, much --we don't rely we're not susceptible to such a delay. Obviously, when we have only one car OEM with a program, then we are really dependent on delays. But when we have 10 or more than a delay here or there should not change the revenue guide. Q – Joseph Spak: Okay. Perfect. And then just maybe a clarification on the OEM commentary around SuperVision. First of all, the $9 million to $10 million does that include the SuperVision light customer? And then also, I know you provided some comparisons versus what you said earlier in the quarter or even last year. I think at CES, you mentioned 6 brands. So how does that sort of the 10 OEMs compared to sort of that brand comment earlier this year?
+
+----------------------------------------
+
+[Amnon Shashua]
+Okay. So, the 10 OEMs does not include SuperVision light. SuperVision light is a separate track. We have one, at the time, win for that, and we are kind of working towards getting more business for that one. SuperVision is a separate truck. So those 10 OEMs are for SuperVision. In terms of brands, it's really 10 OEMs. Last time when we talked about brands, we really met ZEEKR-001 and 009 as 2 brands of the same OEM. All others are separate OEMs. And so the ones that we announced was Polestar, smart. Now we are revealing at Volvo in China, Porsche and all the rest are separate SAW or others are separate OEMs, not brands within that group of OEMs that I just mentioned. A – Dan Galves: Just to clarify. Just one clarifier, Joe, on that. Just to be super clear, within the 10 OEMs, we're considering Geely Group as one OEM, right? So, we have 4 brands, 5 models. But within this metric, we're considering that one OEM. We plan to continue to update this metric on a regular basis. along the same methodology as we move into the future, and we'll try to be very consistent with kind of what we're considering an OEM. Q – Joseph Spak: So OEM is the parent level effectively? A – Dan Galves: The parent level effectively. There could be some parent levels have 2 different product developments, but we're trying to be consistent at the parent level within this metric. Q – Joseph Spak: Okay. Thank you very much.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from Chris McNally with Evercore. Please go ahead. Chris McNally : Thanks so much. And also, I just wanted to echo the best for the Mobileye family. Amnon one of the high-level questions I have about the push into SuperVision light is, I think you have something like 3.5 million plus of ENHANZE just RStfor this year. What would be the reason an OEM would continue with ENHANZE rather than SuperVision light other than the time to change over, it seems like that entire base of units should quickly change over to SuperVision life. But we just would love to hear about sort of the Pro/con because you get all the increased features that really no additional cost at the program level.
+
+----------------------------------------
+
+[Amnon Shashua]
+Well, no, there's a significant cost to the OEM between a front-facing camera with or without cloud enhanced and the SuperVision light. SuperVision light has about between 6 to 7 Cameras feeding on to a domain controller powered by an IQ 6 chip. On the other hand, a prospecting camera is just a front-facing camera, right? There's no domain controller. And cloud-enhanced is our ability to add value to a front rating channel. So you have the front facing Campa, which is very low cost to the OEM. And just by adding software capabilities, we can considerably enhance the feature set, the value proposition of the front-facing camera, for example, allow to do lane keeping when we don't see any visible lanes or providing traffic-light information and providing alerts against running on the red light or breaking against running on the red light and software and so forth. So the price difference is significant between transfacing camera with or without cloud enhanced supervision light, supervision, safer and then dry. It is I think the big steps in terms of cost Chris McNally: Maybe I thought on a lot of these Gen 1 programs, there was also on the ENHANZE that you're on, there was also a significant amount of radar, for example. So if you have multiple radar, you'd be adding 50 million or 60 million to the total cost of the system to the OEM, which you may be able to remove with Subcision light?
+
+----------------------------------------
+
+[Dan Galves]
+Well, so many of the front-facing cameras do not have a radar. It's not that every ADAS program has the front-facing radar. So a lot of our front-facing camera penetration is vision only. There's no radar. With the supervision light, it's the 7 cameras, including 4 of them are parking cameras, of course, sometimes they come with radars and sometimes they denin this particular program that we won, they're the front facing radar. Chris McNally: Okay. Makes sense. And that's why you had the limited operational design domain of when -- the GEN-1 program will only have a big camera. Just the second question. For getting OEMs on the low end to sign up for supervision light, could you talk a little bit about how the system would scale, meaning do they get to see how REM and RSS works and then it leads for them to potentially us higher levels of supervision for more premium vehicles and just the ability for them to upgrade on those existing platforms over time to higher forms of supervision. If you could just kind of go through that sort of escalation that upsell that you could have that with you?
+
+----------------------------------------
+
+[Dan Galves]
+Well, if an OEM buys into supervision light, they cannot upscale because supervision has more sensors, as more cameras as in Canvas. Normally, it goes the other way around. We have an OEM that is signed into supervision in some of its models and now has a low-end model and wants to upgrade the low-end model from a front-facing camera to a supervision light. Chris McNally: And just if I could follow up, in that logic, the Super Light win was -- that is a new OEM, right? So you didn't downsell this specific OEM. The supervision light is the first subvision they're taking.
+
+----------------------------------------
+
+[Dan Galves]
+Well, the supervision light wins with a new OEM design way. It's with a new OEM. It's not part of the OEMs that we mentioned before. Chris McNally: Perfect. Appreciate the detail. I'll follow up after.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from Adam Jonas with Morgan Stanley.
+
+----------------------------------------
+
+[Adam Jonas]
+I'm not, again, my thoughts and prayers with you and your loved ones in the Mobileye community following entropies in Israel. My first question is on the legacy OEMs. Many of them are dialing back their investment plans. We continue -- we expect that will continue. If it does, does slower EV adoption categorically have any impact on supervision adoption over the next few years in your mind?
+
+----------------------------------------
+
+[Dan Galves]
+I think the opposite is happening. When they're dialing that investment, basically dialing back in-source those are very, very big investments and pushing them towards a better time-to-market performance and ODDscaling that Mobileye can provide. So our engagements with OEMs on a supervision is really all over.
+
+----------------------------------------
+
+[Amnon Shashua]
+Yes. Just to be specific. The question is not on EV targeted systems. It's agnostic to powertrain. So we don't see any impact from relative [indiscernible]
+
+----------------------------------------
+
+[Adam Jonas]
+Okay. That kind of brings on my second question then, Dan, is of the 10 identified and does those also include -- how many of those are EV, do any of those include architectures for ice or hybrid?
+
+----------------------------------------
+
+[Amnon Shashua]
+There's -- none of these 10 OEMs are EV-only companies. And I think we're involved with design win discussion and negotiations. I think what I would say is that we have announced design wins with Geely with Porsche with FAW. The other 7 are in negotiation around a variety of models within each group. Anything to add on?
+
+----------------------------------------
+
+[Dan Galves]
+No, it's really agnostic to the powertrain.
+
+----------------------------------------
+
+[Adam Jonas]
+I was thinking about the operating system though. I'm sorry, I'm almost done here. But powertrain, I can see agnosticism, but my understanding was about starting clean sheet with an operating system and our electrical architecture did have some advantages for integrating a very invasive and important new system like the technologies you offer relative to, say, retrofitting an existing or kind of kind of fading out or run off of a nice architecture, but I don't know if that logic is correct.
+
+----------------------------------------
+
+[Dan Galves]
+I think the supervision system is really a closed system, where with the new wins, there is the cooperation with the OEM on tuning the driving policy. As I mentioned last quarter, we have a new language. We call it tuning language or behavioral shaping language, which allows the OEMs to really take control of all the driving policy decisions on top of our kind of operating system of driving policy, but it's all within our system. So whether you have an EV or a new architecture or not a new architecture that's no different. It's really agnostic.
+
+----------------------------------------
+
+[Adam Jonas]
+Thanks.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from Shreyas Patil with Wolfe Research.
+
+----------------------------------------
+
+[Shreyas Patil]
+I guess as we look out over the next few years, a few years, you've talked about supervision ramping up to maybe the low $200,000 unit range for next year. I think you're still targeting $1.2 million by 2026. So that would imply a pretty big ramp in 2025 and -- so maybe can you talk a little bit about the visibility, how much visibility you feel like you have there in supporting that kind of ramp?
+
+----------------------------------------
+
+[Dan Galves]
+Well, our visibility is getting better and better as time goes by naturally. -- the more design wins or close design wins gives us a much better visibility. I would say that amongst all the opportunities that we have, 50% of them are going to launch in 2025 or 2025 and earlier. -- and 50% in 2026. And we're talking about kind of an inflection point in revenue because Supervision revenue per car is in order of magnitude higher than our ASP of IQ. Now pinpointing exactly the date of that inflection point is difficult by the 2025, 2026 time frame, we are confident with the numbers that we gave.
+
+----------------------------------------
+
+[Shreyas Patil]
+Okay. Great. And then just to maybe clarify, so you mentioned on supervision light in this award that you secured, you're playing a Tier 2 role versus a Tier 1. So can you maybe talk a little bit about what a Tier 2 role entails for you? Is it more just software versus providing the domain controller as well? Is that how to think about it?
+
+----------------------------------------
+
+[Dan Galves]
+The Tier 2 role may this is our classic role in almost all other non-supervision programs where we provide the chip, in this case, it's the IQ6 high. and all the software around it, that powers the IQ in terms of the driving functions. And our revenue is for the chip and the software and a few hundreds of dollars.
+
+----------------------------------------
+
+[Shreyas Patil]
+Okay. Maybe just a last quick one for me. just shifting to profitability. It looks like Q4 is tracking towards 36% for operating income at the midpoint. It was just quite strong. I think you've previously talked about 20% OpEx growth for next year, but it sounds like this year, it may be coming in a little bit lower. So should we still be assuming that kind of growth, or should we assume something higher?
+
+----------------------------------------
+
+[Dan Galves]
+Well, there were some things that were not in our control, like the depreciation of the Israeli shekel. Which is responsible for most of our operating expenses. We were still late in moving on to our new campuses. So there's also sales on operating expenses. But our plan of investments, we're not changing that. No, we have big investments to make going forward, and those have not changed. A – Moran Shemesh Rojansky: I would just add to that on 2023, there's also an issue worth mentioning of the nonrecurring engineering reimbursements that reduced R&D. So for more advanced development programs like super visional or hofer the NRE reimbursements are much more significant than what we used to see in ADAS. Of course, to tile, we mobilize investments and therefore, more challenging to predict. So these reimbursements for 2022 are expected to be higher than our conservative assumption at the beginning of the year. That's also part of our savings for 2023. And for 2024, based on our current forecast for 2023, we would expect to see 20% or 25% growth in 2024. So, important factor is, of course, the design is what we are winning supervision and so far, but assuming we win everything, we expect it to be even closer to 25% in 2024. A – Dan Galves: There was a point that on the supervision line, our revenue includes also check the software and ran as well.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from Mark Delaney with Goldman Sachs.
+
+----------------------------------------
+
+[Mark Delaney]
+Yes. And let me add my support of these for everything that the Mobileye family is dealing with. The question on the tech road map for you, Amnon. Do you think the latest GPUs and AI training technology will help Mobileye to accelerate its product development timeline on the topic of the tech road map, I'm curious what feedback you've had on your paper about how end-to-end neural nets may not be the best approach for timing? A – Dan Galves: Well, our view about end-to-end, we put it in that paper, and I don't think this is the forum to kind of repeat what I wrote. So it's out there in a block and we spent some thought on writing it. So, I'll not add more to that. In terms of our compute infrastructure, our compute infrastructure is not GPUs, it is the IQ. It provides us much more flexibility than GPU. It's much more cost efficient. It's much more power efficient. And this is what is driving kind of the big value proposition to our customers that we can be very efficient in cost performance and DD scaling because we have a tapered system on chip to our name.
+
+----------------------------------------
+
+[Mark Delaney]
+Got it. In terms of the potential for supervision gross margins to expand, you spoke about a new domain controller and that being a meaningful driver over the course, any more details you can share about how impactful that may be to gross margins? A – Dan Galves: Our asset of gross margin for supervision is aiming at 50%. We're not there yet, but this is where we're going. A – Moran Shemesh Rojansky: Yes, so supervision. I mean everybody mentioned, the gross margin now will tender the 2 figures that I mentioned. One is the cost reduction for the ECU, the next generation of the ECU, that's supposed to have a significant impact in the beginning of 2024 as of Q2. And also, again, the software bundle, that will have more effect in the back half of 2024, but we will have a meaningful growth in gross margin for supervision in 2024 versus 2023.
+
+----------------------------------------
+
+[Mark Delaney]
+Thank you.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from Aaron Rakers with Wells Fargo.
+
+----------------------------------------
+
+[Aaron Rakers]
+Yes. And my thoughts to the Mobileye family as well, given your current situation. So, I guess, I want to ask about the longer term how we should think about the modification cloud theta, obviously with the MVP functionality across a hundred thousand vehicles. Just maybe, walk me through how we think about that monetization. What comes to be kicking on the latter part of '24? Any metrics you can share how we should think about that? A – Dan Galves: Yeah. Sorry Aaron, could you repeat the question?
+
+----------------------------------------
+
+[Aaron Rakers]
+Yes. Dan, I appreciate that. So I'm asking about the monetization, the effect of the deeper vehicles, for example, taking the full license of the rent functionality, the cloud enhanced ADAS, just how we think about that flowing into the model as we look through '24. A – Dan Galves: Yes. I think maybe I'll start and then maybe Moon can talk a little bit more. So cloud-enhanced ADAS has the potential to generate recurring annual revenue from the maintenance of the map. Those volumes are still relatively small because it was really just a couple of platforms from Volkswagen Group. Ford will be adding REM to their Blue crude. So the volume should start to ramp pretty significantly next year. But the function of annual recurring revenue if you want to see kind of repeated years building up a cumulative number of cars, and that's when it starts to make a big difference. So we'll see some effect next year of the recurring revenue, but it could get much more meaningful in the future years. I think that on software bundle revenue, we're really encouraged by the feedback that we're getting from consumers in China at the end of the day to take these, the supervision functionality and pay an incremental cost from the consumer perspective, obviously, that's going to come from whether they value the system or not. That's why we think that the free trial was a really good idea because there is a lot of value in the system and it's better for people to experience that rather than make them make the decision before they've ever experienced it. And just one thing to reiterate is of the beta users of that system, 95% said that they would pay for the system. We don't think that the penetration rate is going to end up that high, but it's a really encouraging sign. I don't know if Moran has anything else to end, and that should start to happen in the second half of next year. Moran? A – Moran Shemesh Rojansky: Yes. So yes, so neither the volumes or recurring revenues are a major material impact this year in 2023. But we see the growth trajectory on ASP, the Claudine, AWS and RAM revenue will start to provide some modest tailwinds to ASP in 2024. And as Dan mentioned, for supervision, it's only in maybe the back half of 2024 after the traveling tenant. A – Dan Galves: Yes. But to be more concrete about supervision with Diker, every customer that is converted to paying for MDP is a few hundreds of dollars to mobile. That's the average.
+
+----------------------------------------
+
+[Aaron Rakers]
+Yes. Very helpful. And then I think there was a comment in the prepared remarks that I think it was in the context of also Zika and other brands within the Geely Group had you said could add significant volume in the near future. Can you help us appreciate that a little bit more? What are you kind of referring to there? It sounds like within Geely? A – Dan Galves: Yes. Within Geely, it's more design wins. So we're working on more platforms beyond the 2025 timeframe.
+
+----------------------------------------
+
+[Aaron Rakers]
+Okay. Thank you very much.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from Emmanuel Rosner with Deutsche Bank. Please, go ahead.
+
+----------------------------------------
+
+[Emmanuel Rosner]
+Thank you very much. First of all, I would also like to express my sauce prayers and support to the Mobileye family in a horrible circumstances. I wanted to ask you first on your the FAW we obviously extremely encouraging in a new customer and then start pretty soon in late 2024. Can you just frame for us again the scope of what the current win is in terms of the brand and perhaps vehicle models or what timeline? And then what would be the timeline around potential expansion of it and in which direction would that relationship expand? A – Dan Galves: So the relationship is on design wins of supervision starting from end of 2024. So it's the same domain controller that is running on the Z vehicle, so the IQ 6, it's IQ 5. It's a rollout for old brands of FAW starting from end of 2024. I think more than 6 brands. Then a year later, based on IQ 6 is the shelf. So they are going to be one of the first customers post our 4 also customer, but also SAW on the shore with the first system of IQ 6 will include also one of our imaging radars. So it's not just the domain controller, but also we'll start providing also sensors. So that's the scope of the relationship.
+
+----------------------------------------
+
+[Emmanuel Rosner]
+Then in your prepared remarks, you also alluded potential expansion to some of the joint venture brands. How would that play out? Who needs to take this sort of decision? And what is the timeline for that?
+
+----------------------------------------
+
+[Amnon Shashua]
+Yes, I don't know it's a speculation. It's difficult to put a probability on it. But I believe that a successful rollout of supervision on FAW's owned brands would be a good catalysis to start moving to the joint venture brands as well. But at the moment, there is nothing concrete there.
+
+----------------------------------------
+
+[Emmanuel Rosner]
+Understood. And I guess just following up quickly then, since this is launching already in late 2024, obviously, helping with some of your supervision volumes next year. I understand your point on higher confidence in 2025, 2026 since this is the bulk of the launches, but still curious about your latest mark-to-market on what 2024 volumes could look like for supervision is a little bit more than doubling this year, still on track, especially with the addition of FAW.
+
+----------------------------------------
+
+[Amnon Shashua]
+Yes. I think this is a good estimate about doubling what we have in 2023, slightly more, but this is a good estimate.
+
+----------------------------------------
+
+[Emmanuel Rosner]
+Yes, we feel the same as we did last quarter when we made the comment.
+
+----------------------------------------
+
+[Amnon Shashua]
+Great. Thank you.
+
+----------------------------------------
+
+[Operator]
+Our next question comes from Pierre Ferragu with New Street Research. Please go ahead.
+
+----------------------------------------
+
+[Pierre Ferragu]
+So, I think you made interesting comments about China in your prepared remarks. It must be like a very interesting market at the moment with you guys ramping up supervision. And at the same time, you have like a handful of competitors who started to pull on the market like in the hands of drivers of consumers kind of like sales driving features that provide like, I would say, a similar service but with more compute and more sensors, more than just camera. And I'd love to hear how much you've been able to assess the difference in user experiences between supervision and these alternative features. And how you feel about it is, at the end of the day, all these systems competing within that like a very similar ground. Are they offering very similar experiences, or do you see like significant differences emerging between supervision and what the rest of the market has been able to put on the road so far?
+
+----------------------------------------
+
+[Amnon Shashua]
+So, there have been detailed benchmarks comparing by us, by Chile, by store parties comparing ZR-001 with MCP comparing to Xpento to mio to auto. The difference is striking in terms of measuring the mean time to intervention, all sorts of things, how much time it takes to go to point A to point B. The ZR-001 was by tens of percent faster much, let's say, intervention rate by order of magnitude, less intervention rate. Now the difference is really striking. Some of those systems, I think all of them are relying on a high-definition map, the conventional high-definition map which they already have mentioned that they cannot scale it, t's too expensive to the scale where the Mobileye doesn't queue the conventional high-definition definition map. And those systems are much more expensive. As you mentioned, the compute sometimes it's about 10x more compute than what we have many more sensors, more radars, trans facing Lazar and some of them, they have 2 front-facing Lazar. So, I think we are very confident. We have a good value proposition in terms of performance, in terms of cost, in terms of ability, our capabilities allow scalability, geographic scalability that a conventional high-definition maker will find it very difficult to compete. The kind of benchmarks that have been conducted is how the behavior when you approach a construction zone when there is a block plan. So, it was a very detailed benchmark. It's not just intervention rates. And really, the difference is to IT.
+
+----------------------------------------
+
+[Pierre Ferragu]
+Thanks. Great. And just a quick follow-up, and I'm sorry to come back to that, but I just want to make sure I get the whole thing complete. You have your 10 OEMs of which like 3 you've announced they represent 34% of the market. And what you say that of the 7 that are not confirmed yet, you're like confidence ratio, I would say, in terms of converting them is between 50% and 99%, depending on which one we're talking about. And then you had an additional 15% of the market on which confidence is below 50%, I assume. Is that the right way to wrap all that into just one sentence?
+
+----------------------------------------
+
+[Amnon Shashua]
+Yes. I'll take the range within 50 to 99, but the 50% is only one of them. The rest is higher than 80% and one of them is 99%.
+
+----------------------------------------
+
+[Pierre Ferragu]
+Excellent. Thank you for the final clarification on that.
+
+----------------------------------------
+
+[Dan Galves]
+Thank you, Pierre. Kyle, unfortunately, we've run out of time. So, if you could move to close the call, please. Thanks, everyone, for joining us. We'll talk to you next quarter. I really appreciate the interest.
+
+----------------------------------------
+
+[Operator]
+Okay. Perfect. This concludes today's teleconference. You may disconnect your lines at this time. Thank you for your participation and have a great day.
+
+----------------------------------------
+
