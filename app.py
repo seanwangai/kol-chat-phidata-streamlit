@@ -1262,6 +1262,78 @@ class GeminiService:
         except Exception as e:
             logger.error(f"Gemini API调用失败: {e}")
             raise APIError(f"Gemini API调用失败: {e}")
+    
+    @retry_on_failure(max_retries=3)
+    def classify_6k_document(self, document_content: str) -> bool:
+        """使用便宜模型判断6-K文件是否为季报/年报/IPO报告"""
+        try:
+            # 获取当前语言设置
+            language = st.session_state.get("selected_language", "English")
+            
+            if language == "English":
+                prompt = f"""
+                You are a financial document classifier. Please analyze the following 6-K filing content and determine if it is a Quarterly Report, Annual Report, or IPO Report.
+
+                Classification criteria:
+                - Quarterly Report: Contains quarterly financial results, earnings data, quarterly business updates
+                - Annual Report: Contains annual financial results, yearly business summary, annual shareholder information
+                - IPO Report: Contains initial public offering information, prospectus data, listing announcements
+
+                Please respond with ONLY a JSON object in this exact format:
+                {{
+                    "is_quarterly_annual_ipo": true/false,
+                    "document_type": "quarterly/annual/ipo/other",
+                    "confidence": "high/medium/low"
+                }}
+
+                Document content (first 5000 characters):
+                {document_content[:5000]}
+                """
+            else:
+                prompt = f"""
+                你是一个金融文档分类器。请分析以下6-K文件内容，判断它是否是季报、年报或IPO报告。
+
+                分类标准：
+                - 季报：包含季度财务结果、盈利数据、季度业务更新
+                - 年报：包含年度财务结果、年度业务总结、年度股东信息
+                - IPO报告：包含首次公开发行信息、招股说明书数据、上市公告
+
+                请只回答JSON格式：
+                {{
+                    "is_quarterly_annual_ipo": true/false,
+                    "document_type": "quarterly/annual/ipo/other",
+                    "confidence": "high/medium/low"
+                }}
+
+                文档内容（前5000字符）：
+                {document_content[:5000]}
+                """
+            
+            result = self.call_api(prompt, "gemini-2.5-flash-lite-preview-06-17")
+            
+            # 尝试解析JSON
+            try:
+                # 尝试从Markdown代码块中提取JSON
+                import re
+                match = re.search(r"```json\s*(\{.*?\})\s*```", result, re.DOTALL)
+                if match:
+                    json_str = match.group(1)
+                else:
+                    json_str = result
+                
+                import json
+                classification = json.loads(json_str)
+                return classification.get("is_quarterly_annual_ipo", False)
+                
+            except (json.JSONDecodeError, ValueError) as e:
+                logger.warning(f"解析6-K分类JSON失败: {e}. 模型返回: {result}")
+                # 如果解析失败，保守处理，返回True继续分析
+                return True
+                
+        except Exception as e:
+            logger.error(f"6-K文档分类失败: {e}")
+            # 如果分类失败，保守处理，返回True继续分析
+            return True
 
 # SEC 服务
 class SECService:
@@ -2129,7 +2201,7 @@ class SECEarningsAnalyzer:
                 - Ensure answers come from document content, don't imagine
                 - I don't have time to read, ensure answers are direct and to the point, no need for polite conversation
                 - Always answer in English
-                - Escape all dollar signs for currency as \$ to prevent Markdown from rendering them as math.
+                - when markdown output, Escape all dollar signs $ for currency as \$ to prevent Markdown from rendering them as math.
                 
                 Answer Requirements:
                 - Start with 📍 emoji, followed by what type of document this is and its purpose, 
@@ -2159,7 +2231,7 @@ class SECEarningsAnalyzer:
                 - 提供准确、专业的分析
                 - 確保回答都來自文檔內容，不要憑空想像
                 - 我沒時間看 確保回答直接說重點 不用像人一樣還要客套話
-                - 請將所有表示金額的 $ 改為 \$，以避免 Markdown 被誤判為數學公式。
+                - markdown輸出，將所有表示金額的 $ 改為 \$，以避免 Markdown 被誤判為數學公式。
 
 
                 
@@ -2205,6 +2277,7 @@ class SECEarningsAnalyzer:
                 - If the content contains numbers for the same indicator at different time points, place a pivot table at the very beginning of the answer. Format: pivot table row names are different indicators, column names are the time when indicators were published, cells are the indicator numbers. Then explain below the pivot table after generation.
                 - If the content contains business descriptions for the same indicator at different time points, place a pivot table at the very beginning of the answer. Format: pivot table row names are different indicators, column names are the time when indicators were published, cells are the indicator descriptions. Then explain below the pivot table after generation.
                 - For example: row1 would be Indicator, 2025Q1, 2025Q2. row2 would be AI commercialization, Q2 expected to resume double-digit year-over-year growth, confident in achieving significant revenue growth for full year 2025
+                - table output use markdown format, ensure markdown format is correct, no errors
                 - Comprehensively analyze all provided document analysis results
                 - Identify trends, patterns, and key changes
                 - Provide deep insights and professional recommendations
@@ -2229,6 +2302,7 @@ class SECEarningsAnalyzer:
                 - 如果內文有 同指標不同時間點的 數字，回答的最一開始 一定要放上一個pivot table，格式是 pivot table row name 是不同指標 ， column 指標公布的時間，cell 是指標的數字。然後pivot table 生成完 表格下方解釋一下
                 - 如果內文有 同指標不同時間點的 業務的描述，回答的最一開始 一定要放上一個pivot table，格式是 pivot table row name 是不同指標 ， column 指標公布的時間，cell 是指標的數字。然後pivot table 生成完 表格下方解釋一下
                 - - 舉例類似像是  row1會是 指標, 2025Q1, 2025Q2 。 row2會是 AI商业化, Q2预计将恢复两位数同比增长, 有信心在2025全年年实现显著收入增长
+                - table 都用markdown格式，要確保markdown格式正確，不要有錯誤
                 - 综合分析所有提供的文档分析结果
                 - 识别趋势、模式和关键变化
                 - 提供深入的洞察和专业建议
@@ -2507,7 +2581,7 @@ def main():
                     if len(doc_title) > 80:
                         doc_title = doc_title[:77] + "..."
                     
-                    st.markdown(f"{status_icon} {doc_title}")
+                    st.markdown(f"{status_icon} {doc_title} ({doc.date})")
             
             # 显示错误消息
             if status.error_message:
@@ -2558,7 +2632,30 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                 status.add_status_message("🤖 調用AI模型分析...")
                 analyzer.session_manager.update_processing_status(status)
             
-            processing_prompt, integration_prompt = analyzer.analyze_question(status.user_question, ticker, model_type)
+            # 创建AI分析状态显示
+            ai_analysis_placeholder = st.empty()
+            with ai_analysis_placeholder.status("🤖 AI正在分析您的问题...", expanded=True) as ai_analysis_status:
+                if language == "English":
+                    ai_analysis_status.write("🔍 Parsing question intent...")
+                    ai_analysis_status.write(f"📝 Question: {status.user_question}")
+                    ai_analysis_status.write(f"📊 Stock: {ticker}")
+                    ai_analysis_status.write("🧠 Calling AI model to generate analysis prompts...")
+                    ai_analysis_status.write("⏳ Waiting for AI response...")
+                else:
+                    ai_analysis_status.write("🔍 正在解析问题意图...")
+                    ai_analysis_status.write(f"📝 问题: {status.user_question}")
+                    ai_analysis_status.write(f"📊 股票: {ticker}")
+                    ai_analysis_status.write("🧠 正在调用AI模型生成分析提示词...")
+                    ai_analysis_status.write("⏳ 等待AI响应中...")
+                
+                # 执行实际的AI分析
+                processing_prompt, integration_prompt = analyzer.analyze_question(status.user_question, ticker, model_type)
+                
+                ai_analysis_status.write("✅ AI分析完成！")
+                ai_analysis_status.update(label="✅ 问题分析完成", state="complete")
+            
+            # 清除AI分析状态显示
+            ai_analysis_placeholder.empty()
             
             status.processing_prompt = processing_prompt
             status.integration_prompt = integration_prompt
@@ -2663,54 +2760,81 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                     status.add_status_message("📄 Starting parallel processing of earnings calls...")
                     analyzer.session_manager.update_processing_status(status)
                     
-                    # 分批处理以避免过多并发请求
-                    batch_size = 6  # 每批处理6个
-                    for batch_start in range(0, len(all_earnings_urls), batch_size):
-                        if status.stop_requested:
-                            break
-                            
-                        batch_end = min(batch_start + batch_size, len(all_earnings_urls))
-                        batch_urls = all_earnings_urls[batch_start:batch_end]
+                    # 创建earnings获取状态显示
+                    earnings_status_placeholder = st.empty()
+                    with earnings_status_placeholder.status("🎙️ Retrieving earnings call transcripts...", expanded=True) as earnings_status:
+                        earnings_status.write(f"📋 Found {len(all_earnings_urls)} available earnings calls")
+                        earnings_status.write(f"📅 Filtering by cutoff date: {cutoff_date}")
+                        earnings_status.write("🔄 Starting batch processing...")
                         
-                        status.add_status_message(f"📄 Processing batch {batch_start//batch_size + 1}/{(len(all_earnings_urls) + batch_size - 1)//batch_size} ({batch_start + 1}-{batch_end}/{len(all_earnings_urls)})")
-                        analyzer.session_manager.update_processing_status(status)
-                        
-                        # 并行处理当前批次
-                        batch_results = analyzer.earnings_service.get_earnings_transcript_batch(batch_urls, max_workers=2)
-                        
-                        # 处理批次结果
-                        for i, (url_path, transcript_info) in enumerate(zip(batch_urls, batch_results)):
+                        # 分批处理以避免过多并发请求
+                        batch_size = 6  # 每批处理6个
+                        for batch_start in range(0, len(all_earnings_urls), batch_size):
                             if status.stop_requested:
                                 break
                                 
-                            if transcript_info and transcript_info.get('parsed_successfully'):
-                                real_date = transcript_info.get('date')
-                                if real_date:
-                                    if real_date >= cutoff_date:
-                                        doc = Document(
-                                            type='Earnings Call',
-                                            title=f"{transcript_info['ticker']} {transcript_info['year']} Q{transcript_info['quarter']} Earnings Call",
-                                            date=real_date, url=url_path, content=transcript_info.get('content'),
-                                            year=transcript_info.get('year'), quarter=transcript_info.get('quarter')
-                                        )
-                                        filtered_earnings_docs.append(doc)
-                                    else:
-                                        status.add_status_message(f"Earnings call date {real_date} is earlier than cutoff date, stopping retrieval")
-                                        time.sleep(0.5)
-                                        break
-                            else:
+                            batch_end = min(batch_start + batch_size, len(all_earnings_urls))
+                            batch_urls = all_earnings_urls[batch_start:batch_end]
+                            
+                            status.add_status_message(f"📄 Processing batch {batch_start//batch_size + 1}/{(len(all_earnings_urls) + batch_size - 1)//batch_size} ({batch_start + 1}-{batch_end}/{len(all_earnings_urls)})")
+                            analyzer.session_manager.update_processing_status(status)
+                            
+                            # 显示当前批次正在处理的earnings
+                            earnings_status.write(f"📦 Processing batch {batch_start//batch_size + 1}/{(len(all_earnings_urls) + batch_size - 1)//batch_size}")
+                            
+                            # 显示当前批次的具体项目
+                            for url_path in batch_urls:
                                 parsed_info = analyzer.earnings_service.parse_transcript_url(url_path)
                                 if parsed_info:
                                     _ticker, year, quarter = parsed_info
-                                    logger.warning(f"Failed to retrieve or parse earnings call, skipping: {_ticker} {year} Q{quarter}")
+                                    earnings_status.write(f"⏳ 开始获取: {_ticker} {year} Q{quarter}")
+                            
+                            # 并行处理当前批次
+                            batch_results = analyzer.earnings_service.get_earnings_transcript_batch(batch_urls, max_workers=1)
+                            
+                            # 处理批次结果
+                            for i, (url_path, transcript_info) in enumerate(zip(batch_urls, batch_results)):
+                                if status.stop_requested:
+                                    break
+                                    
+                                parsed_info = analyzer.earnings_service.parse_transcript_url(url_path)
+                                if parsed_info:
+                                    _ticker, year, quarter = parsed_info
+                                    
+                                    if transcript_info and transcript_info.get('parsed_successfully'):
+                                        real_date = transcript_info.get('date')
+                                        if real_date:
+                                            if real_date >= cutoff_date:
+                                                doc = Document(
+                                                    type='Earnings Call',
+                                                    title=f"{transcript_info['ticker']} {transcript_info['year']} Q{transcript_info['quarter']} Earnings Call",
+                                                    date=real_date, url=url_path, content=transcript_info.get('content'),
+                                                    year=transcript_info.get('year'), quarter=transcript_info.get('quarter')
+                                                )
+                                                filtered_earnings_docs.append(doc)
+                                                earnings_status.write(f"✅ 成功获取: {_ticker} {year} Q{quarter} ({real_date})")
+                                            else:
+                                                earnings_status.write(f"⏹️ 日期过早，停止获取: {_ticker} {year} Q{quarter} ({real_date})")
+                                                status.add_status_message(f"Earnings call date {real_date} is earlier than cutoff date, stopping retrieval")
+                                                time.sleep(0.5)
+                                                break
+                                    else:
+                                        earnings_status.write(f"⚠️ 获取失败: {_ticker} {year} Q{quarter}")
+                                        logger.warning(f"Failed to retrieve or parse earnings call, skipping: {_ticker} {year} Q{quarter}")
+                            
+                            # 如果发现日期过早，停止处理
+                            if batch_results and any(
+                                result and result.get('parsed_successfully') and 
+                                result.get('date') and result.get('date') < cutoff_date 
+                                for result in batch_results
+                            ):
+                                break
                         
-                        # 如果发现日期过早，停止处理
-                        if batch_results and any(
-                            result and result.get('parsed_successfully') and 
-                            result.get('date') and result.get('date') < cutoff_date 
-                            for result in batch_results
-                        ):
-                            break
+                        earnings_status.write(f"✅ 完成！共获取 {len(filtered_earnings_docs)} 个有效的财报记录")
+                        earnings_status.update(label="✅ Earnings call retrieval completed", state="complete")
+                    
+                    # 清除earnings状态显示
+                    earnings_status_placeholder.empty()
                     
                     all_docs.extend(filtered_earnings_docs)
                     status.add_status_message(f"✅ Successfully filtered {len(filtered_earnings_docs)} relevant earnings calls")
@@ -2814,54 +2938,81 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                     status.add_status_message("📄 开始并行处理财报记录...")
                     analyzer.session_manager.update_processing_status(status)
                     
-                    # 分批处理以避免过多并发请求
-                    batch_size = 6  # 每批处理6个
-                    for batch_start in range(0, len(all_earnings_urls), batch_size):
-                        if status.stop_requested:
-                            break
-                            
-                        batch_end = min(batch_start + batch_size, len(all_earnings_urls))
-                        batch_urls = all_earnings_urls[batch_start:batch_end]
+                    # 创建earnings获取状态显示
+                    earnings_status_placeholder = st.empty()
+                    with earnings_status_placeholder.status("🎙️ 正在获取财报会议记录...", expanded=True) as earnings_status:
+                        earnings_status.write(f"📋 找到 {len(all_earnings_urls)} 个可用的财报记录")
+                        earnings_status.write(f"📅 按截止日期筛选: {cutoff_date}")
+                        earnings_status.write("🔄 开始批量处理...")
                         
-                        status.add_status_message(f"📄 处理批次 {batch_start//batch_size + 1}/{(len(all_earnings_urls) + batch_size - 1)//batch_size} ({batch_start + 1}-{batch_end}/{len(all_earnings_urls)})")
-                        analyzer.session_manager.update_processing_status(status)
-                        
-                        # 并行处理当前批次
-                        batch_results = analyzer.earnings_service.get_earnings_transcript_batch(batch_urls, max_workers=3)
-                        
-                        # 处理批次结果
-                        for i, (url_path, transcript_info) in enumerate(zip(batch_urls, batch_results)):
+                        # 分批处理以避免过多并发请求
+                        batch_size = 6  # 每批处理6个
+                        for batch_start in range(0, len(all_earnings_urls), batch_size):
                             if status.stop_requested:
                                 break
                                 
-                            if transcript_info and transcript_info.get('parsed_successfully'):
-                                real_date = transcript_info.get('date')
-                                if real_date:
-                                    if real_date >= cutoff_date:
-                                        doc = Document(
-                                            type='Earnings Call',
-                                            title=f"{transcript_info['ticker']} {transcript_info['year']} Q{transcript_info['quarter']} Earnings Call",
-                                            date=real_date, url=url_path, content=transcript_info.get('content'),
-                                            year=transcript_info.get('year'), quarter=transcript_info.get('quarter')
-                                        )
-                                        filtered_earnings_docs.append(doc)
-                                    else:
-                                        status.add_status_message(f"财报日期 {real_date} 早于截止日期，停止获取")
-                                        time.sleep(0.5)
-                                        break
-                            else:
+                            batch_end = min(batch_start + batch_size, len(all_earnings_urls))
+                            batch_urls = all_earnings_urls[batch_start:batch_end]
+                            
+                            status.add_status_message(f"📄 处理批次 {batch_start//batch_size + 1}/{(len(all_earnings_urls) + batch_size - 1)//batch_size} ({batch_start + 1}-{batch_end}/{len(all_earnings_urls)})")
+                            analyzer.session_manager.update_processing_status(status)
+                            
+                            # 显示当前批次正在处理的earnings
+                            earnings_status.write(f"📦 处理批次 {batch_start//batch_size + 1}/{(len(all_earnings_urls) + batch_size - 1)//batch_size}")
+                            
+                            # 显示当前批次的具体项目
+                            for url_path in batch_urls:
                                 parsed_info = analyzer.earnings_service.parse_transcript_url(url_path)
                                 if parsed_info:
                                     _ticker, year, quarter = parsed_info
-                                    logger.warning(f"获取或解析财报失败，跳过: {_ticker} {year} Q{quarter}")
+                                    earnings_status.write(f"⏳ 开始获取: {_ticker} {year} Q{quarter}")
+                            
+                            # 并行处理当前批次
+                            batch_results = analyzer.earnings_service.get_earnings_transcript_batch(batch_urls, max_workers=1)
+                            
+                            # 处理批次结果
+                            for i, (url_path, transcript_info) in enumerate(zip(batch_urls, batch_results)):
+                                if status.stop_requested:
+                                    break
+                                    
+                                parsed_info = analyzer.earnings_service.parse_transcript_url(url_path)
+                                if parsed_info:
+                                    _ticker, year, quarter = parsed_info
+                                    
+                                    if transcript_info and transcript_info.get('parsed_successfully'):
+                                        real_date = transcript_info.get('date')
+                                        if real_date:
+                                            if real_date >= cutoff_date:
+                                                doc = Document(
+                                                    type='Earnings Call',
+                                                    title=f"{transcript_info['ticker']} {transcript_info['year']} Q{transcript_info['quarter']} Earnings Call",
+                                                    date=real_date, url=url_path, content=transcript_info.get('content'),
+                                                    year=transcript_info.get('year'), quarter=transcript_info.get('quarter')
+                                                )
+                                                filtered_earnings_docs.append(doc)
+                                                earnings_status.write(f"✅ 成功获取: {_ticker} {year} Q{quarter} ({real_date})")
+                                            else:
+                                                earnings_status.write(f"⏹️ 日期过早，停止获取: {_ticker} {year} Q{quarter} ({real_date})")
+                                                status.add_status_message(f"财报日期 {real_date} 早于截止日期，停止获取")
+                                                time.sleep(0.5)
+                                                break
+                                    else:
+                                        earnings_status.write(f"⚠️ 获取失败: {_ticker} {year} Q{quarter}")
+                                        logger.warning(f"获取或解析财报失败，跳过: {_ticker} {year} Q{quarter}")
+                            
+                            # 如果发现日期过早，停止处理
+                            if batch_results and any(
+                                result and result.get('parsed_successfully') and 
+                                result.get('date') and result.get('date') < cutoff_date 
+                                for result in batch_results
+                            ):
+                                break
                         
-                        # 如果发现日期过早，停止处理
-                        if batch_results and any(
-                            result and result.get('parsed_successfully') and 
-                            result.get('date') and result.get('date') < cutoff_date 
-                            for result in batch_results
-                        ):
-                            break
+                        earnings_status.write(f"✅ 完成！共获取 {len(filtered_earnings_docs)} 个有效的财报记录")
+                        earnings_status.update(label="✅ 财报记录获取完成", state="complete")
+                    
+                    # 清除earnings状态显示
+                    earnings_status_placeholder.empty()
                     
                     all_docs.extend(filtered_earnings_docs)
                     status.add_status_message(f"✅ 成功筛选出 {len(filtered_earnings_docs)} 份相关财报")
@@ -2930,6 +3081,10 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                         completed_msg = f"6-K处理完成，生成了 {len(processed_docs)} 个分析文档" if language == "中文" else f"6-K processing completed, generated {len(processed_docs)} analysis documents"
                         status.add_status_message(completed_msg)
                         
+                        # 检查是否需要对6-K文件进行分类过滤
+                        should_filter_6k = (st.session_state.analyzer_use_sec_reports and 
+                                           not st.session_state.analyzer_use_sec_others)
+                        
                         # 处理所有6-K相关文档
                         for i, doc in enumerate(processed_docs):
                             if status.stop_requested:
@@ -2939,7 +3094,45 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                             status.add_status_message(analyzing_6k_msg)
                             analyzer.session_manager.update_processing_status(status)
                             
-                            analysis_result = analyzer.process_document(doc, status.processing_prompt, model_type)
+                            # 如果需要过滤6-K文件，先用便宜模型进行分类
+                            if should_filter_6k:
+                                classifying_msg = f"正在分类6-K文档..." if language == "中文" else f"Classifying 6-K document..."
+                                status.add_status_message(classifying_msg)
+                                
+                                # 确保文档有内容
+                                if not doc.content:
+                                    if doc.type == 'SEC Filing':
+                                        doc.content = analyzer.sec_service.download_filing(doc.url)
+                                
+                                # 使用便宜模型进行分类
+                                is_quarterly_annual_ipo = analyzer.gemini_service.classify_6k_document(doc.content)
+                                
+                                if not is_quarterly_annual_ipo:
+                                    # 如果不是季报/年报/IPO，跳过这个文档
+                                    skip_msg = f"跳过非季报/年报/IPO的6-K文档: {doc.title}" if language == "中文" else f"Skipping non-quarterly/annual/IPO 6-K document: {doc.title}"
+                                    status.add_status_message(skip_msg)
+                                    continue
+                                else:
+                                    # 如果是季报/年报/IPO，继续处理
+                                    continue_msg = f"检测到季报/年报/IPO文档，继续分析: {doc.title}" if language == "中文" else f"Detected quarterly/annual/IPO document, continuing analysis: {doc.title}"
+                                    status.add_status_message(continue_msg)
+                            
+                            # 创建AI分析状态显示
+                            ai_status_placeholder = st.empty()
+                            with ai_status_placeholder.status(f"🤖 AI正在分析6-K文档 {i+1}/{len(processed_docs)}...", expanded=True) as ai_status:
+                                ai_status.write(f"📄 正在分析: {doc.title}")
+                                ai_status.write("📝 正在构建分析提示词...")
+                                ai_status.write("🧠 正在调用AI模型进行深度分析...")
+                                ai_status.write("⏳ 等待AI响应中（这可能需要几分钟）...")
+                                
+                                # 执行实际的AI分析
+                                analysis_result = analyzer.process_document(doc, status.processing_prompt, model_type)
+                                
+                                ai_status.write("✅ AI分析完成！")
+                                ai_status.update(label=f"✅ 6-K文档 {i+1}/{len(processed_docs)} 分析完成", state="complete")
+                            
+                            # 清除AI状态显示
+                            ai_status_placeholder.empty()
                             
                             # 根据文档类型设置头像
                             avatar = "📄"
@@ -2971,7 +3164,37 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                             status.add_status_message(completed_6k_msg)
                     else:
                         # 普通文档处理
-                        analysis_result = analyzer.process_document(current_doc, status.processing_prompt, model_type)
+                        # 创建AI分析状态显示
+                        ai_status_placeholder = st.empty()
+                        with ai_status_placeholder.status("🤖 AI正在分析文档内容...", expanded=True) as ai_status:
+                            # 显示详细的AI分析步骤
+                            ai_status.write("📄 正在准备文档内容...")
+                            
+                            # 检查文档内容是否需要下载
+                            if not current_doc.content:
+                                ai_status.write("📥 正在下载文档内容...")
+                                if current_doc.type == 'SEC Filing':
+                                    if hasattr(current_doc, 'form_type') and current_doc.form_type == '6-K':
+                                        ai_status.write("⚠️ 6-K文件内容处理失败")
+                                    else:
+                                        ai_status.write("🔗 正在从SEC EDGAR下载文档...")
+                                elif current_doc.type == 'HK Stock Filing':
+                                    ai_status.write("🔗 正在从港交所下载文档...")
+                                elif current_doc.type == 'Earnings Call':
+                                    ai_status.write("🔗 正在获取财报会议记录...")
+                            
+                            ai_status.write("📝 正在构建分析提示词...")
+                            ai_status.write("🧠 正在调用AI模型进行深度分析...")
+                            ai_status.write("⏳ 等待AI响应中（这可能需要几分钟）...")
+                            
+                            # 执行实际的AI分析
+                            analysis_result = analyzer.process_document(current_doc, status.processing_prompt, model_type)
+                            
+                            ai_status.write("✅ AI分析完成！")
+                            ai_status.update(label="✅ AI分析完成", state="complete")
+                        
+                        # 清除AI状态显示
+                        ai_status_placeholder.empty()
                         
                         # 根据文档类型设置头像
                         if current_doc.type == 'SEC Filing':
@@ -3063,6 +3286,7 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
             final_report = analyzer.integrate_results(
                 successful_results, status.integration_prompt, status.user_question, ticker, model_type
             )
+            final_report = """### Summary\n""" + final_report
             st.session_state.analyzer_messages.append({"role": "assistant", "content": final_report, "avatar": "📊"})
             
             report_completed_msg = "综合报告生成完毕！" if language == "中文" else "Comprehensive report generated!"
