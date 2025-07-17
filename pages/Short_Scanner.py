@@ -9,6 +9,7 @@ Features:
 - 实时进度跟踪
 - 错误处理和重试机制
 - 缓存优化
+- 做空信号自动检测系统
 """
 
 import streamlit as st
@@ -33,6 +34,8 @@ import html
 from urllib.parse import urljoin
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+from abc import ABC, abstractmethod
+from enum import Enum
 
 # 配置选项：是否保存transcript文件到磁盘
 SAVE_TRANSCRIPT_FILES = os.getenv("SAVE_TRANSCRIPT_FILES", "false").lower() == "true"
@@ -47,8 +50,8 @@ from itertools import cycle
 
 # 页面配置
 st.set_page_config(
-    page_title="SEC & 财报会议记录分析师",
-    page_icon="📊",
+    page_title="Short Signal Scanner",
+    page_icon="🎯",
     layout="wide"
 )
 
@@ -59,11 +62,845 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# 做空信号检测相关的数据类
+@dataclass
+class ShortSignal:
+    """做空信号数据类"""
+    signal_type: str
+    severity: str  # "High", "Medium", "Low"
+    confidence: float  # 0-1
+    title: str
+    description: str
+    evidence: str
+    recommendation: str
+    source_documents: List[str]
+    detected_at: datetime
+    
+class SignalSeverity(Enum):
+    HIGH = "High"
+    MEDIUM = "Medium"
+    LOW = "Low"
+
+@dataclass
+class DetectionResult:
+    """检测结果数据类"""
+    detector_name: str
+    signals: List[ShortSignal]
+    processing_time: float
+    success: bool
+    error_message: Optional[str] = None
+    analyzed_documents: List[str] = field(default_factory=list)
+
+# 做空信号检测器基类
+class ShortDetector(ABC):
+    """做空信号检测器基类"""
+    
+    def __init__(self, name: str, description: str, priority: int = 50):
+        self.name = name
+        self.description = description
+        self.priority = priority  # 优先级，数字越小优先级越高
+        self.gemini_service = None
+        
+    def set_gemini_service(self, service):
+        """设置Gemini服务"""
+        self.gemini_service = service
+    
+    @abstractmethod
+    def detect(self, documents: List, model_type: str) -> DetectionResult:
+        """检测做空信号"""
+        pass
+    
+    @abstractmethod
+    def get_analysis_prompt(self, documents: List) -> str:
+        """获取分析提示词"""
+        pass
+    
+    def parse_ai_response(self, response: str) -> List[ShortSignal]:
+        """解析AI响应为做空信号"""
+        try:
+            # 尝试解析JSON响应
+            match = re.search(r"```json\s*(\{.*?\})\s*```", response, re.DOTALL)
+            if match:
+                json_str = match.group(1)
+            else:
+                json_str = response
+            
+            data = json.loads(json_str)
+            signals = []
+            
+            for signal_data in data.get("signals", []):
+                signal = ShortSignal(
+                    signal_type=signal_data.get("signal_type", "Unknown"),
+                    severity=signal_data.get("severity", "Low"),
+                    confidence=float(signal_data.get("confidence", 0.5)),
+                    title=signal_data.get("title", ""),
+                    description=signal_data.get("description", ""),
+                    evidence=signal_data.get("evidence", ""),
+                    recommendation=signal_data.get("recommendation", ""),
+                    source_documents=signal_data.get("source_documents", []),
+                    detected_at=datetime.now()
+                )
+                signals.append(signal)
+            
+            return signals
+            
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.warning(f"解析AI响应失败: {e}")
+            # 如果JSON解析失败，创建一个通用信号
+            return [ShortSignal(
+                signal_type=self.name,
+                severity="Medium",
+                confidence=0.3,
+                title="检测结果",
+                description=response[:500] + "..." if len(response) > 500 else response,
+                evidence="AI检测结果",
+                recommendation="需要人工审核",
+                source_documents=[],
+                detected_at=datetime.now()
+            )]
+
+# 具体的检测器实现
+class AccountsReceivableDetector(ShortDetector):
+    """应收账款异常检测器"""
+    
+    def __init__(self):
+        super().__init__(
+            name="应收账款异常检测",
+            description="检测应收账款的异常变动，如突然减少但转移到长期应收款",
+            priority=10
+        )
+    
+    def detect(self, documents: List, model_type: str) -> DetectionResult:
+        start_time = time.time()
+        
+        try:
+            prompt = self.get_analysis_prompt(documents)
+            response = self.gemini_service.call_api(prompt, model_type)
+            signals = self.parse_ai_response(response)
+            
+            return DetectionResult(
+                detector_name=self.name,
+                signals=signals,
+                processing_time=time.time() - start_time,
+                success=True,
+                analyzed_documents=[doc.title for doc in documents]
+            )
+            
+        except Exception as e:
+            logger.error(f"应收账款检测失败: {e}")
+            return DetectionResult(
+                detector_name=self.name,
+                signals=[],
+                processing_time=time.time() - start_time,
+                success=False,
+                error_message=str(e)
+            )
+    
+    def get_analysis_prompt(self, documents: List) -> str:
+        language = st.session_state.get("selected_language", "中文")
+        
+        if language == "中文":
+            return f"""
+            你是一个专业的财务造假检测专家，专门检测应收账款的异常变动。
+
+            检测重点：
+            1. 应收账款突然大幅减少，但同时长期应收款增加
+            2. 应收账款周转率异常变化
+            3. 应收账款减少的原因说明是否合理
+            4. 是否存在将流动资产转为非流动资产的造假行为
+
+            请仔细分析以下文档，寻找应收账款相关的异常信号：
+
+            文档内容：
+            {self._format_documents(documents)}
+
+            请以JSON格式返回检测结果：
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "应收账款异常",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "信号标题",
+                        "description": "详细描述发现的异常",
+                        "evidence": "具体证据和数据",
+                        "recommendation": "建议采取的行动",
+                        "source_documents": ["文档1", "文档2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+        else:
+            return f"""
+            You are a professional financial fraud detection expert specializing in accounts receivable anomaly detection.
+
+            Detection Focus:
+            1. Sudden significant decrease in accounts receivable with simultaneous increase in long-term receivables
+            2. Abnormal changes in accounts receivable turnover ratio
+            3. Whether explanations for accounts receivable decreases are reasonable
+            4. Evidence of fraudulent conversion of current assets to non-current assets
+
+            Please analyze the following documents for accounts receivable related anomalies:
+
+            Document Content:
+            {self._format_documents(documents)}
+
+            Return detection results in JSON format:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "Accounts Receivable Anomaly",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "Signal Title",
+                        "description": "Detailed description of anomaly",
+                        "evidence": "Specific evidence and data",
+                        "recommendation": "Recommended action",
+                        "source_documents": ["Document1", "Document2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+    
+    def _format_documents(self, documents: List) -> str:
+        """格式化文档内容"""
+        formatted = ""
+        for doc in documents:
+            formatted += f"\n=== {doc.title} ({doc.date}) ===\n"
+            formatted += f"{doc.content}\n"
+        return formatted
+
+class MarketPositionDetector(ShortDetector):
+    """市场地位变化检测器"""
+    
+    def __init__(self):
+        super().__init__(
+            name="市场地位变化检测",
+            description="检测公司从行业龙头地位下滑或面临强劲竞争对手",
+            priority=20
+        )
+    
+    def detect(self, documents: List, model_type: str) -> DetectionResult:
+        start_time = time.time()
+        
+        try:
+            prompt = self.get_analysis_prompt(documents)
+            response = self.gemini_service.call_api(prompt, model_type)
+            signals = self.parse_ai_response(response)
+            
+            return DetectionResult(
+                detector_name=self.name,
+                signals=signals,
+                processing_time=time.time() - start_time,
+                success=True,
+                analyzed_documents=[doc.title for doc in documents]
+            )
+            
+        except Exception as e:
+            logger.error(f"市场地位检测失败: {e}")
+            return DetectionResult(
+                detector_name=self.name,
+                signals=[],
+                processing_time=time.time() - start_time,
+                success=False,
+                error_message=str(e)
+            )
+    
+    def get_analysis_prompt(self, documents: List) -> str:
+        language = st.session_state.get("selected_language", "中文")
+        
+        if language == "中文":
+            return f"""
+            你是一个专业的行业分析师，专门检测公司市场地位的变化。
+
+            检测重点：
+            1. 公司市场份额是否在下降
+            2. 是否出现强劲的竞争对手
+            3. 行业排名是否从第一名滑落
+            4. 竞争优势是否在减弱
+            5. 管理层对竞争态势的描述变化
+
+            请仔细分析以下文档，寻找市场地位变化的信号：
+
+            文档内容：
+            {self._format_documents(documents)}
+
+            请以JSON格式返回检测结果：
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "市场地位下滑",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "信号标题",
+                        "description": "详细描述市场地位变化",
+                        "evidence": "具体证据和数据",
+                        "recommendation": "建议采取的行动",
+                        "source_documents": ["文档1", "文档2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+        else:
+            return f"""
+            You are a professional industry analyst specializing in detecting changes in company market position.
+
+            Detection Focus:
+            1. Declining market share
+            2. Emergence of strong competitors
+            3. Fall from industry leadership position
+            4. Weakening competitive advantages
+            5. Changes in management's description of competitive landscape
+
+            Please analyze the following documents for market position change signals:
+
+            Document Content:
+            {self._format_documents(documents)}
+
+            Return detection results in JSON format:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "Market Position Decline",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "Signal Title",
+                        "description": "Detailed description of position change",
+                        "evidence": "Specific evidence and data",
+                        "recommendation": "Recommended action",
+                        "source_documents": ["Document1", "Document2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+    
+    def _format_documents(self, documents: List) -> str:
+        """格式化文档内容"""
+        formatted = ""
+        for doc in documents:
+            formatted += f"\n=== {doc.title} ({doc.date}) ===\n"
+            formatted += f"{doc.content}\n"
+        return formatted
+
+class InconsistencyDetector(ShortDetector):
+    """前后不一致检测器"""
+    
+    def __init__(self):
+        super().__init__(
+            name="前后不一致检测",
+            description="检测同一文档内不同部门描述不一致或前后矛盾",
+            priority=15
+        )
+    
+    def detect(self, documents: List, model_type: str) -> DetectionResult:
+        start_time = time.time()
+        
+        try:
+            prompt = self.get_analysis_prompt(documents)
+            response = self.gemini_service.call_api(prompt, model_type)
+            signals = self.parse_ai_response(response)
+            
+            return DetectionResult(
+                detector_name=self.name,
+                signals=signals,
+                processing_time=time.time() - start_time,
+                success=True,
+                analyzed_documents=[doc.title for doc in documents]
+            )
+            
+        except Exception as e:
+            logger.error(f"前后不一致检测失败: {e}")
+            return DetectionResult(
+                detector_name=self.name,
+                signals=[],
+                processing_time=time.time() - start_time,
+                success=False,
+                error_message=str(e)
+            )
+    
+    def get_analysis_prompt(self, documents: List) -> str:
+        language = st.session_state.get("selected_language", "中文")
+        
+        if language == "中文":
+            return f"""
+            你是一个专业的财务造假检测专家，专门检测文档内部的前后不一致。
+
+            检测重点：
+            1. 同一文档中不同部门的描述是否一致
+            2. 数字与文字描述是否匹配
+            3. 同一文档中前后章节的描述是否矛盾
+            4. 关键指标的描述是否前后一致
+            5. 风险披露与业务描述是否匹配
+
+            请仔细分析以下文档，寻找前后不一致的信号：
+
+            文档内容：
+            {self._format_documents(documents)}
+
+            请以JSON格式返回检测结果：
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "前后不一致",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "信号标题",
+                        "description": "详细描述不一致之处",
+                        "evidence": "具体证据和矛盾点",
+                        "recommendation": "建议采取的行动",
+                        "source_documents": ["文档1", "文档2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+        else:
+            return f"""
+            You are a professional financial fraud detection expert specializing in internal inconsistency detection.
+
+            Detection Focus:
+            1. Consistency between different departments' descriptions
+            2. Match between numbers and text descriptions
+            3. Contradictions between different sections
+            4. Consistency in key indicator descriptions
+            5. Match between risk disclosures and business descriptions
+
+            Please analyze the following documents for inconsistency signals:
+
+            Document Content:
+            {self._format_documents(documents)}
+
+            Return detection results in JSON format:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "Internal Inconsistency",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "Signal Title",
+                        "description": "Detailed description of inconsistency",
+                        "evidence": "Specific evidence and contradictions",
+                        "recommendation": "Recommended action",
+                        "source_documents": ["Document1", "Document2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+    
+    def _format_documents(self, documents: List) -> str:
+        """格式化文档内容"""
+        formatted = ""
+        for doc in documents:
+            formatted += f"\n=== {doc.title} ({doc.date}) ===\n"
+            formatted += f"{doc.content}\n"
+        return formatted
+
+class MetricsDisclosureDetector(ShortDetector):
+    """关键指标披露停止检测器"""
+    
+    def __init__(self):
+        super().__init__(
+            name="关键指标披露停止检测",
+            description="检测原本披露的关键指标突然停止公布",
+            priority=25
+        )
+    
+    def detect(self, documents: List, model_type: str) -> DetectionResult:
+        start_time = time.time()
+        
+        try:
+            prompt = self.get_analysis_prompt(documents)
+            response = self.gemini_service.call_api(prompt, model_type)
+            signals = self.parse_ai_response(response)
+            
+            return DetectionResult(
+                detector_name=self.name,
+                signals=signals,
+                processing_time=time.time() - start_time,
+                success=True,
+                analyzed_documents=[doc.title for doc in documents]
+            )
+            
+        except Exception as e:
+            logger.error(f"指标披露检测失败: {e}")
+            return DetectionResult(
+                detector_name=self.name,
+                signals=[],
+                processing_time=time.time() - start_time,
+                success=False,
+                error_message=str(e)
+            )
+    
+    def get_analysis_prompt(self, documents: List) -> str:
+        language = st.session_state.get("selected_language", "中文")
+        
+        if language == "中文":
+            return f"""
+            你是一个专业的财务分析师，专门检测关键指标披露的变化。
+
+            检测重点：
+            1. 原本定期披露的关键指标是否突然停止公布
+            2. GMV、活跃用户、订单量等关键运营指标的披露变化
+            3. 毛利率、EBITDA等财务指标的披露变化
+            4. 分业务线数据的披露变化
+            5. 对停止披露的解释是否充分
+
+            请仔细分析以下文档，寻找指标披露停止的信号：
+
+            文档内容：
+            {self._format_documents(documents)}
+
+            请以JSON格式返回检测结果：
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "关键指标披露停止",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "信号标题",
+                        "description": "详细描述停止披露的指标",
+                        "evidence": "具体证据和时间点",
+                        "recommendation": "建议采取的行动",
+                        "source_documents": ["文档1", "文档2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+        else:
+            return f"""
+            You are a professional financial analyst specializing in detecting changes in key metrics disclosure.
+
+            Detection Focus:
+            1. Previously disclosed key metrics suddenly stopped being reported
+            2. Changes in disclosure of GMV, active users, order volume, etc.
+            3. Changes in financial metrics disclosure (gross margin, EBITDA, etc.)
+            4. Changes in business segment data disclosure
+            5. Adequacy of explanations for discontinued disclosure
+
+            Please analyze the following documents for metrics disclosure cessation signals:
+
+            Document Content:
+            {self._format_documents(documents)}
+
+            Return detection results in JSON format:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "Key Metrics Disclosure Cessation",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "Signal Title",
+                        "description": "Detailed description of discontinued metrics",
+                        "evidence": "Specific evidence and timeline",
+                        "recommendation": "Recommended action",
+                        "source_documents": ["Document1", "Document2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+    
+    def _format_documents(self, documents: List) -> str:
+        """格式化文档内容"""
+        formatted = ""
+        for doc in documents:
+            formatted += f"\n=== {doc.title} ({doc.date}) ===\n"
+            formatted += f"{doc.content}\n"
+        return formatted
+
+class EarningsCallAnalysisDetector(ShortDetector):
+    """财报会议记录分析检测器"""
+    
+    def __init__(self):
+        super().__init__(
+            name="财报会议记录分析",
+            description="分析财报会议记录中的管理层回答质量、情绪和模式变化",
+            priority=30
+        )
+    
+    def detect(self, documents: List, model_type: str) -> DetectionResult:
+        start_time = time.time()
+        
+        try:
+            # 只分析财报会议记录
+            earnings_docs = [doc for doc in documents if doc.type == 'Earnings Call']
+            if not earnings_docs:
+                return DetectionResult(
+                    detector_name=self.name,
+                    signals=[],
+                    processing_time=time.time() - start_time,
+                    success=True,
+                    analyzed_documents=[]
+                )
+            
+            prompt = self.get_analysis_prompt(earnings_docs)
+            response = self.gemini_service.call_api(prompt, model_type)
+            signals = self.parse_ai_response(response)
+            
+            return DetectionResult(
+                detector_name=self.name,
+                signals=signals,
+                processing_time=time.time() - start_time,
+                success=True,
+                analyzed_documents=[doc.title for doc in earnings_docs]
+            )
+            
+        except Exception as e:
+            logger.error(f"财报会议记录分析失败: {e}")
+            return DetectionResult(
+                detector_name=self.name,
+                signals=[],
+                processing_time=time.time() - start_time,
+                success=False,
+                error_message=str(e)
+            )
+    
+    def get_analysis_prompt(self, documents: List) -> str:
+        language = st.session_state.get("selected_language", "中文")
+        
+        if language == "中文":
+            return f"""
+            你是一个专业的财报会议记录分析专家，专门分析管理层的回答质量和模式。
+
+            检测重点：
+            1. 管理层回答是否在找借口，避免正面回答
+            2. 不同季度会议记录的总字数变化
+            3. Q&A环节字数和问题数量的变化
+            4. 不同高管回答的字数和质量变化
+            5. 管理层整体情绪变化（乐观/悲观/防御性）
+            6. 对具体数字的回答是否变得模糊
+            7. 回答的专业性和透明度变化
+
+            请仔细分析以下财报会议记录，寻找管理层行为异常的信号：
+
+            文档内容：
+            {self._format_documents(documents)}
+
+            请以JSON格式返回检测结果：
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "财报会议记录异常",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "信号标题",
+                        "description": "详细描述管理层行为异常",
+                        "evidence": "具体证据和模式变化",
+                        "recommendation": "建议采取的行动",
+                        "source_documents": ["文档1", "文档2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+        else:
+            return f"""
+            You are a professional earnings call analysis expert specializing in management response quality and patterns.
+
+            Detection Focus:
+            1. Whether management is making excuses or avoiding direct answers
+            2. Changes in total word count across different quarters
+            3. Changes in Q&A section word count and question quantity
+            4. Changes in different executives' response length and quality
+            5. Overall management sentiment changes (optimistic/pessimistic/defensive)
+            6. Whether numerical answers are becoming vague
+            7. Changes in response professionalism and transparency
+
+            Please analyze the following earnings call transcripts for management behavior anomalies:
+
+            Document Content:
+            {self._format_documents(documents)}
+
+            Return detection results in JSON format:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "Earnings Call Anomaly",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "Signal Title",
+                        "description": "Detailed description of management behavior anomaly",
+                        "evidence": "Specific evidence and pattern changes",
+                        "recommendation": "Recommended action",
+                        "source_documents": ["Document1", "Document2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+    
+    def _format_documents(self, documents: List) -> str:
+        """格式化文档内容"""
+        formatted = ""
+        for doc in documents:
+            formatted += f"\n=== {doc.title} ({doc.date}) ===\n"
+            formatted += f"{doc.content}\n"
+        return formatted
+
+# 做空信号分析器主类
+class ShortSignalAnalyzer:
+    """做空信号分析器"""
+    
+    def __init__(self, gemini_service):
+        self.gemini_service = gemini_service
+        self.detectors = self._initialize_detectors()
+    
+    def _initialize_detectors(self) -> List[ShortDetector]:
+        """初始化所有检测器"""
+        detectors = [
+            AccountsReceivableDetector(),
+            MarketPositionDetector(),
+            InconsistencyDetector(),
+            MetricsDisclosureDetector(),
+            EarningsCallAnalysisDetector(),
+        ]
+        
+        # 设置Gemini服务
+        for detector in detectors:
+            detector.set_gemini_service(self.gemini_service)
+        
+        # 按优先级排序
+        detectors.sort(key=lambda x: x.priority)
+        return detectors
+    
+    def get_available_detectors(self) -> List[ShortDetector]:
+        """获取可用的检测器列表"""
+        return self.detectors
+    
+    def analyze_documents(self, documents: List, selected_detectors: List[str], model_type: str) -> List[DetectionResult]:
+        """分析文档并返回检测结果"""
+        results = []
+        
+        for detector in self.detectors:
+            if detector.name in selected_detectors:
+                logger.info(f"开始运行检测器: {detector.name}")
+                try:
+                    result = detector.detect(documents, model_type)
+                    results.append(result)
+                    logger.info(f"检测器 {detector.name} 完成，发现 {len(result.signals)} 个信号")
+                    
+                    # 立即更新session_state，让用户实时看到结果
+                    st.session_state.current_scan_results = results.copy()
+                    
+                except Exception as e:
+                    logger.error(f"检测器 {detector.name} 执行失败: {e}")
+                    error_result = DetectionResult(
+                        detector_name=detector.name,
+                        signals=[],
+                        processing_time=0,
+                        success=False,
+                        error_message=str(e)
+                    )
+                    results.append(error_result)
+                    
+                    # 即使失败也要更新session_state
+                    st.session_state.current_scan_results = results.copy()
+        
+        return results
+    
+    def generate_comprehensive_report(self, results: List[DetectionResult], ticker: str, model_type: str) -> str:
+        """生成综合做空信号报告"""
+        language = st.session_state.get("selected_language", "中文")
+        
+        if language == "中文":
+            report_prompt = f"""
+            你是一个专业的做空分析师，请基于以下检测结果生成一份综合的做空信号报告。
+
+            股票代码: {ticker}
+            分析日期: {datetime.now().strftime('%Y-%m-%d')}
+
+            检测结果：
+            {self._format_results(results)}
+
+            请生成一份专业的做空信号报告，包含：
+            1. 执行摘要（总体风险评估）
+            2. 高风险信号汇总
+            3. 各检测器详细发现
+            4. 综合风险评分（1-100分）
+            5. 做空建议和时机
+            6. 风险提示
+
+            报告要求：
+            - 使用专业的金融分析语言
+            - 突出重点风险信号
+            - 提供具体的行动建议
+            - 使用表格和列表增强可读性
+            - 基于证据得出结论
+            """
+        else:
+            report_prompt = f"""
+            You are a professional short-selling analyst. Please generate a comprehensive short signal report based on the following detection results.
+
+            Stock Symbol: {ticker}
+            Analysis Date: {datetime.now().strftime('%Y-%m-%d')}
+
+            Detection Results:
+            {self._format_results(results)}
+
+            Please generate a professional short signal report including:
+            1. Executive Summary (Overall Risk Assessment)
+            2. High-Risk Signal Summary
+            3. Detailed Findings by Detector
+            4. Comprehensive Risk Score (1-100)
+            5. Short-selling Recommendation and Timing
+            6. Risk Warnings
+
+            Report Requirements:
+            - Use professional financial analysis language
+            - Highlight key risk signals
+            - Provide specific action recommendations
+            - Use tables and lists for readability
+            - Base conclusions on evidence
+            """
+        
+        return self.gemini_service.call_api(report_prompt, model_type)
+    
+    def _format_results(self, results: List[DetectionResult]) -> str:
+        """格式化检测结果"""
+        formatted = ""
+        for result in results:
+            formatted += f"\n=== {result.detector_name} ===\n"
+            formatted += f"执行状态: {'成功' if result.success else '失败'}\n"
+            formatted += f"处理时间: {result.processing_time:.2f}秒\n"
+            formatted += f"发现信号数: {len(result.signals)}\n"
+            
+            if result.error_message:
+                formatted += f"错误信息: {result.error_message}\n"
+            
+            for signal in result.signals:
+                formatted += f"\n- 信号类型: {signal.signal_type}\n"
+                formatted += f"  严重程度: {signal.severity}\n"
+                formatted += f"  置信度: {signal.confidence:.2f}\n"
+                formatted += f"  标题: {signal.title}\n"
+                formatted += f"  描述: {signal.description}\n"
+                formatted += f"  证据: {signal.evidence}\n"
+                formatted += f"  建议: {signal.recommendation}\n"
+            
+            formatted += "\n"
+        
+        return formatted
+
 # 语言配置
 LANGUAGE_CONFIG = {
     "English": {
-        "title": "📊 Financial Disclosure & Earnings Insights",
-        "sidebar_header": "📋 Configuration",
+        "title": "🎯 Short Signal Scanner",
+        "sidebar_header": "📋 Scanner Configuration",
         "ticker_label": "Ticker",
         "ticker_placeholder": "e.g., AAPL, 1024 HK",
         "years_label": "Years of Data",
@@ -74,6 +911,8 @@ LANGUAGE_CONFIG = {
         "sec_others_hk": "Other Announcements",
         "earnings_label": "Earnings Call Transcripts",
         "earnings_caption": "Earnings call transcripts",
+        "detectors_header": "🔍 Detection Modules",
+        "detectors_label": "Select Detectors",
         "model_header": "🤖 AI Model",
         "model_label": "Select Model",
         "api_header": "💳 API Configuration",
@@ -87,7 +926,7 @@ LANGUAGE_CONFIG = {
         "language_label": "Select Language",
         "hk_stock_info": "🏢 Hong Kong Stock - Standardized to: {}",
         "us_stock_info": "🇺🇸 US Stock",
-        "chat_placeholder": "Please enter your question...",
+        "scan_button": "🔍 Start Short Signal Scan",
         "status_header": "📋 STATUS",
         "stop_button": "⏹️ Stop Processing",
         "progress_text": "Progress: {}/{} documents",
@@ -95,33 +934,35 @@ LANGUAGE_CONFIG = {
         "processing_stopped": "Processing has been stopped by user request."
     },
     "中文": {
-        "title": "📊 Financial Disclosure & Earnings Insights",
-        "sidebar_header": "📋 Configuration",
+        "title": "🎯 做空信号扫描器",
+        "sidebar_header": "📋 扫描器配置",
         "ticker_label": "Ticker",
         "ticker_placeholder": "e.g., AAPL, 1024 HK",
-        "years_label": "Years of Data",
-        "data_type_header": "📄 Data Type",
-        "sec_reports_us": "Quarterly & Annual (10-K, 10-Q, 20-F, 6-K, 424B4)",
-        "sec_others_us": "Others (8-K, S-8, DEF 14A, F-3)",
-        "sec_reports_hk": "Quarterly & Annual Results",
-        "sec_others_hk": "Other Announcements",
-        "earnings_label": "Earnings Call Transcripts",
-        "earnings_caption": "Earnings call transcripts",
-        "model_header": "🤖 AI Model",
-        "model_label": "Select Model",
-        "api_header": "💳 API Configuration",
-        "access_code_label": "Enter Access Code",
-        "access_code_placeholder": "Enter access code to enable premium API",
-        "premium_enabled": "✅ Premium API Service Enabled",
-        "free_api": "ℹ️ Using Free API Service",
-        "access_code_error": "❌ Invalid Access Code",
-        "premium_success": "🎉 Premium API Service Enabled!",
-        "language_header": "🌐 Language",
-        "language_label": "Select Language",
+        "years_label": "数据年份",
+        "data_type_header": "📄 数据类型",
+        "sec_reports_us": "季报年报 (10-K, 10-Q, 20-F, 6-K, 424B4)",
+        "sec_others_us": "其他文件 (8-K, S-8, DEF 14A, F-3)",
+        "sec_reports_hk": "季报年报",
+        "sec_others_hk": "其他公告",
+        "earnings_label": "财报会议记录",
+        "earnings_caption": "财报会议记录",
+        "detectors_header": "🔍 检测模块",
+        "detectors_label": "选择检测器",
+        "model_header": "🤖 AI模型",
+        "model_label": "选择模型",
+        "api_header": "💳 API配置",
+        "access_code_label": "输入访问代码",
+        "access_code_placeholder": "输入访问代码以启用高级API",
+        "premium_enabled": "✅ 高级API服务已启用",
+        "free_api": "ℹ️ 使用免费API服务",
+        "access_code_error": "❌ 无效访问代码",
+        "premium_success": "🎉 高级API服务已启用！",
+        "language_header": "🌐 语言",
+        "language_label": "选择语言",
         "hk_stock_info": "🏢 港股 - 已标准化为: {}",
         "us_stock_info": "🇺🇸 美股",
-        "chat_placeholder": "请输入您的问题...",
-        "status_header": "📋 STATUS",
+        "scan_button": "🔍 开始做空信号扫描",
+        "status_header": "📋 状态",
         "stop_button": "⏹️ 停止处理",
         "progress_text": "进度: {}/{} 个文档",
         "stop_success": "⏹️ 用户已停止处理",
@@ -1203,6 +2044,7 @@ class SessionManager:
         # Filter the session state dict to only include known fields
         current_status_dict = st.session_state.get("processing_status", {})
         filtered_args = {k: v for k, v in current_status_dict.items() if k in known_fields}
+        
         return ProcessingStatus(**filtered_args)
     
     @staticmethod
@@ -2261,7 +3103,7 @@ class SECEarningsAnalyzer:
                 - 提供准确、专业的分析
                 - 確保回答都來自文檔內容，不要憑空想像
                 - 我沒時間看 確保回答直接說重點 不用像人一樣還要客套話
-                - markdown輸出，將所有表示金額的 $ 改為 \$，以避免 Markdown 被誤判為數學公式。
+                - markdown輸出，將所有表示金額的 $ 改為 \\$，以避免 Markdown 被誤判為數學公式。
 
 
                 
@@ -2555,6 +3397,14 @@ def main():
     # 在应用初始化之前，确保session state已经存在
     SessionManager.init_session_state()
     
+    # 初始化session state for short scanner
+    if "short_scanner_results" not in st.session_state:
+        st.session_state.short_scanner_results = []
+    if "selected_detectors" not in st.session_state:
+        st.session_state.selected_detectors = []
+    if "current_scan_results" not in st.session_state:
+        st.session_state.current_scan_results = []
+    
     # 處理URL參數
     query_params = st.query_params
     if "p" in query_params:
@@ -2566,6 +3416,9 @@ def main():
 
     # 初始化应用
     analyzer = initialize_app()
+    
+    # 初始化做空信号分析器
+    short_analyzer = ShortSignalAnalyzer(analyzer.gemini_service)
     
     # 获取当前语言设置
     current_language = st.session_state.get("selected_language", "English")
@@ -2622,6 +3475,29 @@ def main():
             
             use_earnings = st.checkbox(lang_config["earnings_label"], value=st.session_state.analyzer_use_earnings)
             st.caption(lang_config["earnings_caption"])
+        
+        # 检测模块选择
+        st.subheader(lang_config["detectors_header"])
+        
+        available_detectors = short_analyzer.get_available_detectors()
+        detector_options = []
+        for detector in available_detectors:
+            detector_options.append(detector.name)
+        
+        selected_detectors = st.multiselect(
+            lang_config["detectors_label"],
+            options=detector_options,
+            default=st.session_state.selected_detectors if st.session_state.selected_detectors else detector_options,
+            help="选择要运行的检测器"
+        )
+        
+        # 显示检测器描述
+        if selected_detectors:
+            st.markdown("**选中的检测器：**")
+            for detector in available_detectors:
+                if detector.name in selected_detectors:
+                    st.markdown(f"• **{detector.name}**")
+                    st.markdown(f"  {detector.description}")
         
         # 模型选择
         st.subheader(lang_config["model_header"])
@@ -2681,73 +3557,103 @@ def main():
         st.session_state.analyzer_use_sec_others = use_sec_others
         st.session_state.analyzer_use_earnings = use_earnings
         st.session_state.analyzer_model = model_type
+        st.session_state.selected_detectors = selected_detectors
     
     # 主内容区域
-
     
-    # 显示历史对话和处理状态
-    for i, message in enumerate(st.session_state.analyzer_messages):
-        with st.chat_message(message["role"], avatar=message.get("avatar")):
-            st.markdown(message["content"])
-            
-            # 如果消息包含文档文件路径，显示原文预览
-            if message.get("temp_file_path") and os.path.exists(message["temp_file_path"]):
-                file_content = analyzer.document_manager.get_download_content(message["temp_file_path"])
-                if file_content:
-                    # 解码文件内容
-                    content_text = file_content.decode('utf-8')
+    # 显示历史扫描结果
+    if st.session_state.short_scanner_results:
+        st.subheader("📊 历史扫描结果")
+        
+        for i, result in enumerate(st.session_state.short_scanner_results):
+            with st.expander(f"扫描结果 {i+1}: {result['ticker']} ({result['timestamp']})", expanded=True):
+                st.markdown(result['report'])
+        
+        st.markdown("---")
+    
+    # 显示当前扫描的中间结果
+    if st.session_state.current_scan_results:
+        st.subheader("🔍 当前扫描结果")
+        
+        total_signals = 0
+        high_risk_signals = 0
+        
+        for result in st.session_state.current_scan_results:
+            with st.expander(f"📊 {result.detector_name} - {len(result.signals)} 个信号", expanded=True):
+                if result.success:
+                    st.success(f"✅ 执行成功 - 用时 {result.processing_time:.2f}秒")
                     
-                    # 使用 expander 来显示原文内容
-                    with st.expander("📄 查看原文", expanded=False):
-                        # 添加一些样式来改善显示效果
-                        st.markdown("---")
-                        
-                        # 显示文档信息
-                        st.caption(f"📋 文档：{message.get('document_title', '未知文档')}")
-                        
-                        # 使用可滚动的文本区域显示内容，添加唯一key
-                        st.text_area(
-                            label="原文内容",
-                            value=content_text,
-                            height=400,
-                            disabled=True,
-                            label_visibility="collapsed",
-                            key=f"text_area_{hash(message['temp_file_path'])}"
-                        )
-                        
-                        # 下载按钮
-                        filename = f"{message.get('document_title', 'document')}.txt"
-                        st.download_button(
-                            label="💾 下载原文",
-                            data=file_content,
-                            file_name=filename,
-                            mime="text/plain",
-                            key=f"download_{hash(message['temp_file_path'])}",
-                            help="下载原文到本地文件"
-                        )
+                    if result.signals:
+                        for signal in result.signals:
+                            total_signals += 1
+                            if signal.severity == "High":
+                                high_risk_signals += 1
+                                
+                            # 根据严重程度选择颜色
+                            if signal.severity == "High":
+                                st.error(f"🚨 **{signal.title}**")
+                            elif signal.severity == "Medium":
+                                st.warning(f"⚠️ **{signal.title}**")
+                            else:
+                                st.info(f"💡 **{signal.title}**")
+                            
+                            st.markdown(f"**置信度**: {signal.confidence:.1%}")
+                            st.markdown(f"**描述**: {signal.description}")
+                            st.markdown(f"**证据**: {signal.evidence}")
+                            st.markdown(f"**建议**: {signal.recommendation}")
+                            
+                            if signal.source_documents:
+                                st.markdown(f"**来源文档**: {', '.join(signal.source_documents)}")
+                            
+                            st.markdown("---")
+                    else:
+                        st.info("未发现异常信号")
+                else:
+                    st.error(f"❌ 执行失败: {result.error_message}")
         
-        # 如果这是最后一条用户消息，并且正在处理，显示状态
-        if (message["role"] == "user" and 
-            i == len(st.session_state.analyzer_messages) - 1 and 
-            analyzer.session_manager.get_processing_status().is_processing):
-            
-            # 這裡不再顯示status，統一在下方處理
-            pass
+        # 显示总结
+        st.subheader("📊 检测总结")
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("总信号数", total_signals)
+        with col2:
+            st.metric("高风险信号", high_risk_signals)
+        with col3:
+            st.metric("风险等级", "高" if high_risk_signals > 0 else "中" if total_signals > 0 else "低")
+        with col4:
+            if st.button("🗑️ 清理当前结果", help="清理当前扫描结果"):
+                st.session_state.current_scan_results = []
+                st.rerun()
+        
+        st.markdown("---")
     
-    # 主聊天输入
-    if prompt := st.chat_input(lang_config["chat_placeholder"]):
-        # 将用户消息添加到历史记录
-        st.session_state.analyzer_messages.append({"role": "user", "content": prompt})
-        
+    # 扫描控制区域
+    col1, col2 = st.columns([3, 1])
+    
+    with col1:
+        # 显示当前配置
+        if ticker:
+            st.info(f"📊 **目标股票**: {ticker} | **数据年份**: {years}年 | **检测器**: {len(selected_detectors)}个")
+        else:
+            st.warning("请输入股票代码")
+    
+    with col2:
+        # 扫描按钮
+        scan_button = st.button(
+            lang_config["scan_button"],
+            disabled=not ticker or not selected_detectors,
+            use_container_width=True
+        )
+    
+    # 处理扫描请求
+    if scan_button and ticker and selected_detectors:
         # 启动处理流程
         status = analyzer.session_manager.get_processing_status()
         status.is_processing = True
-        status.user_question = prompt
         status.processing_step = 1
-        status.stop_requested = False  # 重置停止请求
+        status.stop_requested = False
         analyzer.session_manager.update_processing_status(status)
         
-        # 关键改动：在这里调用rerun来立即启动处理流程并更新UI
         st.rerun()
 
     # 在每次重新运行脚本时，检查是否需要处理
@@ -2756,8 +3662,7 @@ def main():
         # 如果正在处理，显示status
         current_step = status.current_status_label or (lang_config.get("processing_status", "Processing..."))
         
-        # with st.expander(lang_config["status_header"], expanded=False):
-        with st.expander(status.current_status_label, expanded=False):
+        with st.expander(status.current_status_label, expanded=True):
             st.markdown(f"**{status.current_status_label}**")
             
             if status.total_documents > 0:
@@ -2770,14 +3675,6 @@ def main():
                 status.is_processing = False
                 status.current_status_label = lang_config["stop_success"]
                 analyzer.session_manager.update_processing_status(status)
-                
-                # 添加停止消息到聊天历史
-                st.session_state.analyzer_messages.append({
-                    "role": "assistant", 
-                    "content": lang_config["processing_stopped"],
-                    "avatar": "⏹️"
-                })
-                
                 st.rerun()
             
             # 显示文档列表和处理状态
@@ -2802,13 +3699,325 @@ def main():
             if status.error_message:
                 st.error(f"❌ {status.error_message}")
         
-        # 将主处理逻辑移到 st.status 中，以提供实时反馈
-        process_user_question_new(
-            analyzer, ticker, years, 
+        # 运行做空信号扫描流程
+        process_short_signal_scan(
+            analyzer, short_analyzer, ticker, years, 
             st.session_state.analyzer_use_sec_reports,
             st.session_state.analyzer_use_sec_others,
-            use_earnings, model_type
+            use_earnings, selected_detectors, model_type
         )
+
+def process_short_signal_scan(analyzer: SECEarningsAnalyzer, short_analyzer: ShortSignalAnalyzer, ticker: str, years: int, use_sec_reports: bool, use_sec_others: bool, use_earnings: bool, selected_detectors: List[str], model_type: str):
+    """处理做空信号扫描的完整流程"""
+    status = analyzer.session_manager.get_processing_status()
+    language = st.session_state.get("selected_language", "English")
+    
+    # 检查是否已请求停止
+    if status.stop_requested:
+        return
+    
+    try:
+        # 步骤1：获取文档
+        if status.processing_step == 1:
+            # 清理之前的detection_results
+            if 'detection_results' in st.session_state:
+                del st.session_state['detection_results']
+            # 清理之前的中间结果
+            st.session_state.current_scan_results = []
+            # 重置检测器索引
+            st.session_state.current_detector_index = 0
+                
+            if language == "English":
+                status.current_status_label = "📂 Retrieving documents for analysis..."
+                status.add_status_message("🔍 Started document retrieval for short signal analysis")
+            else:
+                status.current_status_label = "📂 正在获取分析文档..."
+                status.add_status_message("🔍 开始为做空信号分析获取文档")
+            
+            analyzer.session_manager.update_processing_status(status)
+            
+            all_docs = []
+
+            # 定义表单组
+            REPORTS_FORMS = ['10-K', '10-Q', '20-F', '6-K', '424B4']
+            OTHER_FORMS = ['8-K', 'S-8', 'DEF 14A', 'F-3']
+            
+            selected_forms = []
+            if use_sec_reports:
+                selected_forms.extend(REPORTS_FORMS)
+            if use_sec_others:
+                selected_forms.extend(OTHER_FORMS)
+
+            # 获取文件 - 根据股票代码类型选择不同的服务
+            if selected_forms:
+                if is_hk_stock(ticker):
+                    # 港股文件
+                    status.current_status_label = "🏢 正在连接港股交易所..." if language == "中文" else "🏢 Connecting to Hong Kong Stock Exchange..."
+                    status.add_status_message("🏢 正在连接港股交易所...")
+                    analyzer.session_manager.update_processing_status(status)
+                    
+                    # 将表单类型转换为港股分类
+                    hk_forms = []
+                    if any(form in REPORTS_FORMS for form in selected_forms):
+                        hk_forms.append('quarterly_annual')
+                    if any(form in OTHER_FORMS for form in selected_forms):
+                        hk_forms.append('others')
+                    
+                    def hk_status_callback(msg):
+                        status.add_status_message(msg)
+                        analyzer.session_manager.update_processing_status(status)
+                    
+                    hk_filings = analyzer.hk_service.get_hk_filings(ticker, years, forms_to_include=hk_forms, status_callback=hk_status_callback)
+                    all_docs.extend(hk_filings)
+                    status.add_status_message(f"✅ 成功获取 {len(hk_filings)} 份港股文件")
+                else:
+                    # 美股SEC文件
+                    status.current_status_label = "🇺🇸 正在连接SEC数据库..." if language == "中文" else "🇺🇸 Connecting to SEC database..."
+                    status.add_status_message("🇺🇸 正在连接SEC数据库...")
+                    analyzer.session_manager.update_processing_status(status)
+                    
+                    def sec_status_callback(msg):
+                        status.add_status_message(msg)
+                        analyzer.session_manager.update_processing_status(status)
+                    
+                    sec_filings = analyzer.sec_service.get_filings(ticker, years, forms_to_include=selected_forms, status_callback=sec_status_callback)
+                    all_docs.extend(sec_filings)
+                    status.add_status_message(f"✅ 成功获取 {len(sec_filings)} 份SEC文件")
+            
+            # 获取财报记录
+            if use_earnings:
+                status.current_status_label = "🎙️ 正在获取财报会议记录..." if language == "中文" else "🎙️ Retrieving earnings call transcripts..."
+                status.add_status_message("🎙️ 正在获取财报会议记录...")
+                analyzer.session_manager.update_processing_status(status)
+                
+                all_earnings_urls = analyzer.earnings_service.get_available_quarters(ticker)
+                
+                # 修正年份计算逻辑
+                current_year = datetime.now().year
+                cutoff_date = datetime(current_year - years + 1, 1, 1).date()
+                
+                filtered_earnings_docs = []
+                
+                # 批量处理财报记录
+                batch_size = 3  # 每批处理3个
+                for batch_start in range(0, len(all_earnings_urls), batch_size):
+                    if status.stop_requested:
+                        break
+                        
+                    batch_end = min(batch_start + batch_size, len(all_earnings_urls))
+                    batch_urls = all_earnings_urls[batch_start:batch_end]
+                    
+                    status.add_status_message(f"📄 处理财报批次 {batch_start//batch_size + 1}/{(len(all_earnings_urls) + batch_size - 1)//batch_size}")
+                    analyzer.session_manager.update_processing_status(status)
+                    
+                    # 批量处理当前批次
+                    batch_results = analyzer.earnings_service.get_earnings_transcript_batch(batch_urls, max_workers=1)
+                    
+                    # 处理批次结果
+                    for url_path, transcript_info in zip(batch_urls, batch_results):
+                        if status.stop_requested:
+                            break
+                            
+                        if transcript_info and transcript_info.get('parsed_successfully'):
+                            real_date = transcript_info.get('date')
+                            if real_date and real_date >= cutoff_date:
+                                doc = Document(
+                                    type='Earnings Call',
+                                    title=f"{transcript_info['ticker']} {transcript_info['year']} Q{transcript_info['quarter']} Earnings Call",
+                                    date=real_date,
+                                    url=url_path,
+                                    content=transcript_info.get('content'),
+                                    year=transcript_info.get('year'),
+                                    quarter=transcript_info.get('quarter')
+                                )
+                                filtered_earnings_docs.append(doc)
+                            else:
+                                status.add_status_message(f"财报日期 {real_date} 早于截止日期，停止获取")
+                                break
+                    
+                    # 如果发现日期过早，停止处理
+                    if batch_results and any(
+                        result and result.get('parsed_successfully') and 
+                        result.get('date') and result.get('date') < cutoff_date 
+                        for result in batch_results
+                    ):
+                        break
+                
+                all_docs.extend(filtered_earnings_docs)
+                status.add_status_message(f"✅ 成功获取 {len(filtered_earnings_docs)} 份财报记录")
+            
+            # 排序并准备文档
+            all_docs.sort(key=lambda x: x.date, reverse=True)
+            status.documents = all_docs
+            status.update_progress(0, len(all_docs), "文档获取完成")
+            status.add_status_message(f"✅ 文档获取完成，共 {len(all_docs)} 份")
+            status.processing_step = 2
+            analyzer.session_manager.update_processing_status(status)
+            st.rerun()
+
+        # 步骤2：下载文档内容
+        elif status.processing_step == 2:
+            if status.stop_requested:
+                return
+                
+            docs_to_process = status.documents
+            
+            status.current_status_label = "📥 正在下载文档内容..." if language == "中文" else "📥 Downloading document contents..."
+            status.add_status_message("📥 开始下载文档内容...")
+            analyzer.session_manager.update_processing_status(status)
+            
+            # 下载所有文档内容
+            for idx, doc in enumerate(docs_to_process):
+                if status.stop_requested:
+                    break
+                    
+                if not doc.content:
+                    status.add_status_message(f"📥 下载文档 {idx+1}/{len(docs_to_process)}: {doc.title}")
+                    status.update_progress(idx, len(docs_to_process), f"下载文档 {idx+1}/{len(docs_to_process)}")
+                    analyzer.session_manager.update_processing_status(status)
+                    
+                    if doc.type == 'SEC Filing':
+                        doc.content = analyzer.sec_service.download_filing(doc.url)
+                    elif doc.type == 'HK Stock Filing':
+                        doc.content = analyzer.hk_service.download_hk_filing(doc.url)
+                    # Earnings Call 内容已经预先获取
+            
+            status.add_status_message("✅ 文档内容下载完成")
+            status.processing_step = 3
+            analyzer.session_manager.update_processing_status(status)
+            st.rerun()
+
+        # 步骤3：运行检测器
+        elif status.processing_step == 3:
+            if status.stop_requested:
+                return
+                
+            status.current_status_label = "🔍 正在运行做空信号检测..." if language == "中文" else "🔍 Running short signal detection..."
+            status.add_status_message("🔍 开始运行做空信号检测...")
+            analyzer.session_manager.update_processing_status(status)
+            
+            # 逐个运行检测器，每个完成后立即显示结果
+            if 'current_detector_index' not in st.session_state:
+                st.session_state.current_detector_index = 0
+            
+            available_detectors = [d for d in short_analyzer.detectors if d.name in selected_detectors]
+            
+            if st.session_state.current_detector_index < len(available_detectors):
+                # 运行当前检测器
+                current_detector = available_detectors[st.session_state.current_detector_index]
+                status.current_status_label = f"🔍 正在运行: {current_detector.name}..."
+                status.add_status_message(f"🔍 运行检测器: {current_detector.name}")
+                analyzer.session_manager.update_processing_status(status)
+                
+                try:
+                    result = current_detector.detect(status.documents, model_type)
+                    
+                    # 更新当前扫描结果
+                    if 'current_scan_results' not in st.session_state:
+                        st.session_state.current_scan_results = []
+                    st.session_state.current_scan_results.append(result)
+                    
+                    status.add_status_message(f"✅ {current_detector.name} 完成，发现 {len(result.signals)} 个信号")
+                    
+                except Exception as e:
+                    logger.error(f"检测器 {current_detector.name} 执行失败: {e}")
+                    error_result = DetectionResult(
+                        detector_name=current_detector.name,
+                        signals=[],
+                        processing_time=0,
+                        success=False,
+                        error_message=str(e)
+                    )
+                    
+                    if 'current_scan_results' not in st.session_state:
+                        st.session_state.current_scan_results = []
+                    st.session_state.current_scan_results.append(error_result)
+                    
+                    status.add_status_message(f"❌ {current_detector.name} 执行失败: {e}")
+                
+                # 移动到下一个检测器
+                st.session_state.current_detector_index += 1
+                analyzer.session_manager.update_processing_status(status)
+                st.rerun()
+            else:
+                # 所有检测器完成
+                detection_results = st.session_state.current_scan_results
+                status.add_status_message("✅ 所有检测器执行完成")
+                
+                # 单独保存detection_results到session_state，因为它包含复杂对象
+                st.session_state.detection_results = detection_results
+                
+                # 进入下一步
+                status.processing_step = 4
+                analyzer.session_manager.update_processing_status(status)
+                st.rerun()
+
+        # 步骤4：生成综合报告
+        elif status.processing_step == 4:
+            if status.stop_requested:
+                return
+                
+            status.current_status_label = "📝 正在生成综合报告..." if language == "中文" else "📝 Generating comprehensive report..."
+            status.add_status_message("📝 开始生成综合报告...")
+            analyzer.session_manager.update_processing_status(status)
+            
+            # 从session_state获取detection_results
+            detection_results = st.session_state.get('detection_results', [])
+            
+            # 检查是否有检测结果
+            if not detection_results:
+                st.error("❌ 检测结果丢失，请重新运行扫描")
+                logger.error("Detection results not found in session state")
+                return
+            
+            # 生成综合报告
+            comprehensive_report = short_analyzer.generate_comprehensive_report(
+                detection_results, 
+                ticker, 
+                model_type
+            )
+            
+            # 显示综合报告
+            st.subheader("📊 综合做空信号报告")
+            st.markdown(comprehensive_report)
+            
+            # 保存扫描结果到历史记录
+            scan_result = {
+                'ticker': ticker,
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'report': comprehensive_report,
+                'signals_count': sum(len(r.signals) for r in detection_results),
+                'high_risk_count': sum(len([s for s in r.signals if s.severity == "High"]) for r in detection_results)
+            }
+            
+            st.session_state.short_scanner_results.append(scan_result)
+            
+            # 完成处理
+            status.current_status_label = "✅ 扫描完成！" if language == "中文" else "✅ Scan completed!"
+            status.add_status_message("✅ 做空信号扫描完成")
+            status.progress_percentage = 100.0
+            analyzer.session_manager.update_processing_status(status)
+            
+            # 短暂显示完成状态
+            time.sleep(0.1)
+            
+            # 不要立即清理扫描结果，让用户可以查看详细信息
+            # st.session_state.current_scan_results = []  # 注释掉这行
+            
+            # 重置状态
+            status = ProcessingStatus()
+            analyzer.session_manager.update_processing_status(status)
+            st.rerun()
+
+    except Exception as e:
+        logger.error(f"做空信号扫描出错: {e}", exc_info=True)
+        error_msg = f"扫描过程中出现错误: {e}" if language == "中文" else f"Error during scan: {e}"
+        st.error(error_msg)
+        # 重置状态
+        status = ProcessingStatus()
+        analyzer.session_manager.update_processing_status(status)
+        st.rerun()
+
 
 def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years: int, use_sec_reports: bool, use_sec_others: bool, use_earnings: bool, model_type: str):
     """处理用户问题的完整流程 - 新版，带实时状态更新和并行处理"""
@@ -3264,7 +4473,7 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                 analyzing_msg = f"正在分析: {current_doc.title}" if language == "中文" else f"Analyzing: {current_doc.title}"
                 status.add_status_message(analyzing_msg)
                 
-                progress_label = f"📖 分析文档中... {status.completed_documents + 1}/{len(docs_to_process)}" if language == "中文" else f"📖 Analyzing document {status.completed_documents + 1}/{len(docs_to_process)}"
+                progress_label = f"📖 分析文档中... {status.completed_documents + 1}/{len(docs_to_process)}" if language == "中文" else f"📖 Analyzing document... {status.completed_documents + 1}/{len(docs_to_process)}"
                 status.update_progress(status.completed_documents, len(docs_to_process), progress_label)
                 analyzer.session_manager.update_processing_status(status)
                 

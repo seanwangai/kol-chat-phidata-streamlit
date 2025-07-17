@@ -33,6 +33,7 @@ import html
 from urllib.parse import urljoin
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+import pandas as pd
 
 # 配置选项：是否保存transcript文件到磁盘
 SAVE_TRANSCRIPT_FILES = os.getenv("SAVE_TRANSCRIPT_FILES", "false").lower() == "true"
@@ -191,15 +192,11 @@ class Document:
 class ProcessingStatus:
     """处理状态数据类"""
     is_processing: bool = False
-    current_step: Optional[str] = None
     completed_documents: int = 0
     total_documents: int = 0
     document_results: List[Dict] = field(default_factory=list)
     processing_step: int = 0
-    processing_prompt: str = ""
-    integration_prompt: str = ""
     documents: List[Document] = field(default_factory=list)
-    user_question: str = ""
     error_message: Optional[str] = None
     status_messages: List[str] = field(default_factory=list)
     current_status_label: str = ""
@@ -216,14 +213,8 @@ class ProcessingStatus:
             self.total_documents = 0
         if self.document_results is None:
             self.document_results = []
-        if self.processing_prompt is None:
-            self.processing_prompt = ""
-        if self.integration_prompt is None:
-            self.integration_prompt = ""
         if self.documents is None:
             self.documents = []
-        if self.user_question is None:
-            self.user_question = ""
         if self.error_message is None:
             self.error_message = None
         if self.status_messages is None:
@@ -1365,6 +1356,22 @@ class GeminiService:
             # 如果分类失败，保守处理，返回True继续分析
             return True
 
+    @retry_on_failure(max_retries=1)
+    def count_tokens(self, text: str, model_type: str = "gemini-2.5-flash") -> int:
+        """计算文本的token数量"""
+        try:
+            client = self.init_client()
+            response = client.models.count_tokens(
+                model=model_type,
+                contents=[text]
+            )
+            return response.total_tokens
+        except Exception as e:
+            logger.error(f"计算Token数量失败: {e}")
+            # 如果API调用失败，可以返回一个估算值或错误标识
+            # 基于一般规则，一个token约等于4个英文字符或0.5-1.5个中文字符
+            return len(text) // 2
+
 # SEC 服务
 class SECService:
     """SEC文件服务"""
@@ -2231,7 +2238,7 @@ class SECEarningsAnalyzer:
                 - Ensure answers come from document content, don't imagine
                 - I don't have time to read, ensure answers are direct and to the point, no need for polite conversation
                 - Always answer in English
-                - when markdown output, Escape all dollar signs $ for currency as \\$ to prevent Markdown from rendering them as math.
+                - when markdown output, Escape all dollar signs $ for currency as \$ to prevent Markdown from rendering them as math.
                 
                 Answer Requirements:
                 - Start with 📍 emoji, followed by what type of document this is and its purpose, 
@@ -2331,7 +2338,7 @@ class SECEarningsAnalyzer:
                 - Ensure answers come from document content, don't imagine
                 - I don't have time to read, ensure answers are direct and to the point, no need for polite conversation
                 - Always answer in English
-                - when markdown output, Escape all dollar signs $ for currency as \\$ to prevent Markdown from rendering them as math.
+                - when markdown output, Escape all dollar signs $ for currency as \$ to prevent Markdown from rendering them as math.
                 
                 Answer Requirements:
                 - Start with 📍 emoji, followed by what type of document this is and its purpose, 
@@ -2361,7 +2368,7 @@ class SECEarningsAnalyzer:
                 - 提供准确、专业的分析
                 - 確保回答都來自文檔內容，不要憑空想像
                 - 我沒時間看 確保回答直接說重點 不用像人一樣還要客套話
-                - markdown輸出，將所有表示金額的 $ 改為 \\$，以避免 Markdown 被誤判為數學公式。
+                - markdown輸出，將所有表示金額的 $ 改為 \$，以避免 Markdown 被誤判為數學公式。
 
 
                 
@@ -2654,8 +2661,6 @@ def main():
                 if not st.session_state.get("use_premium_api", False):
                     st.session_state.use_premium_api = True
                     st.session_state.premium_access_code = access_code
-                    # 当启用付费API时，默认选择2.5 pro模型
-                    st.session_state.analyzer_model = "gemini-2.5-pro"
                     st.success(lang_config["premium_success"])
                     st.rerun()
             else:
@@ -2683,71 +2688,31 @@ def main():
         st.session_state.analyzer_model = model_type
     
     # 主内容区域
-
-    
-    # 显示历史对话和处理状态
-    for i, message in enumerate(st.session_state.analyzer_messages):
-        with st.chat_message(message["role"], avatar=message.get("avatar")):
-            st.markdown(message["content"])
-            
-            # 如果消息包含文档文件路径，显示原文预览
-            if message.get("temp_file_path") and os.path.exists(message["temp_file_path"]):
-                file_content = analyzer.document_manager.get_download_content(message["temp_file_path"])
-                if file_content:
-                    # 解码文件内容
-                    content_text = file_content.decode('utf-8')
-                    
-                    # 使用 expander 来显示原文内容
-                    with st.expander("📄 查看原文", expanded=False):
-                        # 添加一些样式来改善显示效果
-                        st.markdown("---")
-                        
-                        # 显示文档信息
-                        st.caption(f"📋 文档：{message.get('document_title', '未知文档')}")
-                        
-                        # 使用可滚动的文本区域显示内容，添加唯一key
-                        st.text_area(
-                            label="原文内容",
-                            value=content_text,
-                            height=400,
-                            disabled=True,
-                            label_visibility="collapsed",
-                            key=f"text_area_{hash(message['temp_file_path'])}"
-                        )
-                        
-                        # 下载按钮
-                        filename = f"{message.get('document_title', 'document')}.txt"
-                        st.download_button(
-                            label="💾 下载原文",
-                            data=file_content,
-                            file_name=filename,
-                            mime="text/plain",
-                            key=f"download_{hash(message['temp_file_path'])}",
-                            help="下载原文到本地文件"
-                        )
+    # 显示历史统计结果
+    if "analysis_results" in st.session_state and st.session_state.analysis_results:
+        st.subheader("📊 分析结果")
         
-        # 如果这是最后一条用户消息，并且正在处理，显示状态
-        if (message["role"] == "user" and 
-            i == len(st.session_state.analyzer_messages) - 1 and 
-            analyzer.session_manager.get_processing_status().is_processing):
-            
-            # 這裡不再顯示status，統一在下方處理
-            pass
-    
-    # 主聊天输入
-    if prompt := st.chat_input(lang_config["chat_placeholder"]):
-        # 将用户消息添加到历史记录
-        st.session_state.analyzer_messages.append({"role": "user", "content": prompt})
+        # 使用pandas创建DataFrame以获得更好的显示效果
+        df = pd.DataFrame(st.session_state.analysis_results)
         
+        # 计算总计
+        total_word_count = df['word_count'].sum()
+        total_token_count = df['token_count'].sum()
+        
+        st.dataframe(df, use_container_width=True)
+        
+        st.metric(label="总字数", value=f"{total_word_count:,}")
+        st.metric(label="总Token数", value=f"{total_token_count:,}")
+    
+    # 分析控制区域
+    if st.button("🔍 开始分析", disabled=not ticker):
         # 启动处理流程
         status = analyzer.session_manager.get_processing_status()
         status.is_processing = True
-        status.user_question = prompt
         status.processing_step = 1
-        status.stop_requested = False  # 重置停止请求
+        status.stop_requested = False
         analyzer.session_manager.update_processing_status(status)
         
-        # 关键改动：在这里调用rerun来立即启动处理流程并更新UI
         st.rerun()
 
     # 在每次重新运行脚本时，检查是否需要处理
@@ -2756,8 +2721,7 @@ def main():
         # 如果正在处理，显示status
         current_step = status.current_status_label or (lang_config.get("processing_status", "Processing..."))
         
-        # with st.expander(lang_config["status_header"], expanded=False):
-        with st.expander(status.current_status_label, expanded=False):
+        with st.expander(status.current_status_label, expanded=True):
             st.markdown(f"**{status.current_status_label}**")
             
             if status.total_documents > 0:
@@ -2770,14 +2734,6 @@ def main():
                 status.is_processing = False
                 status.current_status_label = lang_config["stop_success"]
                 analyzer.session_manager.update_processing_status(status)
-                
-                # 添加停止消息到聊天历史
-                st.session_state.analyzer_messages.append({
-                    "role": "assistant", 
-                    "content": lang_config["processing_stopped"],
-                    "avatar": "⏹️"
-                })
-                
                 st.rerun()
             
             # 显示文档列表和处理状态
@@ -2791,7 +2747,6 @@ def main():
                     else:
                         status_icon = "⏳"
                     
-                    # 優化文档标题显示，增加長度限制
                     doc_title = doc.title
                     if len(doc_title) > 80:
                         doc_title = doc_title[:77] + "..."
@@ -2802,759 +2757,122 @@ def main():
             if status.error_message:
                 st.error(f"❌ {status.error_message}")
         
-        # 将主处理逻辑移到 st.status 中，以提供实时反馈
-        process_user_question_new(
+        # 运行文档统计流程
+        process_and_count_documents(
             analyzer, ticker, years, 
             st.session_state.analyzer_use_sec_reports,
             st.session_state.analyzer_use_sec_others,
             use_earnings, model_type
         )
 
-def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years: int, use_sec_reports: bool, use_sec_others: bool, use_earnings: bool, model_type: str):
-    """处理用户问题的完整流程 - 新版，带实时状态更新和并行处理"""
+def process_and_count_documents(analyzer: SECEarningsAnalyzer, ticker: str, years: int, use_sec_reports: bool, use_sec_others: bool, use_earnings: bool, model_type: str):
+    """处理并统计文档的完整流程"""
     status = analyzer.session_manager.get_processing_status()
     language = st.session_state.get("selected_language", "English")
     
-    # 检查是否已请求停止
     if status.stop_requested:
         return
     
     try:
-        # 步骤1：分析问题
+        # 步骤1：获取文档
         if status.processing_step == 1:
-            if language == "English":
-                status.current_status_label = "🧠 Analyzing your question..."
-                status.add_status_message("Started analyzing user question")
-                analyzer.session_manager.update_processing_status(status)
-                
-                status.current_status_label = "🔍 Parsing question content..."
-                status.add_status_message("🔍 Parsing question content...")
-                analyzer.session_manager.update_processing_status(status)
-                
-                status.current_status_label = "🤖 Calling AI model for analysis..."
-                status.add_status_message("🤖 Calling AI model for analysis...")
-                analyzer.session_manager.update_processing_status(status)
-            else:
-                status.current_status_label = "🧠 正在分析您的问题..."
-                status.add_status_message("開始分析用戶問題")
-                analyzer.session_manager.update_processing_status(status)
-                
-                status.current_status_label = "🔍 解析問題內容..."
-                status.add_status_message("🔍 解析問題內容...")
-                analyzer.session_manager.update_processing_status(status)
-                
-                status.current_status_label = "🤖 調用AI模型分析..."
-                status.add_status_message("🤖 調用AI模型分析...")
-                analyzer.session_manager.update_processing_status(status)
+            st.session_state.analysis_results = [] # 清空旧结果
             
-            # 创建AI分析状态显示
-            ai_analysis_placeholder = st.empty()
-            with ai_analysis_placeholder.status("🤖 AI正在分析您的问题...", expanded=True) as ai_analysis_status:
                 if language == "English":
-                    ai_analysis_status.write("🔍 Parsing question intent...")
-                    ai_analysis_status.write(f"📝 Question: {status.user_question}")
-                    ai_analysis_status.write(f"📊 Stock: {ticker}")
-                    ai_analysis_status.write("🧠 Calling AI model to generate analysis prompts...")
-                    ai_analysis_status.write("⏳ Waiting for AI response...")
-                else:
-                    ai_analysis_status.write("🔍 正在解析问题意图...")
-                    ai_analysis_status.write(f"📝 问题: {status.user_question}")
-                    ai_analysis_status.write(f"📊 股票: {ticker}")
-                    ai_analysis_status.write("🧠 正在调用AI模型生成分析提示词...")
-                    ai_analysis_status.write("⏳ 等待AI响应中...")
-                
-                # 执行实际的AI分析
-                processing_prompt, integration_prompt = analyzer.analyze_question(status.user_question, ticker, model_type)
-                
-                ai_analysis_status.write("✅ AI分析完成！")
-                ai_analysis_status.update(label="✅ 问题分析完成", state="complete")
-            
-            # 清除AI分析状态显示
-            ai_analysis_placeholder.empty()
-            
-            status.processing_prompt = processing_prompt
-            status.integration_prompt = integration_prompt
-            
-            success_msg = "✅ User question analysis completed" if language == "English" else "✅ 用戶問題分析完成"
-            status.add_status_message(success_msg)
-            status.processing_step = 2
-            analyzer.session_manager.update_processing_status(status)
-            time.sleep(0.1) # 短暂停留，让用户看到消息
-            st.rerun()
-        
-        # 步骤2：获取和筛选文档
-        elif status.processing_step == 2:
-            if status.stop_requested:
-                return
-                
-            if language == "English":
-                status.current_status_label = "📂 Retrieving and filtering documents..."
+                status.current_status_label = "📂 Retrieving documents..."
                 status.add_status_message("🔍 Started document retrieval")
+                    else:
+                status.current_status_label = "📂 正在获取文档..."
+                status.add_status_message("🔍 开始获取文档")
+            
                 analyzer.session_manager.update_processing_status(status)
                 
                 all_docs = []
-
-                # 定义表单组
                 REPORTS_FORMS = ['10-K', '10-Q', '20-F', '6-K', '424B4']
                 OTHER_FORMS = ['8-K', 'S-8', 'DEF 14A', 'F-3']
-                
-                status.add_status_message("📋 Preparing document type filtering...")
-                analyzer.session_manager.update_processing_status(status)
-                
                 selected_forms = []
-                if use_sec_reports:
-                    selected_forms.extend(REPORTS_FORMS)
-                if use_sec_others:
-                    selected_forms.extend(OTHER_FORMS)
+            if use_sec_reports: selected_forms.extend(REPORTS_FORMS)
+            if use_sec_others: selected_forms.extend(OTHER_FORMS)
 
-                # 获取文件 - 根据股票代码类型选择不同的服务
                 if selected_forms:
                     if is_hk_stock(ticker):
-                        # 港股文件
-                        status.current_status_label = "🏢 Connecting to Hong Kong Stock Exchange..."
-                        status.add_status_message("🏢 Connecting to Hong Kong Stock Exchange...")
-                        analyzer.session_manager.update_processing_status(status)
-                        
-                        status.current_status_label = "📄 Retrieving Hong Kong stock filings list..."
-                        status.add_status_message("📄 Retrieving Hong Kong stock filings list...")
-                        analyzer.session_manager.update_processing_status(status)
-                        
-                        # 将表单类型转换为港股分类
                         hk_forms = []
-                        if any(form in REPORTS_FORMS for form in selected_forms):
-                            hk_forms.append('quarterly_annual')
-                        if any(form in OTHER_FORMS for form in selected_forms):
-                            hk_forms.append('others')
-                        
-                        def hk_status_callback(msg):
-                            status.add_status_message(msg)
-                            analyzer.session_manager.update_processing_status(status)
-                        
-                        hk_filings = analyzer.hk_service.get_hk_filings(ticker, years, forms_to_include=hk_forms, status_callback=hk_status_callback)
-                        all_docs.extend(hk_filings)
-                        status.add_status_message(f"✅ Successfully retrieved {len(hk_filings)} Hong Kong stock filings")
+                    if any(form in REPORTS_FORMS for form in selected_forms): hk_forms.append('quarterly_annual')
+                    if any(form in OTHER_FORMS for form in selected_forms): hk_forms.append('others')
+                    all_docs.extend(analyzer.hk_service.get_hk_filings(ticker, years, hk_forms))
                     else:
-                        # 美股SEC文件
-                        status.current_status_label = "🇺🇸 Connecting to SEC database..."
-                        status.add_status_message("🇺🇸 Connecting to SEC database...")
-                        analyzer.session_manager.update_processing_status(status)
-                        
-                        status.current_status_label = "📄 Retrieving SEC filings list..."
-                        status.add_status_message("📄 Retrieving SEC filings list...")
-                        analyzer.session_manager.update_processing_status(status)
-                        
-                        def sec_status_callback(msg):
-                            status.add_status_message(msg)
-                            analyzer.session_manager.update_processing_status(status)
-                        
-                        sec_filings = analyzer.sec_service.get_filings(ticker, years, forms_to_include=selected_forms, status_callback=sec_status_callback)
-                        all_docs.extend(sec_filings)
-                        status.add_status_message(f"✅ Successfully retrieved {len(sec_filings)} SEC filings")
-                
-                # 获取财报记录 - 支持美股和港股
+                    all_docs.extend(analyzer.sec_service.get_filings(ticker, years, selected_forms))
+            
                 if use_earnings:
-                    status.current_status_label = "🎙️ Connecting to earnings call transcript service..."
-                    status.add_status_message("🎙️ Connecting to earnings call transcript service...")
-                    analyzer.session_manager.update_processing_status(status)
-                    
-                    status.current_status_label = "📋 Retrieving available earnings call list..."
-                    status.add_status_message("📋 Retrieving available earnings call list...")
-                    analyzer.session_manager.update_processing_status(status)
-                    
                     all_earnings_urls = analyzer.earnings_service.get_available_quarters(ticker)
-                    
-                    # 修正年份计算逻辑：与SEC保持一致
                     current_year = datetime.now().year
-                    cutoff_date = datetime(current_year - years + 1, 1, 1).date()  # 往前推years年
-                    status.add_status_message(f"⏰ Started retrieving earnings calls and filtering by cutoff date ({cutoff_date})...")
-                    analyzer.session_manager.update_processing_status(status)
-
-                    filtered_earnings_docs = []
-                    
-                    # 使用并行处理来提升速度
-                    status.add_status_message("📄 Starting parallel processing of earnings calls...")
-                    analyzer.session_manager.update_processing_status(status)
-                    
-                    # 创建earnings获取状态显示
-                    earnings_status_placeholder = st.empty()
-                    with earnings_status_placeholder.status("🎙️ Retrieving earnings call transcripts...", expanded=True) as earnings_status:
-                        earnings_status.write(f"📋 Found {len(all_earnings_urls)} available earnings calls")
-                        earnings_status.write(f"📅 Filtering by cutoff date: {cutoff_date}")
-                        earnings_status.write("🔄 Starting batch processing...")
-                        
-                        # 分批处理以避免过多并发请求
-                        batch_size = 1  # 每批处理1个
-                        for batch_start in range(0, len(all_earnings_urls), batch_size):
-                            if status.stop_requested:
-                                break
-                                
-                            batch_end = min(batch_start + batch_size, len(all_earnings_urls))
-                            batch_urls = all_earnings_urls[batch_start:batch_end]
-                            
-                            status.add_status_message(f"📄 Processing batch {batch_start//batch_size + 1}/{(len(all_earnings_urls) + batch_size - 1)//batch_size} ({batch_start + 1}-{batch_end}/{len(all_earnings_urls)})")
-                            analyzer.session_manager.update_processing_status(status)
-                            
-                            # 显示当前批次正在处理的earnings
-                            earnings_status.write(f"📦 Processing batch {batch_start//batch_size + 1}/{(len(all_earnings_urls) + batch_size - 1)//batch_size}")
-                            
-                            # 显示当前批次的具体项目
-                            for url_path in batch_urls:
-                                parsed_info = analyzer.earnings_service.parse_transcript_url(url_path)
-                                if parsed_info:
-                                    _ticker, year, quarter = parsed_info
-                                    earnings_status.write(f"⏳ 开始获取: {_ticker} {year} Q{quarter}")
-                            
-                            # 顺序处理当前批次
-                            batch_results = analyzer.earnings_service.get_earnings_transcript_batch(batch_urls, max_workers=1)
-                            
-                            # 处理批次结果
-                            for i, (url_path, transcript_info) in enumerate(zip(batch_urls, batch_results)):
-                                if status.stop_requested:
-                                    break
-                                    
-                                parsed_info = analyzer.earnings_service.parse_transcript_url(url_path)
-                                if parsed_info:
-                                    _ticker, year, quarter = parsed_info
-                                    
-                                    if transcript_info and transcript_info.get('parsed_successfully'):
-                                        real_date = transcript_info.get('date')
-                                        if real_date:
-                                            if real_date >= cutoff_date:
-                                                doc = Document(
+                cutoff_date = datetime(current_year - years + 1, 1, 1).date()
+                
+                earnings_docs = []
+                for url_path in all_earnings_urls:
+                    if status.stop_requested: break
+                    transcript_info = analyzer.earnings_service.get_earnings_transcript(url_path)
+                    if transcript_info and transcript_info['date'] and transcript_info['date'] >= cutoff_date:
+                        earnings_docs.append(Document(
                                                     type='Earnings Call',
                                                     title=f"{transcript_info['ticker']} {transcript_info['year']} Q{transcript_info['quarter']} Earnings Call",
-                                                    date=real_date, url=url_path, content=transcript_info.get('content'),
-                                                    year=transcript_info.get('year'), quarter=transcript_info.get('quarter')
-                                                )
-                                                filtered_earnings_docs.append(doc)
-                                                earnings_status.write(f"✅ 成功获取: {_ticker} {year} Q{quarter} ({real_date})")
-                                            else:
-                                                earnings_status.write(f"⏹️ 日期过早，停止获取: {_ticker} {year} Q{quarter} ({real_date})")
-                                                status.add_status_message(f"Earnings call date {real_date} is earlier than cutoff date, stopping retrieval")
-                                                time.sleep(0.1)
-                                                break
-                                    else:
-                                        earnings_status.write(f"⚠️ 获取失败: {_ticker} {year} Q{quarter}")
-                                        logger.warning(f"Failed to retrieve or parse earnings call, skipping: {_ticker} {year} Q{quarter}")
-                            
-                            # 如果发现日期过早，停止处理
-                            if batch_results and any(
-                                result and result.get('parsed_successfully') and 
-                                result.get('date') and result.get('date') < cutoff_date 
-                                for result in batch_results
-                            ):
-                                break
-                        
-                        earnings_status.write(f"✅ 完成！共获取 {len(filtered_earnings_docs)} 个有效的财报记录")
-                        earnings_status.update(label="✅ Earnings call retrieval completed", state="complete")
-                    
-                    # 清除earnings状态显示
-                    earnings_status_placeholder.empty()
-                    
-                    all_docs.extend(filtered_earnings_docs)
-                    status.add_status_message(f"✅ Successfully filtered {len(filtered_earnings_docs)} relevant earnings calls")
-                    analyzer.session_manager.update_processing_status(status)
-
-                status.add_status_message("📊 Organizing document list...")
-                analyzer.session_manager.update_processing_status(status)
+                            date=transcript_info['date'], url=url_path, content=transcript_info.get('content')
+                        ))
+                    elif transcript_info and transcript_info['date']:
+                        break # 日期过早，停止
+                all_docs.extend(earnings_docs)
                 
                 all_docs.sort(key=lambda x: x.date, reverse=True)
                 status.documents = all_docs
-                status.update_progress(0, len(all_docs), "Document list ready")
-                status.add_status_message(f"✅ Document list ready, total {len(all_docs)} documents")
-                status.processing_step = 3
+            status.update_progress(0, len(all_docs), "文档获取完成")
+            status.processing_step = 2
                 analyzer.session_manager.update_processing_status(status)
-            else:
-                # 中文版本的消息
-                status.current_status_label = "📂 正在检索和筛选文档..."
-                status.add_status_message("🔍 開始檢索文檔")
-                analyzer.session_manager.update_processing_status(status)
-                
-                all_docs = []
-
-                # 定义表单组
-                REPORTS_FORMS = ['10-K', '10-Q', '20-F', '6-K', '424B4']
-                OTHER_FORMS = ['8-K', 'S-8', 'DEF 14A', 'F-3']
-                
-                status.add_status_message("📋 準備文檔類型篩選...")
-                analyzer.session_manager.update_processing_status(status)
-                
-                selected_forms = []
-                if use_sec_reports:
-                    selected_forms.extend(REPORTS_FORMS)
-                if use_sec_others:
-                    selected_forms.extend(OTHER_FORMS)
-
-                # 获取文件 - 根据股票代码类型选择不同的服务
-                if selected_forms:
-                    if is_hk_stock(ticker):
-                        # 港股文件
-                        status.current_status_label = "🏢 正在連接港股交易所..."
-                        status.add_status_message("🏢 正在連接港股交易所...")
-                        analyzer.session_manager.update_processing_status(status)
-                        
-                        status.current_status_label = "📄 正在获取港股文件列表..."
-                        status.add_status_message("📄 正在获取港股文件列表...")
-                        analyzer.session_manager.update_processing_status(status)
-                        
-                        # 将表单类型转换为港股分类
-                        hk_forms = []
-                        if any(form in REPORTS_FORMS for form in selected_forms):
-                            hk_forms.append('quarterly_annual')
-                        if any(form in OTHER_FORMS for form in selected_forms):
-                            hk_forms.append('others')
-                        
-                        def hk_status_callback(msg):
-                            status.add_status_message(msg)
-                            analyzer.session_manager.update_processing_status(status)
-                        
-                        hk_filings = analyzer.hk_service.get_hk_filings(ticker, years, forms_to_include=hk_forms, status_callback=hk_status_callback)
-                        all_docs.extend(hk_filings)
-                        status.add_status_message(f"✅ 成功获取 {len(hk_filings)} 份港股文件")
-                    else:
-                        # 美股SEC文件
-                        status.current_status_label = "🇺🇸 正在連接SEC數據庫..."
-                        status.add_status_message("🇺🇸 正在連接SEC數據庫...")
-                        analyzer.session_manager.update_processing_status(status)
-                        
-                        status.current_status_label = "📄 正在获取SEC文件列表..."
-                        status.add_status_message("📄 正在获取SEC文件列表...")
-                        analyzer.session_manager.update_processing_status(status)
-                        
-                        def sec_status_callback(msg):
-                            status.add_status_message(msg)
-                            analyzer.session_manager.update_processing_status(status)
-                        
-                        sec_filings = analyzer.sec_service.get_filings(ticker, years, forms_to_include=selected_forms, status_callback=sec_status_callback)
-                        all_docs.extend(sec_filings)
-                        status.add_status_message(f"✅ 成功获取 {len(sec_filings)} 份SEC文件")
-                
-                # 获取财报记录 - 支持美股和港股
-                if use_earnings:
-                    status.current_status_label = "🎙️ 正在連接財報會議記錄服務..."
-                    status.add_status_message("🎙️ 正在連接財報會議記錄服務...")
-                    analyzer.session_manager.update_processing_status(status)
-                    
-                    status.current_status_label = "📋 正在获取可用财报列表..."
-                    status.add_status_message("📋 正在获取可用财报列表...")
-                    analyzer.session_manager.update_processing_status(status)
-                    
-                    all_earnings_urls = analyzer.earnings_service.get_available_quarters(ticker)
-                    
-                    # 修正年份计算逻辑：与SEC保持一致
-                    current_year = datetime.now().year
-                    cutoff_date = datetime(current_year - years + 1, 1, 1).date()  # 往前推years年
-                    status.add_status_message(f"⏰ 開始逐一获取财报並按截止日期 ({cutoff_date}) 篩選...")
-                    analyzer.session_manager.update_processing_status(status)
-
-                    filtered_earnings_docs = []
-                    
-                    # 使用并行处理来提升速度
-                    status.add_status_message("📄 开始并行处理财报记录...")
-                    analyzer.session_manager.update_processing_status(status)
-                    
-                    # 创建earnings获取状态显示
-                    earnings_status_placeholder = st.empty()
-                    with earnings_status_placeholder.status("🎙️ 正在获取财报会议记录...", expanded=True) as earnings_status:
-                        earnings_status.write(f"📋 找到 {len(all_earnings_urls)} 个可用的财报记录")
-                        earnings_status.write(f"📅 按截止日期筛选: {cutoff_date}")
-                        earnings_status.write("🔄 开始批量处理...")
-                        
-                        # 分批处理以避免过多并发请求
-                        batch_size = 6  # 每批处理6个
-                        for batch_start in range(0, len(all_earnings_urls), batch_size):
-                            if status.stop_requested:
-                                break
-                                
-                            batch_end = min(batch_start + batch_size, len(all_earnings_urls))
-                            batch_urls = all_earnings_urls[batch_start:batch_end]
-                            
-                            status.add_status_message(f"📄 处理批次 {batch_start//batch_size + 1}/{(len(all_earnings_urls) + batch_size - 1)//batch_size} ({batch_start + 1}-{batch_end}/{len(all_earnings_urls)})")
-                            analyzer.session_manager.update_processing_status(status)
-                            
-                            # 显示当前批次正在处理的earnings
-                            earnings_status.write(f"📦 处理批次 {batch_start//batch_size + 1}/{(len(all_earnings_urls) + batch_size - 1)//batch_size}")
-                            
-                            # 显示当前批次的具体项目
-                            for url_path in batch_urls:
-                                parsed_info = analyzer.earnings_service.parse_transcript_url(url_path)
-                                if parsed_info:
-                                    _ticker, year, quarter = parsed_info
-                                    earnings_status.write(f"⏳ 开始获取: {_ticker} {year} Q{quarter}")
-                            
-                            # 顺序处理当前批次
-                            batch_results = analyzer.earnings_service.get_earnings_transcript_batch(batch_urls, max_workers=1)
-                            
-                            # 处理批次结果
-                            for i, (url_path, transcript_info) in enumerate(zip(batch_urls, batch_results)):
-                                if status.stop_requested:
-                                    break
-                                    
-                                parsed_info = analyzer.earnings_service.parse_transcript_url(url_path)
-                                if parsed_info:
-                                    _ticker, year, quarter = parsed_info
-                                    
-                                    if transcript_info and transcript_info.get('parsed_successfully'):
-                                        real_date = transcript_info.get('date')
-                                        if real_date:
-                                            if real_date >= cutoff_date:
-                                                doc = Document(
-                                                    type='Earnings Call',
-                                                    title=f"{transcript_info['ticker']} {transcript_info['year']} Q{transcript_info['quarter']} Earnings Call",
-                                                    date=real_date, url=url_path, content=transcript_info.get('content'),
-                                                    year=transcript_info.get('year'), quarter=transcript_info.get('quarter')
-                                                )
-                                                filtered_earnings_docs.append(doc)
-                                                earnings_status.write(f"✅ 成功获取: {_ticker} {year} Q{quarter} ({real_date})")
-                                            else:
-                                                earnings_status.write(f"⏹️ 日期过早，停止获取: {_ticker} {year} Q{quarter} ({real_date})")
-                                                status.add_status_message(f"财报日期 {real_date} 早于截止日期，停止获取")
-                                                time.sleep(0.1)
-                                                break
-                                    else:
-                                        earnings_status.write(f"⚠️ 获取失败: {_ticker} {year} Q{quarter}")
-                                        logger.warning(f"获取或解析财报失败，跳过: {_ticker} {year} Q{quarter}")
-                            
-                            # 如果发现日期过早，停止处理
-                            if batch_results and any(
-                                result and result.get('parsed_successfully') and 
-                                result.get('date') and result.get('date') < cutoff_date 
-                                for result in batch_results
-                            ):
-                                break
-                        
-                        earnings_status.write(f"✅ 完成！共获取 {len(filtered_earnings_docs)} 个有效的财报记录")
-                        earnings_status.update(label="✅ 财报记录获取完成", state="complete")
-                    
-                    # 清除earnings状态显示
-                    earnings_status_placeholder.empty()
-                    
-                    all_docs.extend(filtered_earnings_docs)
-                    status.add_status_message(f"✅ 成功筛选出 {len(filtered_earnings_docs)} 份相关财报")
-                    analyzer.session_manager.update_processing_status(status)
-
-                status.add_status_message("📊 正在整理文檔列表...")
-                analyzer.session_manager.update_processing_status(status)
-                
-                all_docs.sort(key=lambda x: x.date, reverse=True)
-                status.documents = all_docs
-                status.update_progress(0, len(all_docs), "文档列表准备就绪")
-                status.add_status_message(f"✅ 文档列表准备就绪，共 {len(all_docs)} 份")
-                status.processing_step = 3
-                analyzer.session_manager.update_processing_status(status)
-
             st.rerun()
 
-        # 步骤3：按日期顺序处理文档
-        elif status.processing_step == 3:
-            if status.stop_requested:
-                return
+        # 步骤2：下载、计数并显示结果
+        elif status.processing_step == 2:
+            if status.stop_requested: return
                 
             docs_to_process = status.documents
+            analysis_results = []
             
-            # 初始化处理状态
-            if status.completed_documents == 0:
-                status.document_results = []
-            
-            # 检查是否还有文档需要处理
-            if status.completed_documents < len(docs_to_process):
-                current_doc = docs_to_process[status.completed_documents]
-                
-                # 更新状态
-                analyzing_msg = f"正在分析: {current_doc.title}" if language == "中文" else f"Analyzing: {current_doc.title}"
-                status.add_status_message(analyzing_msg)
-                
-                progress_label = f"📖 分析文档中... {status.completed_documents + 1}/{len(docs_to_process)}" if language == "中文" else f"📖 Analyzing document {status.completed_documents + 1}/{len(docs_to_process)}"
-                status.update_progress(status.completed_documents, len(docs_to_process), progress_label)
+            for idx, doc in enumerate(docs_to_process):
+                if status.stop_requested: break
+
+                status.update_progress(idx, len(docs_to_process), f"正在处理 {idx+1}/{len(docs_to_process)}")
                 analyzer.session_manager.update_processing_status(status)
                 
-                try:
-                    # 特殊处理6-K文件
-                    if hasattr(current_doc, 'form_type') and current_doc.form_type == '6-K':
-                        sixk_msg = f"检测到6-K文件，开始处理附件" if language == "中文" else f"Detected 6-K file, starting to process attachments"
-                        status.add_status_message(sixk_msg)
-                        
-                        # 初始化6-K处理器
-                        analyzer.sec_service._init_sixk_processor(analyzer.document_manager.temp_dir)
-                        
-                        # 从URL中提取ticker和cik
-                        ticker = st.session_state.analyzer_ticker
-                        
-                        # 获取CIK
-                        ticker_map = analyzer.sec_service.get_cik_map()
-                        cik = ticker_map.get(ticker.upper(), '')
-                        
-                        downloading_msg = f"正在下载和处理6-K附件..." if language == "中文" else f"Downloading and processing 6-K attachments..."
-                        status.add_status_message(downloading_msg)
-                        analyzer.session_manager.update_processing_status(status)
-                        
-                        # 处理6-K文件
-                        processed_docs = analyzer.sec_service.sixk_processor.process_6k_filing(
-                            ticker, cik, current_doc.url, current_doc
-                        )
-                        
-                        completed_msg = f"6-K处理完成，生成了 {len(processed_docs)} 个分析文档" if language == "中文" else f"6-K processing completed, generated {len(processed_docs)} analysis documents"
-                        status.add_status_message(completed_msg)
-                        
-                        # 检查是否需要对6-K文件进行分类过滤
-                        should_filter_6k = (st.session_state.analyzer_use_sec_reports and 
-                                           not st.session_state.analyzer_use_sec_others)
-                        
-                        # 处理所有6-K相关文档
-                        for i, doc in enumerate(processed_docs):
-                            if status.stop_requested:
-                                break
-                                
-                            analyzing_6k_msg = f"正在分析第 {i+1}/{len(processed_docs)} 个6-K文档: {doc.title}" if language == "中文" else f"Analyzing {i+1}/{len(processed_docs)} 6-K document: {doc.title}"
-                            status.add_status_message(analyzing_6k_msg)
-                            analyzer.session_manager.update_processing_status(status)
-                            
-                            # 如果需要过滤6-K文件，先用便宜模型进行分类
-                            if should_filter_6k:
-                                classifying_msg = f"正在分类6-K文档..." if language == "中文" else f"Classifying 6-K document..."
-                                status.add_status_message(classifying_msg)
-                                
-                                # 确保文档有内容
                                 if not doc.content:
                                     if doc.type == 'SEC Filing':
                                         doc.content = analyzer.sec_service.download_filing(doc.url)
-                                
-                                # 使用便宜模型进行分类
-                                is_quarterly_annual_ipo = analyzer.gemini_service.classify_6k_document(doc.content)
-                                
-                                if not is_quarterly_annual_ipo:
-                                    # 如果不是季报/年报/IPO，跳过这个文档
-                                    skip_msg = f"跳过非季报/年报/IPO的6-K文档: {doc.title}" if language == "中文" else f"Skipping non-quarterly/annual/IPO 6-K document: {doc.title}"
-                                    status.add_status_message(skip_msg)
-                                    continue
-                                else:
-                                    # 如果是季报/年报/IPO，继续处理
-                                    continue_msg = f"检测到季报/年报/IPO文档，继续分析: {doc.title}" if language == "中文" else f"Detected quarterly/annual/IPO document, continuing analysis: {doc.title}"
-                                    status.add_status_message(continue_msg)
-                            
-                            # 创建AI分析状态显示
-                            ai_status_placeholder = st.empty()
-                            with ai_status_placeholder.status(f"🤖 AI正在分析6-K文档 {i+1}/{len(processed_docs)}...", expanded=True) as ai_status:
-                                ai_status.write(f"📄 正在分析: {doc.title}")
-                                ai_status.write("📝 正在构建分析提示词...")
-                                ai_status.write("🧠 正在调用AI模型进行深度分析...")
-                                ai_status.write("⏳ 开始流式响应...")
-                                
-                                # 执行实际的AI分析 - 使用流式响应
-                                stream_generator = analyzer.process_document_stream(doc, status.processing_prompt, model_type)
-                                
-                                ai_status.write("✅ AI分析开始！")
-                                ai_status.update(label=f"✅ 6-K文档 {i+1}/{len(processed_docs)} 分析开始", state="complete")
-                            
-                            # 清除AI状态显示
-                            ai_status_placeholder.empty()
-                            
-                            # 显示文档标题
-                            st.markdown(f"### 📅 {doc.date}")
-                            st.markdown(f"### {doc.title}")
-                            
-                            # 使用流式响应显示结果
-                            analysis_result = st.write_stream(stream_generator)
-                            
-                            # 根据文档类型设置头像
-                            avatar = "📄"
-                            
-                            # 保存文档内容到临时文件
-                            temp_file_path = analyzer.document_manager.save_document_content(doc)
-                            
-                            # 将分析结果添加到聊天历史中，这样rerun时不会丢失
-                            message_content = f"### 📅 {doc.date}\n### {doc.title}\n\n{analysis_result}"
-                            st.session_state.analyzer_messages.append({
-                                "role": "assistant",
-                                "content": message_content,
-                                "avatar": avatar,
-                                "temp_file_path": temp_file_path,
-                                "document_title": doc.title
-                            })
-                            
-                            # 保存结果
-                            status.document_results.append({
-                                "title": doc.title,
-                                "date": doc.date.isoformat(),
-                                "analysis": analysis_result
-                            })
-                            
-                            completed_6k_msg = f"完成第 {i+1} 个6-K文档分析" if language == "中文" else f"Completed {i+1} 6-K document analysis"
-                            status.add_status_message(completed_6k_msg)
-                    else:
-                        # 普通文档处理
-                        # 创建AI分析状态显示
-                        ai_status_placeholder = st.empty()
-                        with ai_status_placeholder.status("🤖 AI正在分析文档内容...", expanded=True) as ai_status:
-                            # 显示详细的AI分析步骤
-                            ai_status.write("📄 正在准备文档内容...")
-                            
-                            # 检查文档内容是否需要下载
-                            if not current_doc.content:
-                                ai_status.write("📥 正在下载文档内容...")
-                                if current_doc.type == 'SEC Filing':
-                                    if hasattr(current_doc, 'form_type') and current_doc.form_type == '6-K':
-                                        ai_status.write("⚠️ 6-K文件内容处理失败")
-                                    else:
-                                        ai_status.write("🔗 正在从SEC EDGAR下载文档...")
-                                elif current_doc.type == 'HK Stock Filing':
-                                    ai_status.write("🔗 正在从港交所下载文档...")
-                                elif current_doc.type == 'Earnings Call':
-                                    ai_status.write("🔗 正在获取财报会议记录...")
-                            
-                            ai_status.write("📝 正在构建分析提示词...")
-                            ai_status.write("🧠 正在调用AI模型进行深度分析...")
-                            ai_status.write("⏳ 开始流式响应...")
-                            
-                            # 执行实际的AI分析 - 使用流式响应
-                            stream_generator = analyzer.process_document_stream(current_doc, status.processing_prompt, model_type)
-                            
-                            ai_status.write("✅ AI分析开始！")
-                            ai_status.update(label="✅ AI分析开始", state="complete")
-                        
-                        # 清除AI状态显示
-                        ai_status_placeholder.empty()
-                        
-                        # 显示文档标题
-                        st.markdown(f"### 📅 {current_doc.date}")
-                        st.markdown(f"### {current_doc.title}")
-                        
-                        # 使用流式响应显示结果
-                        analysis_result = st.write_stream(stream_generator)
-                        
-                        # 根据文档类型设置头像
-                        if current_doc.type == 'SEC Filing':
-                            avatar = "📄"
-                        elif current_doc.type == 'HK Stock Filing':
-                            avatar = "🏢"
-                        elif current_doc.type == 'Earnings Call':
-                            avatar = "🎙️"
-                        else:
-                            avatar = "📄"
-                        
-                        # 保存文档内容到临时文件
-                        temp_file_path = analyzer.document_manager.save_document_content(current_doc)
-                        
-                        # 将分析结果添加到聊天历史中，这样rerun时不会丢失
-                        message_content = f"### 📅 {current_doc.date}\n### {current_doc.title}\n\n{analysis_result}"
-                        st.session_state.analyzer_messages.append({
-                            "role": "assistant",
-                            "content": message_content,
-                            "avatar": avatar,
-                            "temp_file_path": temp_file_path,
-                            "document_title": current_doc.title
-                        })
-                        
-                        # 保存结果
-                        status.document_results.append({
-                            "title": current_doc.title,
-                            "date": current_doc.date.isoformat(),
-                            "analysis": analysis_result
-                        })
-                    
-                    status.completed_documents += 1
-                    
-                    # 更新状态
-                    analyzer.session_manager.update_processing_status(status)
-                    
-                    # 如果还有更多文档需要处理，继续下一个
-                    if status.completed_documents < len(docs_to_process) and not status.stop_requested:
-                        st.rerun()
-                    else:
-                        # 所有文档处理完成，进入下一步
-                        status.processing_step = 4
-                        analyzer.session_manager.update_processing_status(status)
-                        st.rerun()
-                    
-                except Exception as exc:
-                    failed_msg = f"分析失败: {current_doc.title} - {exc}" if language == "中文" else f"Analysis failed: {current_doc.title} - {exc}"
-                    status.add_status_message(failed_msg)
-                    logger.error(f"文档分析失败: {current_doc.title} - {exc}")
-                    
-                    # 也将错误信息添加到聊天历史中
-                    error_prefix = f"**⚠️ {current_doc.title} 分析失败:**" if language == "中文" else f"**⚠️ {current_doc.title} Analysis Failed:**"
-                    error_message = f"{error_prefix}\n\n{exc}"
-                    st.session_state.analyzer_messages.append({
-                        "role": "assistant", 
-                        "content": error_message,
-                        "avatar": "⚠️"
-                    })
-                    
-                    # 跳过失败的文档，继续处理下一个
-                    status.completed_documents += 1
-                    analyzer.session_manager.update_processing_status(status)
-                    st.rerun()
-            else:
-                # 所有文档处理完成
-                all_completed_msg = "✅ 所有文档分析完成" if language == "中文" else "✅ All document analysis completed"
-                status.current_status_label = all_completed_msg
-                status.processing_step = 4
-                analyzer.session_manager.update_processing_status(status)
-                st.rerun()
-        
-        # 步骤4：整合结果
-        elif status.processing_step == 4:
-            if status.stop_requested:
-                return
+                    elif doc.type == 'HK Stock Filing':
+                        doc.content = analyzer.hk_service.download_hk_filing(doc.url)
                 
-            generating_msg = "📊 正在生成最终报告..." if language == "中文" else "📊 Generating final report..."
-            status.current_status_label = generating_msg
-            
-            integrating_msg = "整合所有分析结果..." if language == "中文" else "Integrating all analysis results..."
-            status.add_status_message(integrating_msg)
-            analyzer.session_manager.update_processing_status(status)
-            
-            # 过滤掉失败的结果
-            successful_results = [res for res in status.document_results if res is not None]
-            
-            # 显示综合报告标题
-            st.markdown("### 📊 Summary")
-            
-            # 使用流式响应显示最终报告
-            final_report_stream = analyzer.integrate_results_stream(
-                successful_results, status.integration_prompt, status.user_question, ticker, model_type
-            )
-            final_report = st.write_stream(final_report_stream)
-            
-            # 将综合报告添加到聊天历史中
-            summary_content = f"### 📊 Summary\n\n{final_report}"
-            st.session_state.analyzer_messages.append({
-                "role": "assistant",
-                "content": summary_content,
-                "avatar": "📊"
-            })
-            
-            report_completed_msg = "综合报告生成完毕！" if language == "中文" else "Comprehensive report generated!"
-            status.add_status_message(report_completed_msg)
-            
-            processing_completed_msg = "✅ 处理完成！" if language == "中文" else "✅ Processing completed!"
-            status.current_status_label = processing_completed_msg
-            status.progress_percentage = 100.0
-            analyzer.session_manager.update_processing_status(status)
-            
-            # 短暂显示完成状态
-            time.sleep(0.1)
-            
-            # 重置状态
-            status = ProcessingStatus()
-            analyzer.session_manager.update_processing_status(status)
+                word_count = len(doc.content.split())
+                token_count = analyzer.gemini_service.count_tokens(doc.content, model_type)
 
+                analysis_results.append({
+                    "document_title": doc.title,
+                    "date": doc.date.strftime("%Y-%m-%d"),
+                    "word_count": word_count,
+                    "token_count": token_count,
+                    "url": doc.url
+                })
+                
+                status.completed_documents = idx + 1
+
+            st.session_state.analysis_results = analysis_results
+            status.is_processing = False
+            status.current_status_label = "✅ 分析完成！"
+                    analyzer.session_manager.update_processing_status(status)
             st.rerun()
 
     except Exception as e:
         logger.error(f"处理流程出错: {e}", exc_info=True)
-        error_msg = f"处理过程中出现严重错误: {e}" if language == "中文" else f"A serious error occurred during processing: {e}"
-        st.error(error_msg)
-        # 重置状态
-        status = ProcessingStatus()
+        status.error_message = str(e)
+        status.is_processing = False
         analyzer.session_manager.update_processing_status(status)
         st.rerun()
-
-
-def process_user_question(analyzer: SECEarningsAnalyzer, ticker: str, years: int, use_sec: bool, use_earnings: bool, model_type: str):
-    """处理用户问题的完整流程"""
-    # DEPRECATED: use process_user_question_new instead
-    pass
 
 if __name__ == "__main__":
     main() 
