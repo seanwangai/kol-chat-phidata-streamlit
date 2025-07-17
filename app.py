@@ -76,6 +76,12 @@ LANGUAGE_CONFIG = {
         "earnings_caption": "Earnings call transcripts",
         "model_header": "🤖 AI Model",
         "model_label": "Select Model",
+        "analysis_mode_header": "⚡ Analysis Mode",
+        "analysis_mode_label": "Select Mode",
+        "fast_mode": "Fast Mode",
+        "detailed_mode": "Detailed Mode",
+        "fast_mode_caption": "Analyze all documents together in one pass",
+        "detailed_mode_caption": "Analyze each document separately, then integrate results",
         "api_header": "💳 API Configuration",
         "access_code_label": "Enter Access Code",
         "access_code_placeholder": "Enter access code to enable premium API",
@@ -109,6 +115,12 @@ LANGUAGE_CONFIG = {
         "earnings_caption": "Earnings call transcripts",
         "model_header": "🤖 AI Model",
         "model_label": "Select Model",
+        "analysis_mode_header": "⚡ 分析模式",
+        "analysis_mode_label": "选择模式",
+        "fast_mode": "快速模式",
+        "detailed_mode": "详细模式",
+        "fast_mode_caption": "一次性分析所有文档",
+        "detailed_mode_caption": "逐个分析每份文档，然后整合结果",
         "api_header": "💳 API Configuration",
         "access_code_label": "Enter Access Code",
         "access_code_placeholder": "Enter access code to enable premium API",
@@ -1183,6 +1195,7 @@ class SessionManager:
             "analyzer_use_sec_others": False,
             "analyzer_use_earnings": True,
             "analyzer_model": "gemini-2.5-flash",
+            "analyzer_analysis_mode": "fast_mode",  # 新增：分析模式，默认快速模式
             "api_key_cycle": cycle(st.secrets["GOOGLE_API_KEYS"]),
             "processing_status": ProcessingStatus().__dict__,
             "cache": {},
@@ -2187,6 +2200,87 @@ class SECEarningsAnalyzer:
             
             return processing_prompt, integration_prompt
     
+    def generate_fast_mode_prompt(self, question: str, ticker: str, model_type: str) -> str:
+        """生成快速模式的分析提示词"""
+        # 获取当前语言设置
+        language = st.session_state.get("selected_language", "English")
+        
+        if language == "English":
+            analysis_prompt = f"""
+            You are a professional financial analyst assistant, specialized in analyzing user questions and generating optimized prompts for fast document analysis.
+
+            User Question: {question}
+            Stock Ticker: {ticker}
+
+            Your Task:
+            Generate a single, comprehensive prompt that can analyze all provided documents at once to answer the user's question.
+
+            Requirements:
+            - The prompt should be optimized for processing multiple documents simultaneously
+            - It should extract and synthesize information from all documents to provide a complete answer
+            - The prompt should be professional and capable of producing structured, readable analysis
+            - The user's original question MUST appear in the generated prompt
+            - Always answer in English
+            - **Must return only JSON format, do not include any other text or explanations.**
+
+            Please return directly in JSON format:
+            ```json
+            {{
+                "fast_mode_prompt": "Comprehensive analysis prompt for all documents"
+            }}
+            ```
+            """
+        else:  # 中文
+            analysis_prompt = f"""
+            你是一个专业的金融分析师助手，专门负责分析用户问题并生成优化的快速文档分析提示词。
+
+            用户问题: {question}
+            股票代码: {ticker}
+
+            你的任务：
+            生成一个综合性的提示词，能够一次性分析所有提供的文档来回答用户的问题。
+
+            要求：
+            - 提示词应该针对同时处理多个文档进行优化
+            - 应该能够从所有文档中提取和综合信息，提供完整的答案
+            - 提示词应该专业，能够产生结构化、易读的分析结果
+            - 用户原始问题必须出现在生成的提示词中
+            - **必须只返回JSON格式，不要包含任何其他文本或解释。**
+
+            请直接返回JSON格式：
+            ```json
+            {{
+                "fast_mode_prompt": "综合分析所有文档的提示词"
+            }}
+            ```
+            """
+        
+        try:
+            result = self.gemini_service.call_api(analysis_prompt, model_type)
+            # 尝试从Markdown代码块中提取JSON
+            match = re.search(r"```json\s*(\{.*?\})\s*```", result, re.DOTALL)
+            if match:
+                json_str = match.group(1)
+            else:
+                json_str = result
+            
+            prompt_data = json.loads(json_str)
+            
+            fast_mode_prompt = prompt_data.get("fast_mode_prompt", "")
+            
+            if not fast_mode_prompt:
+                raise ValueError("生成的快速模式提示词为空")
+            
+            return fast_mode_prompt
+            
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.error(f"解析快速模式prompt JSON失败: {e}. 模型返回: {result}")
+            # 使用默认提示词
+            if language == "English":
+                return f"Please analyze all the provided documents to answer the user's question: '{question}'. Extract relevant information from all documents and provide a comprehensive analysis. Keep answers concise and to the point. Start with conclusions, use appropriate emojis and markdown format. If not found, briefly state 'Not mentioned in documents'. Always answer in English."
+            else:
+                return f"请分析所有提供的文档来回答用户问题：'{question}'。从所有文档中提取相关信息并提供综合分析。只回答重点就好，记得不废话。回答要结论先说，可以适当使用emoji，markdown格式，如果没找到就简短回答，说未提及就好。"
+    
     def process_document(self, document: Document, processing_prompt: str, model_type: str) -> str:
         """处理单个文档"""
         try:
@@ -2540,6 +2634,116 @@ class SECEarningsAnalyzer:
             def error_generator():
                 yield error_msg
             return error_generator()
+    
+    def process_all_documents_fast(self, documents: List[Document], fast_mode_prompt: str, model_type: str):
+        """快速模式：一次性处理所有文档 - 流式响应版本"""
+        try:
+            # 获取当前语言设置
+            language = st.session_state.get("selected_language", "English")
+            
+            # 下载所有文档内容
+            all_content = ""
+            for i, document in enumerate(documents):
+                if not document.content:
+                    if document.type == 'SEC Filing':
+                        if hasattr(document, 'form_type') and document.form_type == '6-K':
+                            logger.warning(f"6-K文件内容为空，这不应该发生: {document.title}")
+                            document.content = "6-K文件内容处理失败" if language == "中文" else "6-K file content processing failed"
+                        else:
+                            document.content = self.sec_service.download_filing(document.url)
+                    elif document.type == 'HK Stock Filing':
+                        document.content = self.hk_service.download_hk_filing(document.url)
+                    elif document.type == 'Earnings Call':
+                        logger.warning(f"处理文档时发现财报记录内容为空: {document.title}")
+                        document.content = "内容未找到" if language == "中文" else "Content not found"
+                
+                # 添加文档分隔符和标题
+                separator = f"\n\n{'='*60}\n"
+                doc_header = f"文档 {i+1}: {document.title}\n日期: {document.date}\n类型: {document.type}\n" if language == "中文" else f"Document {i+1}: {document.title}\nDate: {document.date}\nType: {document.type}\n"
+                separator += doc_header
+                separator += f"{'='*60}\n\n"
+                
+                all_content += separator + (document.content or "")
+            
+            # 限制总内容长度
+            if len(all_content) > config.MAX_CONTENT_LENGTH:
+                all_content = all_content[:config.MAX_CONTENT_LENGTH] + f"\n[内容已截断]" if language == "中文" else f"\n[Content truncated]"
+            
+            # 构建完整的提示词
+            if language == "English":
+                prompt = f"""
+                You are a professional financial analyst, specialized in analyzing multiple financial documents simultaneously.
+
+                Analysis Requirements: {fast_mode_prompt}
+                
+                Requirements:
+                - Analyze all provided documents comprehensively
+                - Extract relevant information according to the user's specific requirements
+                - Provide accurate, professional analysis
+                - Ensure answers come from document content, don't imagine
+                - I don't have time to read, ensure answers are direct and to the point, no need for polite conversation
+                - Always answer in English
+                - when markdown output, Escape all dollar signs $ for currency as ＄ to prevent Markdown from rendering them as math.
+                
+                Answer Requirements:
+                - Start with 📊 emoji, followed by a brief summary of what documents were analyzed
+                - Second line Start with 💡 on next new line row, directly state conclusions related to the user's question
+                - Please provide structured analysis results, only answer key points, remember no nonsense
+                - First sentence should state key points without pleasantries
+                - Answer should start with conclusions, can use emojis to help users read, markdown format
+                - If the documents don't contain information related to the question, just say "Not mentioned in documents" period, one sentence only
+                - If the content contains numbers for the same indicator at different time points, or question is about guidance, place a pivot table at the very beginning of the answer. Format: pivot table row names are different indicators, column names are the time when indicators were published, cells are the indicator numbers. Then explain below the pivot table after generation.
+                - If the content contains business descriptions for the same indicator at different time points, or question is about guidance, place a pivot table at the very beginning of the answer. Format: pivot table row names are different indicators, column names are the time when indicators were published, cells are the indicator descriptions. Then explain below the pivot table after generation.
+                - For example: row1 would be Indicator, 2025Q1, 2025Q2. row2 would be AI commercialization, Q2 expected to resume double-digit year-over-year growth, confident in achieving significant revenue growth for full year 2025
+                - table output use markdown format, ensure markdown format is correct, no errors
+
+
+                All Document Contents:
+                {all_content}
+                """
+            else:  # 中文
+                prompt = f"""
+                你是一个专业的金融分析师，专门负责同时分析多个金融文档。
+
+                分析要求: {fast_mode_prompt}
+                
+                要求：
+                - 全面分析所有提供的文档
+                - 根据用户的具体要求提取相关信息
+                - 提供准确、专业的分析
+                - 确保回答都来自文档内容，不要凭空想象
+                - 我没时间看，确保回答直接说重点，不用像人一样还要客套话
+                - markdown输出，将所有表示金额的 $ 改为 ＄，以避免 Markdown 被误判为数学公式
+                
+                回答要求：
+                - 开头以📊这个emoji开头，📊后面接简要说明分析了哪些文档
+                - 第二句下一行，开头以💡，记得换行，直接说结论，回答跟用户问题有关的结论，都是简短一句话
+                - 请提供结构化的分析结果，只回答重点就好，记得不废话
+                - 第一句就说重点不用客套，直接说重点
+                - 回答要结论先说，可以使用emoji帮助使用者阅读，markdown格式
+                - 如果文档内没有跟问题有关的信息，就说一句"文档内未提及"句号，一句话就好，不准废话
+                - 如果內文有 同指標不同時間點的 數字 或是問guidance，問題適合整理成表格的 回答的最一開始 一定要放上一個pivot table，格式是 pivot table row name 是不同指標 ， column 指標公布的時間，cell 是指標的數字。然後pivot table 生成完 表格下方解釋一下
+                - 如果內文有 同指標不同時間點的 業務的描述 或是問guidance，問題適合整理成表格的 回答的最一開始 一定要放上一個pivot table，格式是 pivot table row name 是不同指標 ， column 指標公布的時間，cell 是指標的數字。然後pivot table 生成完 表格下方解釋一下
+                - - 舉例類似像是  row1會是 指標, 2025Q1, 2025Q2 。 row2會是 AI商业化, Q2预计将恢复两位数同比增长, 有信心在2025全年年实现显著收入增长
+                - table 都用markdown格式，要確保markdown格式正確，不要有錯誤
+
+                所有文档内容:
+                {all_content}
+                """
+            
+            logger.info("================================================")
+            logger.info(f"Processing all documents in fast mode in {language}")
+            
+            # 返回流式响应生成器
+            return self.gemini_service.call_api_stream(prompt, model_type)
+            
+        except Exception as e:
+            logger.error(f"快速模式处理失败: {e}")
+            error_msg = f"快速模式处理时出错: {e}" if language == "中文" else f"Error in fast mode processing: {e}"
+            # 对于错误，返回一个简单的生成器
+            def error_generator():
+                yield error_msg
+            return error_generator()
 
 # 初始化应用
 @st.cache_resource
@@ -2630,6 +2834,21 @@ def main():
             format_func=lambda x: config.MODELS[x]
         )
         
+        # 分析模式选择
+        st.subheader(lang_config["analysis_mode_header"])
+        analysis_mode = st.selectbox(
+            lang_config["analysis_mode_label"],
+            options=["fast_mode", "detailed_mode"],
+            index=0 if st.session_state.analyzer_analysis_mode == "fast_mode" else 1,
+            format_func=lambda x: lang_config["fast_mode"] if x == "fast_mode" else lang_config["detailed_mode"]
+        )
+        
+        # 显示模式说明
+        if analysis_mode == "fast_mode":
+            st.caption(lang_config["fast_mode_caption"])
+        else:
+            st.caption(lang_config["detailed_mode_caption"])
+        
         # 付費API設置
         st.subheader(lang_config["api_header"])
         
@@ -2679,6 +2898,7 @@ def main():
         st.session_state.analyzer_use_sec_others = use_sec_others
         st.session_state.analyzer_use_earnings = use_earnings
         st.session_state.analyzer_model = model_type
+        st.session_state.analyzer_analysis_mode = analysis_mode
     
     # 主内容区域
 
@@ -2805,10 +3025,10 @@ def main():
             analyzer, ticker, years, 
             st.session_state.analyzer_use_sec_reports,
             st.session_state.analyzer_use_sec_others,
-            use_earnings, model_type
+            use_earnings, model_type, st.session_state.analyzer_analysis_mode
         )
 
-def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years: int, use_sec_reports: bool, use_sec_others: bool, use_earnings: bool, model_type: str):
+def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years: int, use_sec_reports: bool, use_sec_others: bool, use_earnings: bool, model_type: str, analysis_mode: str = "detailed_mode"):
     """处理用户问题的完整流程 - 新版，带实时状态更新和并行处理"""
     status = analyzer.session_manager.get_processing_status()
     language = st.session_state.get("selected_language", "English")
@@ -2861,17 +3081,23 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                     ai_analysis_status.write("🧠 正在调用AI模型生成分析提示词...")
                     ai_analysis_status.write("⏳ 等待AI响应中...")
                 
-                # 执行实际的AI分析
-                processing_prompt, integration_prompt = analyzer.analyze_question(status.user_question, ticker, model_type)
+                # 根据分析模式选择不同的处理逻辑
+                if analysis_mode == "fast_mode":
+                    # 快速模式：生成快速模式提示词
+                    fast_mode_prompt = analyzer.generate_fast_mode_prompt(status.user_question, ticker, model_type)
+                    status.processing_prompt = fast_mode_prompt
+                    status.integration_prompt = ""  # 快速模式不需要integration prompt
+                else:
+                    # 详细模式：生成详细分析提示词
+                    processing_prompt, integration_prompt = analyzer.analyze_question(status.user_question, ticker, model_type)
+                    status.processing_prompt = processing_prompt
+                    status.integration_prompt = integration_prompt
                 
                 ai_analysis_status.write("✅ AI分析完成！")
                 ai_analysis_status.update(label="✅ 问题分析完成", state="complete")
             
             # 清除AI分析状态显示
             ai_analysis_placeholder.empty()
-            
-            status.processing_prompt = processing_prompt
-            status.integration_prompt = integration_prompt
             
             success_msg = "✅ User question analysis completed" if language == "English" else "✅ 用戶問題分析完成"
             status.add_status_message(success_msg)
@@ -3060,8 +3286,14 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                 status.documents = all_docs
                 status.update_progress(0, len(all_docs), "Document list ready")
                 status.add_status_message(f"✅ Document list ready, total {len(all_docs)} documents")
-                status.processing_step = 3
+                
+                # 根据分析模式选择不同的处理步骤
+                if analysis_mode == "fast_mode":
+                    status.processing_step = 5  # 跳转到快速模式处理
+                else:
+                    status.processing_step = 3  # 详细模式：逐个处理文档
                 analyzer.session_manager.update_processing_status(status)
+            
             else:
                 # 中文版本的消息
                 status.current_status_label = "📂 正在检索和筛选文档..."
@@ -3238,7 +3470,12 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                 status.documents = all_docs
                 status.update_progress(0, len(all_docs), "文档列表准备就绪")
                 status.add_status_message(f"✅ 文档列表准备就绪，共 {len(all_docs)} 份")
-                status.processing_step = 3
+                
+                # 根据分析模式选择不同的处理步骤
+                if analysis_mode == "fast_mode":
+                    status.processing_step = 5  # 跳转到快速模式处理
+                else:
+                    status.processing_step = 3  # 详细模式：逐个处理文档
                 analyzer.session_manager.update_processing_status(status)
 
             st.rerun()
@@ -3537,6 +3774,67 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
             status = ProcessingStatus()
             analyzer.session_manager.update_processing_status(status)
 
+            st.rerun()
+        
+        # 步骤5：快速模式处理
+        elif status.processing_step == 5:
+            if status.stop_requested:
+                return
+                
+            generating_msg = "⚡ 正在快速分析所有文档..." if language == "中文" else "⚡ Fast analyzing all documents..."
+            status.current_status_label = generating_msg
+            status.add_status_message(generating_msg)
+            analyzer.session_manager.update_processing_status(status)
+            
+            # 生成快速模式提示词
+            fast_mode_prompt = analyzer.generate_fast_mode_prompt(status.user_question, ticker, model_type)
+            
+            # 创建AI分析状态显示
+            ai_status_placeholder = st.empty()
+            with ai_status_placeholder.status("⚡ 快速模式AI分析中...", expanded=True) as ai_status:
+                ai_status.write(f"📊 正在同时分析 {len(status.documents)} 个文档")
+                ai_status.write("🧠 正在调用AI模型进行综合分析...")
+                ai_status.write("⏳ 开始流式响应...")
+                
+                # 执行快速模式分析
+                fast_stream = analyzer.process_all_documents_fast(status.documents, fast_mode_prompt, model_type)
+                
+                ai_status.write("✅ 快速分析开始！")
+                ai_status.update(label="✅ 快速分析开始", state="complete")
+            
+            # 清除AI状态显示
+            ai_status_placeholder.empty()
+            
+            # 显示快速分析结果
+            st.markdown("### ⚡ 快速分析结果" if language == "中文" else "### ⚡ Fast Analysis Results")
+            
+            # 使用流式响应显示结果
+            final_result = st.write_stream(fast_stream)
+            
+            # 将结果添加到聊天历史中
+            result_content = f"### ⚡ {'快速分析结果' if language == '中文' else 'Fast Analysis Results'}\n\n{final_result}"
+            st.session_state.analyzer_messages.append({
+                "role": "assistant",
+                "content": result_content,
+                "avatar": "⚡"
+            })
+            
+            # 完成处理
+            completed_msg = "快速分析完成！" if language == "中文" else "Fast analysis completed!"
+            status.add_status_message(completed_msg)
+            
+            processing_completed_msg = "✅ 处理完成！" if language == "中文" else "✅ Processing completed!"
+            status.current_status_label = processing_completed_msg
+            status.progress_percentage = 100.0
+            analyzer.session_manager.update_processing_status(status)
+            
+            # 短暂显示完成状态
+            time.sleep(0.1)
+            
+            # 重置状态
+            status = ProcessingStatus()
+            analyzer.session_manager.update_processing_status(status)
+            
             st.rerun()
 
     except Exception as e:

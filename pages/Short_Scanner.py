@@ -807,6 +807,172 @@ class EarningsCallAnalysisDetector(ShortDetector):
             formatted += f"{doc.content}\n"
         return formatted
 
+class PeterLynchTurnaroundDetector(ShortDetector):
+    """Peter Lynch反转股检测器"""
+    
+    def __init__(self):
+        super().__init__(
+            name_zh="Peter Lynch反转股检测",
+            name_en="Peter Lynch Turnaround Detection",
+            description_zh="基于Peter Lynch理念检测公司是否有改善计划📈(适合做多)还是业务恶化无改善📉(适合做空)",
+            description_en="Detects turnaround opportunities based on Peter Lynch principles: improvement plans📈(suitable for long) or deterioration without solutions📉(suitable for short)",
+            priority=5  # 高优先级，因为反转股检测对投资决策很重要
+        )
+    
+    def detect(self, documents: List, model_type: str) -> DetectionResult:
+        """检测Peter Lynch反转股信号"""
+        start_time = time.time()
+        
+        try:
+            # 获取当前语言设置
+            language = st.session_state.get("selected_language", "English")
+            
+            # 构建检测提示词
+            prompt = self._build_detection_prompt(documents, language)
+            
+            # 调用AI进行检测
+            response = self.gemini_service.call_api(prompt, model_type)
+            
+            # 解析AI响应
+            signals = self.parse_ai_response(response)
+            
+            processing_time = time.time() - start_time
+            
+            return DetectionResult(
+                detector_name=self.name,
+                success=True,
+                signals=signals,
+                processing_time=processing_time,
+                error_message=None
+            )
+            
+        except Exception as e:
+            processing_time = time.time() - start_time
+            logger.error(f"Peter Lynch反转股检测失败: {e}")
+            
+            return DetectionResult(
+                detector_name=self.name,
+                success=False,
+                signals=[],
+                processing_time=processing_time,
+                error_message=str(e)
+            )
+    
+    def get_analysis_prompt(self, documents: List) -> str:
+        """获取分析提示词 - 实现抽象方法"""
+        # 获取当前语言设置
+        language = st.session_state.get("selected_language", "English")
+        return self._build_detection_prompt(documents, language)
+    
+    def _build_detection_prompt(self, documents: List, language: str) -> str:
+        """构建检测提示词"""
+        if language == "中文":
+            return f"""
+            你是一个专业的价值投资分析师，专门基于Peter Lynch的反转股理念进行分析。
+
+            Peter Lynch反转股检测重点：
+
+            📈 **正面转机信号（适合做多）**：
+            1. 管理层改善计划：新管理团队、重组计划、明确的战略转型路径
+            2. 业务改善迹象：收入回升、成本控制改善、运营效率提升
+            3. 产品或服务创新：新产品推出、技术升级、服务改进
+            4. 财务状况修复：现金流改善、债务重组、资产负债表优化
+            5. 市场机会把握：新市场进入、市场份额回升、竞争优势重建
+            6. 估值修复潜力：低估值但有改善计划，业务开始好转
+            7. 催化剂事件：资产剥离、业务重组、合作伙伴关系
+            8. 困境反转：从亏损转盈利、从负现金流转正的具体计划
+
+            📉 **负面恶化信号（适合做空）**：
+            1. 缺乏改善计划：管理层无明确改善策略，或计划不切实际
+            2. 业务持续恶化：收入下滑、利润率压缩、成本失控且无改善
+            3. 产品竞争力丧失：产品老化、技术落后、市场份额流失
+            4. 财务状况恶化：现金流恶化、债务增加、无有效财务计划
+            5. 市场地位下滑：失去竞争优势、客户流失、品牌价值下降
+            6. 估值陷阱：看似便宜但业务基本面持续恶化
+            7. 负面催化剂：监管冲击、诉讼风险、关键客户流失
+            8. 管理层失信：频繁变动、执行力差、承诺无法兑现
+
+            请仔细分析以下文档，寻找Peter Lynch反转股的信号：
+
+            文档内容：
+            {self._format_documents(documents)}
+
+            请以JSON格式返回检测结果：
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "Peter Lynch反转股",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "信号标题",
+                        "description": "详细描述反转股特征和改善计划",
+                        "evidence": "具体证据和改善/恶化迹象",
+                        "recommendation": "📈做多建议(有改善计划) 或 📉做空建议(无改善计划)",
+                        "source_documents": ["文档1", "文档2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+        else:
+            return f"""
+            You are a professional value investment analyst specializing in Peter Lynch's turnaround stock principles.
+
+            Peter Lynch Turnaround Detection Focus:
+
+            📈 **Positive Turnaround Signals (Suitable for Long)**:
+            1. Management improvement plans: New management team, restructuring plans, clear strategic transformation path
+            2. Business improvement signs: Revenue recovery, cost control improvement, operational efficiency gains
+            3. Product or service innovation: New product launches, technology upgrades, service improvements
+            4. Financial condition repair: Cash flow improvement, debt restructuring, balance sheet optimization
+            5. Market opportunity capture: New market entry, market share recovery, competitive advantage rebuilding
+            6. Valuation recovery potential: Undervalued with improvement plans, business starting to improve
+            7. Catalyst events: Asset divestitures, business restructuring, partnership agreements
+            8. Distressed turnaround: Specific plans to turn from losses to profits, negative to positive cash flow
+
+            📉 **Negative Deterioration Signals (Suitable for Short)**:
+            1. Lack of improvement plans: Management has no clear improvement strategy, or plans are unrealistic
+            2. Persistent business deterioration: Revenue decline, margin compression, cost overruns with no improvement
+            3. Product competitiveness loss: Product aging, technology lag, market share loss
+            4. Financial condition deterioration: Cash flow deterioration, debt increase, no effective financial plan
+            5. Market position decline: Loss of competitive advantage, customer attrition, brand value decline
+            6. Value trap: Appears cheap but business fundamentals continue to deteriorate
+            7. Negative catalysts: Regulatory impact, litigation risks, key customer losses
+            8. Management credibility loss: Frequent changes, poor execution, promises not delivered
+
+            Please analyze the following documents for Peter Lynch turnaround signals:
+
+            Document Content:
+            {self._format_documents(documents)}
+
+            Return detection results in JSON format:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "Peter Lynch Turnaround",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "Signal Title",
+                        "description": "Detailed description of turnaround characteristics and improvement plans",
+                        "evidence": "Specific evidence and improvement/deterioration indicators",
+                        "recommendation": "📈Long recommendation (with improvement plans) or 📉Short recommendation (without improvement plans)",
+                        "source_documents": ["Document1", "Document2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+    
+    def _format_documents(self, documents: List) -> str:
+        """格式化文档内容"""
+        formatted = ""
+        for doc in documents:
+            formatted += f"\n=== {doc.title} ({doc.date}) ===\n"
+            formatted += f"{doc.content}\n"
+        return formatted
+
 # 做空信号分析器主类
 class ShortSignalAnalyzer:
     """做空信号分析器"""
@@ -818,6 +984,7 @@ class ShortSignalAnalyzer:
     def _initialize_detectors(self) -> List[ShortDetector]:
         """初始化所有检测器"""
         detectors = [
+            PeterLynchTurnaroundDetector(),
             AccountsReceivableDetector(),
             MarketPositionDetector(),
             InconsistencyDetector(),
@@ -1021,7 +1188,7 @@ LANGUAGE_CONFIG = {
         "processing_stopped": "Processing has been stopped by user request."
     },
     "中文": {
-        "title": "🎯 做空信号扫描器",
+        "title": "🎯 Short Signal Scanner",
         "sidebar_header": "📋 扫描器配置",
         "ticker_label": "Ticker",
         "ticker_placeholder": "e.g., AAPL, 1024 HK",
@@ -1048,7 +1215,7 @@ LANGUAGE_CONFIG = {
         "language_label": "选择语言",
         "hk_stock_info": "🏢 港股 - 已标准化为: {}",
         "us_stock_info": "🇺🇸 美股",
-        "scan_button": "🔍 开始做空信号扫描",
+        "scan_button": "🔍 Start Short Signal Scan",
         "status_header": "📋 状态",
         "stop_button": "⏹️ 停止处理",
         "progress_text": "进度: {}/{} 个文档",
