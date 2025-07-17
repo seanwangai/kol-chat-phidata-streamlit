@@ -123,20 +123,31 @@ class ShortDetector(ABC):
             if match:
                 json_str = match.group(1)
             else:
-                json_str = response
+                json_str = response.strip()
+            
+            # 清理可能的转义字符问题
+            json_str = self._clean_json_string(json_str)
             
             data = json.loads(json_str)
             signals = []
             
             for signal_data in data.get("signals", []):
+                # 确保所有字符串字段都是字符串类型
+                def safe_str(value, default=""):
+                    if value is None:
+                        return default
+                    if isinstance(value, (dict, list)):
+                        return str(value)
+                    return str(value)
+                
                 signal = ShortSignal(
-                    signal_type=signal_data.get("signal_type", "Unknown"),
-                    severity=signal_data.get("severity", "Low"),
+                    signal_type=safe_str(signal_data.get("signal_type"), "Unknown"),
+                    severity=safe_str(signal_data.get("severity"), "Low"),
                     confidence=float(signal_data.get("confidence", 0.5)),
-                    title=signal_data.get("title", ""),
-                    description=signal_data.get("description", ""),
-                    evidence=signal_data.get("evidence", ""),
-                    recommendation=signal_data.get("recommendation", ""),
+                    title=safe_str(signal_data.get("title")),
+                    description=safe_str(signal_data.get("description")),
+                    evidence=safe_str(signal_data.get("evidence")),
+                    recommendation=safe_str(signal_data.get("recommendation")),
                     source_documents=signal_data.get("source_documents", []),
                     detected_at=datetime.now()
                 )
@@ -146,6 +157,7 @@ class ShortDetector(ABC):
             
         except (json.JSONDecodeError, ValueError) as e:
             logger.warning(f"解析AI响应失败: {e}")
+            logger.warning(f"原始响应: {response[:200]}...")
             # 如果JSON解析失败，创建一个通用信号
             return [ShortSignal(
                 signal_type=self.name,
@@ -158,6 +170,18 @@ class ShortDetector(ABC):
                 source_documents=[],
                 detected_at=datetime.now()
             )]
+    
+    def _clean_json_string(self, json_str: str) -> str:
+        """清理JSON字符串中的问题转义字符"""
+        # 修复常见的转义字符问题
+        json_str = json_str.replace('\\$', '$')  # 修复美元符号转义
+        json_str = json_str.replace('\\"', '"')  # 确保引号正确转义
+        json_str = json_str.replace('\\\\', '\\')  # 修复双反斜杠
+        
+        # 移除可能的控制字符
+        json_str = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', json_str)
+        
+        return json_str
 
 # 具体的检测器实现
 class AccountsReceivableDetector(ShortDetector):
@@ -280,7 +304,7 @@ class MarketPositionDetector(ShortDetector):
     def __init__(self):
         super().__init__(
             name="市场地位变化检测",
-            description="检测公司从行业龙头地位下滑或面临强劲竞争对手",
+            description="检测公司从行业龙头地位下滑或面临强劲竞争对手，護城河發生改變",
             priority=20
         )
     
@@ -684,7 +708,7 @@ class EarningsCallAnalysisDetector(ShortDetector):
             5. 管理层整体情绪变化（乐观/悲观/防御性）
             6. 对具体数字的回答是否变得模糊
             7. 回答的专业性和透明度变化
-
+            
             请仔细分析以下财报会议记录，寻找管理层行为异常的信号：
 
             文档内容：
@@ -842,6 +866,7 @@ class ShortSignalAnalyzer:
             - 提供具体的行动建议
             - 使用表格和列表增强可读性
             - 基于证据得出结论
+            - markdown輸出，將所有表示金額的 $ 改為 \\$，以避免 Markdown 被誤判為數學公式。
             """
         else:
             report_prompt = f"""
@@ -867,6 +892,7 @@ class ShortSignalAnalyzer:
             - Provide specific action recommendations
             - Use tables and lists for readability
             - Base conclusions on evidence
+            - when markdown output, Escape all dollar signs $ for currency as \\$ to prevent Markdown from rendering them as math.
             """
         
         return self.gemini_service.call_api(report_prompt, model_type)
@@ -875,26 +901,55 @@ class ShortSignalAnalyzer:
         """格式化检测结果"""
         formatted = ""
         for result in results:
-            formatted += f"\n=== {result.detector_name} ===\n"
+            # 转义检测器名称中的美元符号
+            detector_name = self._escape_dollars(result.detector_name)
+            formatted += f"\n=== {detector_name} ===\n"
             formatted += f"执行状态: {'成功' if result.success else '失败'}\n"
             formatted += f"处理时间: {result.processing_time:.2f}秒\n"
             formatted += f"发现信号数: {len(result.signals)}\n"
             
             if result.error_message:
-                formatted += f"错误信息: {result.error_message}\n"
+                # 转义错误信息中的美元符号
+                error_message = self._escape_dollars(result.error_message)
+                formatted += f"错误信息: {error_message}\n"
             
             for signal in result.signals:
-                formatted += f"\n- 信号类型: {signal.signal_type}\n"
-                formatted += f"  严重程度: {signal.severity}\n"
+                # 转义所有信号字段中的美元符号
+                signal_type = self._escape_dollars(signal.signal_type)
+                severity = self._escape_dollars(signal.severity)
+                title = self._escape_dollars(signal.title)
+                description = self._escape_dollars(signal.description)
+                evidence = self._escape_dollars(signal.evidence)
+                recommendation = self._escape_dollars(signal.recommendation)
+                
+                formatted += f"\n- 信号类型: {signal_type}\n"
+                formatted += f"  严重程度: {severity}\n"
                 formatted += f"  置信度: {signal.confidence:.2f}\n"
-                formatted += f"  标题: {signal.title}\n"
-                formatted += f"  描述: {signal.description}\n"
-                formatted += f"  证据: {signal.evidence}\n"
-                formatted += f"  建议: {signal.recommendation}\n"
+                formatted += f"  标题: {title}\n"
+                formatted += f"  描述: {description}\n"
+                formatted += f"  证据: {evidence}\n"
+                formatted += f"  建议: {recommendation}\n"
             
             formatted += "\n"
         
         return formatted
+    
+    def _escape_dollars(self, text) -> str:
+        """转义字符串中的美元符号以避免被Markdown解析为数学公式"""
+        if not text:
+            return ""
+        
+        # 如果是字典或列表，转换为字符串
+        if isinstance(text, (dict, list)):
+            text = str(text)
+        
+        # 确保是字符串类型
+        if not isinstance(text, str):
+            text = str(text)
+        
+        # 将美元符号用反引号包裹，使其在Markdown中被渲染为行内代码
+        # 这样可以避免被KaTeX解析为数学公式
+        return text.replace('$', '\\$')
 
 # 语言配置
 LANGUAGE_CONFIG = {
@@ -1170,7 +1225,7 @@ def clean_hk_ticker(ticker: str) -> str:
 
 class RateLimiter:
     """API请求限流器"""
-    def __init__(self, max_calls: int = 10, window: int = 60):
+    def __init__(self, max_calls: int = 30, window: int = 60):
         self.max_calls = max_calls
         self.window = window
         self.calls = []
@@ -2057,7 +2112,7 @@ class GeminiService:
     """Gemini AI服务"""
     
     def __init__(self):
-        self.rate_limiter = RateLimiter(max_calls=20, window=60)
+        self.rate_limiter = RateLimiter(max_calls=30, window=60)
     
     def get_next_api_key(self) -> str:
         """获取下一个API密钥"""
@@ -2212,7 +2267,7 @@ class SECService:
     """SEC文件服务"""
     
     def __init__(self, cache_manager: CacheManager):
-        self.rate_limiter = RateLimiter(max_calls=10, window=60)
+        self.rate_limiter = RateLimiter(max_calls=30, window=60)
         warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
         self.cache_manager = cache_manager
         self.sixk_processor = None  # 将在需要时初始化
@@ -2414,7 +2469,7 @@ class HKStockService:
     """港股文件服务"""
     
     def __init__(self, cache_manager: CacheManager):
-        self.rate_limiter = RateLimiter(max_calls=10, window=60)
+        self.rate_limiter = RateLimiter(max_calls=30, window=60)
         self.cache_manager = cache_manager
         self.downloader = HKStockFilingsDownloader()
     
@@ -2573,7 +2628,7 @@ class EarningsService:
     """财报会议记录服务"""
     
     def __init__(self, cache_manager: CacheManager):
-        self.rate_limiter = RateLimiter(max_calls=10, window=60)
+        self.rate_limiter = RateLimiter(max_calls=30, window=60)
         self.cache_manager = cache_manager
         self.session = requests.Session() # 使用持久化会话处理cookies
         self._lock = threading.Lock()  # 添加线程锁用于并行处理
@@ -3262,6 +3317,7 @@ class SECEarningsAnalyzer:
                 - This is a comprehensive summary, don't repeat detailed content from individual documents
                 - Focus on cross-document trends and correlations
                 - Always answer in English
+                - when markdown output, Escape all dollar signs $ for currency as \\$ to prevent Markdown from rendering them as math.
                 
                 Document Analysis Results:
                 """
@@ -3336,6 +3392,7 @@ class SECEarningsAnalyzer:
                 - This is a comprehensive summary, don't repeat detailed content from individual documents
                 - Focus on cross-document trends and correlations
                 - Always answer in English
+                - when markdown output, Escape all dollar signs $ for currency as \\$ to prevent Markdown from rendering them as math.
                 
                 Document Analysis Results:
                 """
@@ -3360,6 +3417,7 @@ class SECEarningsAnalyzer:
                 - 突出重点信息和关键发现
                 - 这是一个综合总结，不要重复单个文档的详细内容
                 - 重点关注跨文档的趋势和关联性
+                - markdown輸出，將所有表示金額的 $ 改為 \\$，以避免 Markdown 被誤判為數學公式。
                 
                 文档分析结果:
                 """
@@ -3560,7 +3618,7 @@ def main():
         st.session_state.selected_detectors = selected_detectors
     
     # 主内容区域
-    
+
     # 显示历史扫描结果
     if st.session_state.short_scanner_results:
         st.subheader("📊 历史扫描结果")
@@ -3568,9 +3626,7 @@ def main():
         for i, result in enumerate(st.session_state.short_scanner_results):
             with st.expander(f"扫描结果 {i+1}: {result['ticker']} ({result['timestamp']})", expanded=True):
                 st.markdown(result['report'])
-        
-        st.markdown("---")
-    
+                        
     # 显示当前扫描的中间结果
     if st.session_state.current_scan_results:
         st.subheader("🔍 当前扫描结果")
@@ -3667,7 +3723,7 @@ def main():
             
             if status.total_documents > 0:
                 progress_text = lang_config["progress_text"].format(status.completed_documents, status.total_documents)
-                st.progress(status.progress_percentage / 100, text=progress_text)
+                # st.progress(status.progress_percentage / 100, text=progress_text)
             
             # 停止按钮
             if st.button(lang_config["stop_button"], key="stop_processing"):

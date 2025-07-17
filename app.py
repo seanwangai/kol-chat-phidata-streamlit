@@ -329,7 +329,7 @@ def clean_hk_ticker(ticker: str) -> str:
 
 class RateLimiter:
     """API请求限流器"""
-    def __init__(self, max_calls: int = 10, window: int = 60):
+    def __init__(self, max_calls: int = 30, window: int = 60):
         self.max_calls = max_calls
         self.window = window
         self.calls = []
@@ -1215,7 +1215,7 @@ class GeminiService:
     """Gemini AI服务"""
     
     def __init__(self):
-        self.rate_limiter = RateLimiter(max_calls=20, window=60)
+        self.rate_limiter = RateLimiter(max_calls=30, window=60)
     
     def get_next_api_key(self) -> str:
         """获取下一个API密钥"""
@@ -1370,7 +1370,7 @@ class SECService:
     """SEC文件服务"""
     
     def __init__(self, cache_manager: CacheManager):
-        self.rate_limiter = RateLimiter(max_calls=10, window=60)
+        self.rate_limiter = RateLimiter(max_calls=30, window=60)
         warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
         self.cache_manager = cache_manager
         self.sixk_processor = None  # 将在需要时初始化
@@ -1572,7 +1572,7 @@ class HKStockService:
     """港股文件服务"""
     
     def __init__(self, cache_manager: CacheManager):
-        self.rate_limiter = RateLimiter(max_calls=10, window=60)
+        self.rate_limiter = RateLimiter(max_calls=30, window=60)
         self.cache_manager = cache_manager
         self.downloader = HKStockFilingsDownloader()
     
@@ -1731,7 +1731,7 @@ class EarningsService:
     """财报会议记录服务"""
     
     def __init__(self, cache_manager: CacheManager):
-        self.rate_limiter = RateLimiter(max_calls=10, window=60)
+        self.rate_limiter = RateLimiter(max_calls=30, window=60)
         self.cache_manager = cache_manager
         self.session = requests.Session() # 使用持久化会话处理cookies
         self._lock = threading.Lock()  # 添加线程锁用于并行处理
@@ -2762,7 +2762,7 @@ def main():
             
             if status.total_documents > 0:
                 progress_text = lang_config["progress_text"].format(status.completed_documents, status.total_documents)
-                st.progress(status.progress_percentage / 100, text=progress_text)
+                # st.progress(status.progress_percentage / 100, text=progress_text)
             
             # 停止按钮
             if st.button(lang_config["stop_button"], key="stop_processing"):
