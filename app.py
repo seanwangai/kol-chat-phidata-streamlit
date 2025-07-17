@@ -2231,7 +2231,7 @@ class SECEarningsAnalyzer:
                 - Ensure answers come from document content, don't imagine
                 - I don't have time to read, ensure answers are direct and to the point, no need for polite conversation
                 - Always answer in English
-                - when markdown output, Escape all dollar signs $ for currency as \\$ to prevent Markdown from rendering them as math.
+                - when markdown output, Escape all dollar signs $ for currency as ＄ to prevent Markdown from rendering them as math.
                 
                 Answer Requirements:
                 - Start with 📍 emoji, followed by what type of document this is and its purpose, 
@@ -2261,9 +2261,7 @@ class SECEarningsAnalyzer:
                 - 提供准确、专业的分析
                 - 確保回答都來自文檔內容，不要憑空想像
                 - 我沒時間看 確保回答直接說重點 不用像人一樣還要客套話
-                - markdown輸出，將所有表示金額的 $ 改為 \$，以避免 Markdown 被誤判為數學公式。
-
-
+                - markdown輸出，將所有表示金額的 $ 改為 ＄，以避免 Markdown 被誤判為數學公式。
                 
                 回答要求：
                 - 開頭以📍这个emoji开頭， 📍後面接這是一份什麼文件，文件目的是什麼，
@@ -2331,7 +2329,7 @@ class SECEarningsAnalyzer:
                 - Ensure answers come from document content, don't imagine
                 - I don't have time to read, ensure answers are direct and to the point, no need for polite conversation
                 - Always answer in English
-                - when markdown output, Escape all dollar signs $ for currency as \\$ to prevent Markdown from rendering them as math.
+                - when markdown output, Escape all dollar signs $ for currency as ＄ to prevent Markdown from rendering them as math.
                 
                 Answer Requirements:
                 - Start with 📍 emoji, followed by what type of document this is and its purpose, 
@@ -2361,7 +2359,7 @@ class SECEarningsAnalyzer:
                 - 提供准确、专业的分析
                 - 確保回答都來自文檔內容，不要憑空想像
                 - 我沒時間看 確保回答直接說重點 不用像人一樣還要客套話
-                - markdown輸出，將所有表示金額的 $ 改為 \\$，以避免 Markdown 被誤判為數學公式。
+                - markdown輸出，將所有表示金額的 $ 改為 ＄，以避免 Markdown 被誤判為數學公式。
 
 
                 

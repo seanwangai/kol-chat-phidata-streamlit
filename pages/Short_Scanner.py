@@ -95,11 +95,25 @@ class DetectionResult:
 class ShortDetector(ABC):
     """做空信号检测器基类"""
     
-    def __init__(self, name: str, description: str, priority: int = 50):
-        self.name = name
-        self.description = description
+    def __init__(self, name_zh: str, name_en: str, description_zh: str, description_en: str, priority: int = 50):
+        self.name_zh = name_zh
+        self.name_en = name_en
+        self.description_zh = description_zh
+        self.description_en = description_en
         self.priority = priority  # 优先级，数字越小优先级越高
         self.gemini_service = None
+    
+    @property
+    def name(self) -> str:
+        """根据当前语言返回名称"""
+        language = st.session_state.get("selected_language", "English")
+        return self.name_zh if language == "中文" else self.name_en
+    
+    @property
+    def description(self) -> str:
+        """根据当前语言返回描述"""
+        language = st.session_state.get("selected_language", "English")
+        return self.description_zh if language == "中文" else self.description_en
         
     def set_gemini_service(self, service):
         """设置Gemini服务"""
@@ -174,7 +188,7 @@ class ShortDetector(ABC):
     def _clean_json_string(self, json_str: str) -> str:
         """清理JSON字符串中的问题转义字符"""
         # 修复常见的转义字符问题
-        json_str = json_str.replace('\\$', '$')  # 修复美元符号转义
+        json_str = json_str.replace('＄', '$')  # 修复美元符号转义
         json_str = json_str.replace('\\"', '"')  # 确保引号正确转义
         json_str = json_str.replace('\\\\', '\\')  # 修复双反斜杠
         
@@ -189,9 +203,11 @@ class AccountsReceivableDetector(ShortDetector):
     
     def __init__(self):
         super().__init__(
-            name="应收账款异常检测",
-            description="检测应收账款的异常变动，如突然减少但转移到长期应收款",
-            priority=10
+            name_zh="应收账款异常检测",
+            name_en="Accounts Receivable Anomaly Detection",
+            description_zh="检测应收账款的异常变动，如突然减少但转移到长期应收款的原因",
+            description_en="Detects abnormal changes in accounts receivable, such as sudden decreases while transferring to long-term receivables",
+            priority=50
         )
     
     def detect(self, documents: List, model_type: str) -> DetectionResult:
@@ -225,7 +241,7 @@ class AccountsReceivableDetector(ShortDetector):
         
         if language == "中文":
             return f"""
-            你是一个专业的财务造假检测专家，专门检测应收账款的异常变动。
+            你是一个专业的财务造假检测专家，专门检测应收账款的异常变动。你還是專業的Hedge Fund基金經理分析師，熟知各種金融知識，熟知各種金融知識
 
             检测重点：
             1. 应收账款突然大幅减少，但同时长期应收款增加
@@ -303,8 +319,10 @@ class MarketPositionDetector(ShortDetector):
     
     def __init__(self):
         super().__init__(
-            name="市场地位变化检测",
-            description="检测公司从行业龙头地位下滑或面临强劲竞争对手，護城河發生改變",
+            name_zh="市场地位变化检测",
+            name_en="Market Position Change Detection",
+            description_zh="检测公司从行业龙头地位下滑或面临强劲竞争对手，重点关注护城河是否被打破",
+            description_en="Detects company's decline from industry leadership or facing strong competitors, focusing on whether competitive moats are being breached",
             priority=20
         )
     
@@ -339,7 +357,7 @@ class MarketPositionDetector(ShortDetector):
         
         if language == "中文":
             return f"""
-            你是一个专业的行业分析师，专门检测公司市场地位的变化。
+            你是一个专业的行业分析师，专门检测公司市场地位的变化。你還是專業的Hedge Fund基金經理分析師，熟知各種金融知識
 
             检测重点：
             1. 公司市场份额是否在下降
@@ -347,6 +365,9 @@ class MarketPositionDetector(ShortDetector):
             3. 行业排名是否从第一名滑落
             4. 竞争优势是否在减弱
             5. 管理层对竞争态势的描述变化
+            6. 护城河是否被打破（技术壁垒、品牌优势、规模经济、网络效应等）
+            7. 传统竞争优势是否被新技术或商业模式颠覆
+            8. earning call transcript 中，Q&A環節分析師是否問了公司競爭對手相關的問題，然後公司回答是否合理
 
             请仔细分析以下文档，寻找市场地位变化的信号：
 
@@ -381,6 +402,9 @@ class MarketPositionDetector(ShortDetector):
             3. Fall from industry leadership position
             4. Weakening competitive advantages
             5. Changes in management's description of competitive landscape
+            6. Breach of competitive moats (technology barriers, brand advantages, economies of scale, network effects, etc.)
+            7. Traditional competitive advantages being disrupted by new technologies or business models
+            8. Whether analysts asked questions about competitors in the Q&A session of the earnings call transcript.
 
             Please analyze the following documents for market position change signals:
 
@@ -419,8 +443,10 @@ class InconsistencyDetector(ShortDetector):
     
     def __init__(self):
         super().__init__(
-            name="前后不一致检测",
-            description="检测同一文档内不同部门描述不一致或前后矛盾",
+            name_zh="前后不一致检测",
+            name_en="Internal Inconsistency Detection",
+            description_zh="检测同一文档内不同部门描述不一致或前后矛盾",
+            description_en="Detects inconsistencies or contradictions between different departments or sections within the same document",
             priority=15
         )
     
@@ -455,14 +481,14 @@ class InconsistencyDetector(ShortDetector):
         
         if language == "中文":
             return f"""
-            你是一个专业的财务造假检测专家，专门检测文档内部的前后不一致。
+            你是一个专业的财务造假检测专家，专门检测文档内部的前后不一致。你還是專業的Hedge Fund基金經理分析師，熟知各種金融知識
 
             检测重点：
-            1. 同一文档中不同部门的描述是否一致
-            2. 数字与文字描述是否匹配
-            3. 同一文档中前后章节的描述是否矛盾
-            4. 关键指标的描述是否前后一致
-            5. 风险披露与业务描述是否匹配
+            1. 同一文档中 同一個業務 在不同章節內的描述是否一致 是否矛盾
+            2. 数字与文字描述是否匹配 (特別是年報不同章節可能是不同部門寫的，有造假的公司如果部門之間沒有配合好，會有前後不一致)
+            3. 关键指标的描述是否前后一致
+            4. 比對同一天的財報和earning call transcript，對同一件事情的描述是否存在矛盾
+            5. earning call transcript 比對管理層前面說的，和後面Q&A環節回答的，是否存在矛盾
 
             请仔细分析以下文档，寻找前后不一致的信号：
 
@@ -489,14 +515,14 @@ class InconsistencyDetector(ShortDetector):
             """
         else:
             return f"""
-            You are a professional financial fraud detection expert specializing in internal inconsistency detection.
+            You are a professional financial fraud detection expert analyst specializing in internal inconsistency detection.
 
             Detection Focus:
-            1. Consistency between different departments' descriptions
-            2. Match between numbers and text descriptions
-            3. Contradictions between different sections
-            4. Consistency in key indicator descriptions
-            5. Match between risk disclosures and business descriptions
+            1. Whether the descriptions of the same business within different sections of the same document are consistent or contradictory.
+            2. Whether the numerical data matches the written descriptions (especially since different sections of annual reports might be written by different departments—if a company is engaged in fraud and there's a lack of coordination between departments, inconsistencies may arise).
+            3. Whether the descriptions of key metrics are internally consistent throughout the document.
+            4. Compare the financial report and the earnings call transcript from the same day to check if there are contradictions in the description of the same event.
+            5. Compare the management’s statements in the main part of the earnings call and their responses during the Q&A session to see if any contradictions exist.
 
             Please analyze the following documents for inconsistency signals:
 
@@ -535,8 +561,10 @@ class MetricsDisclosureDetector(ShortDetector):
     
     def __init__(self):
         super().__init__(
-            name="关键指标披露停止检测",
-            description="检测原本披露的关键指标突然停止公布",
+            name_zh="关键指标披露停止检测",
+            name_en="Key Metrics Disclosure Cessation Detection",
+            description_zh="检测原本披露的关键指标突然停止公布",
+            description_en="Detects when previously disclosed key metrics suddenly stop being reported",
             priority=25
         )
     
@@ -571,14 +599,13 @@ class MetricsDisclosureDetector(ShortDetector):
         
         if language == "中文":
             return f"""
-            你是一个专业的财务分析师，专门检测关键指标披露的变化。
+            你是一个专业的财务分析师，专门检测关键指标披露的变化。你還是專業的Hedge Fund基金經理分析師，熟知各種金融知識
 
             检测重点：
             1. 原本定期披露的关键指标是否突然停止公布
-            2. GMV、活跃用户、订单量等关键运营指标的披露变化
-            3. 毛利率、EBITDA等财务指标的披露变化
-            4. 分业务线数据的披露变化
-            5. 对停止披露的解释是否充分
+            2. 关键运营指标的披露变化，包括但是不限于GMV、活跃用户、订单量等
+            3. 分业务线数据的披露变化
+            4. 对停止披露的解释是否充分
 
             请仔细分析以下文档，寻找指标披露停止的信号：
 
@@ -610,9 +637,8 @@ class MetricsDisclosureDetector(ShortDetector):
             Detection Focus:
             1. Previously disclosed key metrics suddenly stopped being reported
             2. Changes in disclosure of GMV, active users, order volume, etc.
-            3. Changes in financial metrics disclosure (gross margin, EBITDA, etc.)
-            4. Changes in business segment data disclosure
-            5. Adequacy of explanations for discontinued disclosure
+            3. Changes in business segment data disclosure
+            4. Adequacy of explanations for discontinued disclosure
 
             Please analyze the following documents for metrics disclosure cessation signals:
 
@@ -651,8 +677,10 @@ class EarningsCallAnalysisDetector(ShortDetector):
     
     def __init__(self):
         super().__init__(
-            name="财报会议记录分析",
-            description="分析财报会议记录中的管理层回答质量、情绪和模式变化",
+            name_zh="财报会议记录分析",
+            name_en="Earnings Call Analysis",
+            description_zh="分析财报会议记录中的管理层回答质量、情绪和模式变化",
+            description_en="Analyzes management response quality, sentiment, and pattern changes in earnings call transcripts",
             priority=30
         )
     
@@ -698,17 +726,18 @@ class EarningsCallAnalysisDetector(ShortDetector):
         
         if language == "中文":
             return f"""
-            你是一个专业的财报会议记录分析专家，专门分析管理层的回答质量和模式。
+            你是一个专业的财报会议记录分析专家，专门分析管理层的回答质量和模式。你還是專業的Hedge Fund基金經理分析師，熟知各種金融知識
 
             检测重点：
-            1. 管理层回答是否在找借口，避免正面回答
-            2. 不同季度会议记录的总字数变化
-            3. Q&A环节字数和问题数量的变化
-            4. 不同高管回答的字数和质量变化
-            5. 管理层整体情绪变化（乐观/悲观/防御性）
-            6. 对具体数字的回答是否变得模糊
-            7. 回答的专业性和透明度变化
+            1. 管理层Q&A回答是否在找借口，避免正面回答
+            2. 对具体数字的回答是否变得模糊 (過去都有回答數字，後來改模糊回答)
+            3. Q&A环节问题数量的变化
+            4. Q&A环节不同高管回答质量变化 专业性和透明度变化
+            5 不同管理人員 對不同業務的描述 情绪变化（🔴 🟡 🟢）
+            6. Q&A环节不同分析師的問題 情绪变化（🔴 🟡 🟢）
             
+            內文都用markdown輸出，可以使用markdown table對比變化
+
             请仔细分析以下财报会议记录，寻找管理层行为异常的信号：
 
             文档内容：
@@ -737,14 +766,15 @@ class EarningsCallAnalysisDetector(ShortDetector):
             You are a professional earnings call analysis expert specializing in management response quality and patterns.
 
             Detection Focus:
-            1. Whether management is making excuses or avoiding direct answers
-            2. Changes in total word count across different quarters
-            3. Changes in Q&A section word count and question quantity
-            4. Changes in different executives' response length and quality
-            5. Overall management sentiment changes (optimistic/pessimistic/defensive)
-            6. Whether numerical answers are becoming vague
-            7. Changes in response professionalism and transparency
+            1. Whether management's Q&A responses are making excuses to avoid giving direct answers
+            2. Whether responses to specific numbers have become vague (e.g., previously gave exact figures, but later shifted to vague answers)
+            3. Changes in the number of questions asked during the Q&A session
+            4. Changes in the quality of responses from different executives during the Q&A — in terms of professionalism and transparency
+            5. Emotional shifts (🔴 🟡 🟢) in how different managers describe different parts of the business
+            6. Emotional shifts (🔴 🟡 🟢) in the questions asked by different analysts during the Q&A session
 
+            內文都用markdown輸出，可以使用markdown table對比變化
+            
             Please analyze the following earnings call transcripts for management behavior anomalies:
 
             Document Content:
@@ -807,12 +837,12 @@ class ShortSignalAnalyzer:
         """获取可用的检测器列表"""
         return self.detectors
     
-    def analyze_documents(self, documents: List, selected_detectors: List[str], model_type: str) -> List[DetectionResult]:
+    def analyze_documents(self, documents: List, selected_detector_classes: List[str], model_type: str) -> List[DetectionResult]:
         """分析文档并返回检测结果"""
         results = []
         
         for detector in self.detectors:
-            if detector.name in selected_detectors:
+            if detector.__class__.__name__ in selected_detector_classes:
                 logger.info(f"开始运行检测器: {detector.name}")
                 try:
                     result = detector.detect(documents, model_type)
@@ -866,7 +896,7 @@ class ShortSignalAnalyzer:
             - 提供具体的行动建议
             - 使用表格和列表增强可读性
             - 基于证据得出结论
-            - markdown輸出，將所有表示金額的 $ 改為 \\$，以避免 Markdown 被誤判為數學公式。
+            - markdown輸出，將所有表示金額的 $ 改為 ＄，以避免 Markdown 被誤判為數學公式。
             """
         else:
             report_prompt = f"""
@@ -892,7 +922,7 @@ class ShortSignalAnalyzer:
             - Provide specific action recommendations
             - Use tables and lists for readability
             - Base conclusions on evidence
-            - when markdown output, Escape all dollar signs $ for currency as \\$ to prevent Markdown from rendering them as math.
+            - when markdown output, Escape all dollar signs $ for currency as ＄ to prevent Markdown from rendering them as math.
             """
         
         return self.gemini_service.call_api(report_prompt, model_type)
@@ -920,11 +950,13 @@ class ShortSignalAnalyzer:
                 title = self._escape_dollars(signal.title)
                 description = self._escape_dollars(signal.description)
                 evidence = self._escape_dollars(signal.evidence)
+                logger.info('--------------------------------')
+                logger.info(evidence)
                 recommendation = self._escape_dollars(signal.recommendation)
                 
                 formatted += f"\n- 信号类型: {signal_type}\n"
                 formatted += f"  严重程度: {severity}\n"
-                formatted += f"  置信度: {signal.confidence:.2f}\n"
+                # formatted += f"  置信度: {signal.confidence:.2f}\n"
                 formatted += f"  标题: {title}\n"
                 formatted += f"  描述: {description}\n"
                 formatted += f"  证据: {evidence}\n"
@@ -949,7 +981,7 @@ class ShortSignalAnalyzer:
         
         # 将美元符号用反引号包裹，使其在Markdown中被渲染为行内代码
         # 这样可以避免被KaTeX解析为数学公式
-        return text.replace('$', '\\$')
+        return text.replace('$', '＄')
 
 # 语言配置
 LANGUAGE_CONFIG = {
@@ -3128,7 +3160,7 @@ class SECEarningsAnalyzer:
                 - Ensure answers come from document content, don't imagine
                 - I don't have time to read, ensure answers are direct and to the point, no need for polite conversation
                 - Always answer in English
-                - when markdown output, Escape all dollar signs $ for currency as \\$ to prevent Markdown from rendering them as math.
+                - when markdown output, Escape all dollar signs $ for currency as ＄ to prevent Markdown from rendering them as math.
                 
                 Answer Requirements:
                 - Start with 📍 emoji, followed by what type of document this is and its purpose, 
@@ -3158,7 +3190,7 @@ class SECEarningsAnalyzer:
                 - 提供准确、专业的分析
                 - 確保回答都來自文檔內容，不要憑空想像
                 - 我沒時間看 確保回答直接說重點 不用像人一樣還要客套話
-                - markdown輸出，將所有表示金額的 $ 改為 \\$，以避免 Markdown 被誤判為數學公式。
+                - 內文markdown輸出，將所有表示金額的 $ 改為 ＄，以避免 Markdown 被誤判為數學公式。
 
 
                 
@@ -3228,7 +3260,7 @@ class SECEarningsAnalyzer:
                 - Ensure answers come from document content, don't imagine
                 - I don't have time to read, ensure answers are direct and to the point, no need for polite conversation
                 - Always answer in English
-                - when markdown output, Escape all dollar signs $ for currency as \\$ to prevent Markdown from rendering them as math.
+                - when markdown output, Escape all dollar signs $ for currency as ＄ to prevent Markdown from rendering them as math.
                 
                 Answer Requirements:
                 - Start with 📍 emoji, followed by what type of document this is and its purpose, 
@@ -3258,7 +3290,7 @@ class SECEarningsAnalyzer:
                 - 提供准确、专业的分析
                 - 確保回答都來自文檔內容，不要憑空想像
                 - 我沒時間看 確保回答直接說重點 不用像人一樣還要客套話
-                - markdown輸出，將所有表示金額的 $ 改為 \\$，以避免 Markdown 被誤判為數學公式。
+                - markdown輸出，將所有表示金額的 $ 改為 ＄，以避免 Markdown 被誤判為數學公式。
 
 
                 
@@ -3317,7 +3349,7 @@ class SECEarningsAnalyzer:
                 - This is a comprehensive summary, don't repeat detailed content from individual documents
                 - Focus on cross-document trends and correlations
                 - Always answer in English
-                - when markdown output, Escape all dollar signs $ for currency as \\$ to prevent Markdown from rendering them as math.
+                - when markdown output, Escape all dollar signs $ for currency as ＄ to prevent Markdown from rendering them as math.
                 
                 Document Analysis Results:
                 """
@@ -3392,7 +3424,7 @@ class SECEarningsAnalyzer:
                 - This is a comprehensive summary, don't repeat detailed content from individual documents
                 - Focus on cross-document trends and correlations
                 - Always answer in English
-                - when markdown output, Escape all dollar signs $ for currency as \\$ to prevent Markdown from rendering them as math.
+                - when markdown output, Escape all dollar signs $ for currency as ＄ to prevent Markdown from rendering them as math.
                 
                 Document Analysis Results:
                 """
@@ -3417,7 +3449,7 @@ class SECEarningsAnalyzer:
                 - 突出重点信息和关键发现
                 - 这是一个综合总结，不要重复单个文档的详细内容
                 - 重点关注跨文档的趋势和关联性
-                - markdown輸出，將所有表示金額的 $ 改為 \\$，以避免 Markdown 被誤判為數學公式。
+                - markdown輸出，將所有表示金額的 $ 改為 ＄，以避免 Markdown 被誤判為數學公式。
                 
                 文档分析结果:
                 """
@@ -3458,8 +3490,7 @@ def main():
     # 初始化session state for short scanner
     if "short_scanner_results" not in st.session_state:
         st.session_state.short_scanner_results = []
-    if "selected_detectors" not in st.session_state:
-        st.session_state.selected_detectors = []
+    # selected_detectors 已被 selected_detector_classes 替代
     if "current_scan_results" not in st.session_state:
         st.session_state.current_scan_results = []
     
@@ -3539,21 +3570,41 @@ def main():
         
         available_detectors = short_analyzer.get_available_detectors()
         detector_options = []
-        for detector in available_detectors:
-            detector_options.append(detector.name)
+        detector_class_to_name = {}  # 类名到当前语言名称的映射
+        detector_name_to_class = {}  # 当前语言名称到类名的映射
         
+        for detector in available_detectors:
+            class_name = detector.__class__.__name__
+            current_name = detector.name
+            detector_options.append(current_name)
+            detector_class_to_name[class_name] = current_name
+            detector_name_to_class[current_name] = class_name
+        
+        # 使用类名作为稳定的标识符来处理语言切换
+        if "selected_detector_classes" not in st.session_state:
+            # 初始化时默认选择所有检测器
+            st.session_state.selected_detector_classes = [detector.__class__.__name__ for detector in available_detectors]
+        
+        # 根据选中的类名获取当前语言的名称
+        default_selection = [detector_class_to_name[class_name] for class_name in st.session_state.selected_detector_classes if class_name in detector_class_to_name]
+        
+        help_text = "选择要运行的检测器" if current_language == "中文" else "Select detectors to run"
         selected_detectors = st.multiselect(
             lang_config["detectors_label"],
             options=detector_options,
-            default=st.session_state.selected_detectors if st.session_state.selected_detectors else detector_options,
-            help="选择要运行的检测器"
+            default=default_selection,
+            help=help_text
         )
+        
+        # 更新选中的检测器类名
+        st.session_state.selected_detector_classes = [detector_name_to_class[name] for name in selected_detectors]
         
         # 显示检测器描述
         if selected_detectors:
-            st.markdown("**选中的检测器：**")
+            selected_detectors_header = "**选中的检测器：**" if current_language == "中文" else "**Selected Detectors:**"
+            st.markdown(selected_detectors_header)
             for detector in available_detectors:
-                if detector.name in selected_detectors:
+                if detector.__class__.__name__ in st.session_state.selected_detector_classes:
                     st.markdown(f"• **{detector.name}**")
                     st.markdown(f"  {detector.description}")
         
@@ -3615,29 +3666,34 @@ def main():
         st.session_state.analyzer_use_sec_others = use_sec_others
         st.session_state.analyzer_use_earnings = use_earnings
         st.session_state.analyzer_model = model_type
-        st.session_state.selected_detectors = selected_detectors
+        # selected_detectors 已在上面更新为 selected_detector_classes
     
     # 主内容区域
 
     # 显示历史扫描结果
     if st.session_state.short_scanner_results:
-        st.subheader("📊 历史扫描结果")
+        history_header = "📊 历史扫描结果" if current_language == "中文" else "📊 Historical Scan Results"
+        st.subheader(history_header)
         
         for i, result in enumerate(st.session_state.short_scanner_results):
-            with st.expander(f"扫描结果 {i+1}: {result['ticker']} ({result['timestamp']})", expanded=True):
+            scan_result_label = f"扫描结果 {i+1}: {result['ticker']} ({result['timestamp']})" if current_language == "中文" else f"Scan Result {i+1}: {result['ticker']} ({result['timestamp']})"
+            with st.expander(scan_result_label, expanded=True):
                 st.markdown(result['report'])
                         
     # 显示当前扫描的中间结果
     if st.session_state.current_scan_results:
-        st.subheader("🔍 当前扫描结果")
+        current_results_header = "🔍 当前扫描结果" if current_language == "中文" else "🔍 Current Scan Results"
+        st.subheader(current_results_header)
         
         total_signals = 0
         high_risk_signals = 0
         
         for result in st.session_state.current_scan_results:
-            with st.expander(f"📊 {result.detector_name} - {len(result.signals)} 个信号", expanded=True):
+            signals_text = "个信号" if current_language == "中文" else "signals"
+            with st.expander(f"📊 {result.detector_name} - {len(result.signals)} {signals_text}", expanded=True):
                 if result.success:
-                    st.success(f"✅ 执行成功 - 用时 {result.processing_time:.2f}秒")
+                    success_text = f"✅ 执行成功 - 用时 {result.processing_time:.2f}秒" if current_language == "中文" else f"✅ Execution successful - {result.processing_time:.2f}s"
+                    st.success(success_text)
                     
                     if result.signals:
                         for signal in result.signals:
@@ -3653,31 +3709,52 @@ def main():
                             else:
                                 st.info(f"💡 **{signal.title}**")
                             
-                            st.markdown(f"**置信度**: {signal.confidence:.1%}")
-                            st.markdown(f"**描述**: {signal.description}")
-                            st.markdown(f"**证据**: {signal.evidence}")
-                            st.markdown(f"**建议**: {signal.recommendation}")
-                            
-                            if signal.source_documents:
-                                st.markdown(f"**来源文档**: {', '.join(signal.source_documents)}")
+                            if current_language == "中文":
+                                # st.markdown(f"**置信度**: {signal.confidence:.1%}")
+                                st.markdown(f"**描述**: {signal.description}")
+                                st.markdown(f"**证据**: {signal.evidence}")
+                                st.markdown(f"**建议**: {signal.recommendation}")
+                                
+                                if signal.source_documents:
+                                    st.markdown(f"**来源文档**: {', '.join(signal.source_documents)}")
+                            else:
+                                # st.markdown(f"**Confidence**: {signal.confidence:.1%}")
+                                st.markdown(f"**Description**: {signal.description}")
+                                st.markdown(f"**Evidence**: {signal.evidence}")
+                                st.markdown(f"**Recommendation**: {signal.recommendation}")
+                                
+                                if signal.source_documents:
+                                    st.markdown(f"**Source Documents**: {', '.join(signal.source_documents)}")
                             
                             st.markdown("---")
                     else:
-                        st.info("未发现异常信号")
+                        no_signals_text = "未发现异常信号" if current_language == "中文" else "No anomalous signals detected"
+                        st.info(no_signals_text)
                 else:
-                    st.error(f"❌ 执行失败: {result.error_message}")
+                    error_text = f"❌ 执行失败: {result.error_message}" if current_language == "中文" else f"❌ Execution failed: {result.error_message}"
+                    st.error(error_text)
         
         # 显示总结
-        st.subheader("📊 检测总结")
+        summary_header = "📊 检测总结" if current_language == "中文" else "📊 Detection Summary"
+        st.subheader(summary_header)
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.metric("总信号数", total_signals)
+            total_signals_label = "总信号数" if current_language == "中文" else "Total Signals"
+            st.metric(total_signals_label, total_signals)
         with col2:
-            st.metric("高风险信号", high_risk_signals)
+            high_risk_label = "高风险信号" if current_language == "中文" else "High Risk Signals"
+            st.metric(high_risk_label, high_risk_signals)
         with col3:
-            st.metric("风险等级", "高" if high_risk_signals > 0 else "中" if total_signals > 0 else "低")
+            risk_level_label = "风险等级" if current_language == "中文" else "Risk Level"
+            if current_language == "中文":
+                risk_level_value = "高" if high_risk_signals > 0 else "中" if total_signals > 0 else "低"
+            else:
+                risk_level_value = "High" if high_risk_signals > 0 else "Medium" if total_signals > 0 else "Low"
+            st.metric(risk_level_label, risk_level_value)
         with col4:
-            if st.button("🗑️ 清理当前结果", help="清理当前扫描结果"):
+            clear_button_text = "🗑️ 清理当前结果" if current_language == "中文" else "🗑️ Clear Current Results"
+            clear_help_text = "清理当前扫描结果" if current_language == "中文" else "Clear current scan results"
+            if st.button(clear_button_text, help=clear_help_text):
                 st.session_state.current_scan_results = []
                 st.rerun()
         
@@ -3689,20 +3766,26 @@ def main():
     with col1:
         # 显示当前配置
         if ticker:
-            st.info(f"📊 **目标股票**: {ticker} | **数据年份**: {years}年 | **检测器**: {len(selected_detectors)}个")
+            if current_language == "中文":
+                st.info(f"📊 **目标股票**: {ticker} | **数据年份**: {years}年 | **检测器**: {len(st.session_state.selected_detector_classes)}个")
+            else:
+                years_text = "year" if years == 1 else "years"
+                detectors_text = "detector" if len(st.session_state.selected_detector_classes) == 1 else "detectors"
+                st.info(f"📊 **Target Stock**: {ticker} | **Data Period**: {years} {years_text} | **Detectors**: {len(st.session_state.selected_detector_classes)} {detectors_text}")
         else:
-            st.warning("请输入股票代码")
+            warning_text = "请输入股票代码" if current_language == "中文" else "Please enter stock ticker"
+            st.warning(warning_text)
     
     with col2:
         # 扫描按钮
         scan_button = st.button(
             lang_config["scan_button"],
-            disabled=not ticker or not selected_detectors,
+            disabled=not ticker or not st.session_state.selected_detector_classes,
             use_container_width=True
         )
     
     # 处理扫描请求
-    if scan_button and ticker and selected_detectors:
+    if scan_button and ticker and st.session_state.selected_detector_classes:
         # 启动处理流程
         status = analyzer.session_manager.get_processing_status()
         status.is_processing = True
@@ -3760,10 +3843,10 @@ def main():
             analyzer, short_analyzer, ticker, years, 
             st.session_state.analyzer_use_sec_reports,
             st.session_state.analyzer_use_sec_others,
-            use_earnings, selected_detectors, model_type
+            use_earnings, st.session_state.selected_detector_classes, model_type
         )
 
-def process_short_signal_scan(analyzer: SECEarningsAnalyzer, short_analyzer: ShortSignalAnalyzer, ticker: str, years: int, use_sec_reports: bool, use_sec_others: bool, use_earnings: bool, selected_detectors: List[str], model_type: str):
+def process_short_signal_scan(analyzer: SECEarningsAnalyzer, short_analyzer: ShortSignalAnalyzer, ticker: str, years: int, use_sec_reports: bool, use_sec_others: bool, use_earnings: bool, selected_detector_classes: List[str], model_type: str):
     """处理做空信号扫描的完整流程"""
     status = analyzer.session_manager.get_processing_status()
     language = st.session_state.get("selected_language", "English")
@@ -3956,7 +4039,7 @@ def process_short_signal_scan(analyzer: SECEarningsAnalyzer, short_analyzer: Sho
             if 'current_detector_index' not in st.session_state:
                 st.session_state.current_detector_index = 0
             
-            available_detectors = [d for d in short_analyzer.detectors if d.name in selected_detectors]
+            available_detectors = [d for d in short_analyzer.detectors if d.__class__.__name__ in selected_detector_classes]
             
             if st.session_state.current_detector_index < len(available_detectors):
                 # 运行当前检测器
