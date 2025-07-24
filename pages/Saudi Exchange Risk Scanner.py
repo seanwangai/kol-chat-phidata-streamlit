@@ -3276,8 +3276,19 @@ class SaudiExchangeService:
         self.base_url = "https://www.saudiexchange.sa"
         self.announcement_api = "https://www.saudiexchange.sa/wps/portal/saudiexchange/newsandreports/issuer-news/issuer-announcements/!ut/p/z1/lY_NDoIwHMOfhQcwqxD-zOPUODAgTBjiLmYHY0h0ejA-v8Qb-BHsrcmvacsMa5hx9tGe7L29Onvu_N7QIRQEP-bIEVcLEEpJuuLTpU9s1wd4JglqI1TuRyFkDWb-yqMsQqhVkQUptpCgcXl8kRjRb_pILmZRt2A9l0kqAk7REPhwcVDy_uEF_BhZHh27XbRu0CYT4XlP_MzK5g!!/p0/IZ7_5A602H80O0HTC060SG6UT81DI1=CZ6_5A602H80O0HTC060SG6UT81D26=NJgetAnnouncementListData=/"
         
-        # 设置请求头
-        self.headers = {
+        # 设置基础session配置
+        self.session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9,zh-TW;q=0.8,zh;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive",
+            "sec-ch-ua": '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"macOS"',
+        })
+        
+        # 获取列表用的headers (POST请求)
+        self.list_headers = {
             "accept": "*/*",
             "accept-language": "en-US,en;q=0.9,zh-TW;q=0.8,zh;q=0.7",
             "cache-control": "no-cache",
@@ -3292,6 +3303,42 @@ class SaudiExchangeService:
             "sec-fetch-site": "same-origin",
             "x-requested-with": "XMLHttpRequest",
             "referer": "https://www.saudiexchange.sa/wps/portal/saudiexchange/newsandreports/issuer-news/issuer-announcements?locale=en&page=1",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
+        }
+        
+        # 获取详情页面用的headers (GET请求)
+        self.detail_headers = {
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "accept-language": "en-US,en;q=0.9,zh-TW;q=0.8,zh;q=0.7",
+            "cache-control": "no-cache",
+            "pragma": "no-cache",
+            "priority": "u=0, i",
+            "sec-ch-ua": '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"macOS"',
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "same-origin",
+            "sec-fetch-user": "?1",
+            "upgrade-insecure-requests": "1",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
+        }
+        
+        # 下载PDF用的headers (GET请求)
+        self.pdf_headers = {
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "accept-language": "en-US,en;q=0.9,zh-TW;q=0.8,zh;q=0.7",
+            "cache-control": "no-cache",
+            "pragma": "no-cache",
+            "priority": "u=0, i",
+            "sec-ch-ua": '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"macOS"',
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "same-origin",
+            "sec-fetch-user": "?1",
+            "upgrade-insecure-requests": "1",
             "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
         }
     
@@ -3348,10 +3395,11 @@ class SaudiExchangeService:
                 
                 logger.info(f"🔍 [SAUDI] 请求第 {page} 页，symbol: {symbol}")
                 
+                # 使用专门的列表请求headers
                 response = self.session.post(
                     self.announcement_api,
                     data=post_data,
-                    headers=self.headers,
+                    headers=self.list_headers,
                     timeout=30
                 )
                 response.raise_for_status()
@@ -3472,8 +3520,12 @@ class SaudiExchangeService:
         try:
             logger.info(f"🔍 [SAUDI] 开始下载公告内容: {filing_url}")
             
+            # 设置referer为公告列表页面
+            detail_headers = self.detail_headers.copy()
+            detail_headers["referer"] = "https://www.saudiexchange.sa/wps/portal/saudiexchange/newsandreports/issuer-news/issuer-announcements?locale=en&page=1"
+            
             # 首先获取HTML页面
-            response = self.session.get(filing_url, headers=self.headers, timeout=30)
+            response = self.session.get(filing_url, headers=detail_headers, timeout=30)
             response.raise_for_status()
             
             soup = BeautifulSoup(response.content, 'html.parser')
@@ -3589,8 +3641,15 @@ class SaudiExchangeService:
         try:
             logger.info(f"🔍 [SAUDI-PDF] 开始下载PDF: {filename}")
             
+            # 设置PDF下载的referer
+            pdf_headers = self.pdf_headers.copy()
+            # 从pdf_url中提取公告详情页URL作为referer
+            if "/Resources/fsPdf/" in pdf_url:
+                # 假设referer应该是具体的公告详情页，但我们先用通用的
+                pdf_headers["referer"] = "https://www.saudiexchange.sa/wps/portal/saudiexchange/newsandreports/issuer-news/issuer-announcements/issuer-announcements-details/"
+            
             # 下载PDF文件
-            response = self.session.get(pdf_url, headers=self.headers, timeout=30)
+            response = self.session.get(pdf_url, headers=pdf_headers, timeout=30)
             response.raise_for_status()
             
             # 保存到临时文件
@@ -4269,10 +4328,10 @@ class SECEarningsAnalyzer:
 
                 
                 回答要求：
-                - 開頭以📍这个emoji开頭， 📍後面接這是一份什麼文件，文件目的是什麼，
+                - 開頭以📍这个emoji开头， 📍後面接這是一份什麼文件，文件目的是什麼，
                 - 第二句下一行，開頭以 💡，記得換行，直接說結論，回答跟我处理要求有關的結論 都是簡短一句話
                 - 请提供结构化的分析结果，只回答重點就好，記得不廢話。
-                - 第一句就說重點不用客套。 不用說 根据您提供的文档内容... 這種廢話，直接說重點
+                - 第一句就說重點不用客套。 不用說 根据您提供的文档内容... 這種廢話，直接說重点
                 - 回答要結論先說，可以使用emoji幫助使用者閱讀，markdown格式
                 - 如果文檔內沒有跟我的問題有關的資訊，就說一句 文檔內未提及 句號 一句話就好  不准廢話 我沒時間看
 
@@ -4405,10 +4464,10 @@ class SECEarningsAnalyzer:
 
                 
                 回答要求：
-                - 開頭以📍这个emoji开頭， 📍後面接這是一份什麼文件，文件目的是什麼，
+                - 開頭以📍这个emoji开头， 📍後面接這是一份什麼文件，文件目的是什麼，
                 - 第二句下一行，開頭以 💡，記得換行，直接說結論，回答跟我处理要求有關的結論 都是簡短一句話
                 - 请提供结构化的分析结果，只回答重點就好，記得不廢話。
-                - 第一句就說重點不用客套。 不用說 根据您提供的文档内容... 這種廢話，直接說重點
+                - 第一句就說重點不用客套。 不用說 根据您提供的文档内容... 這種廢話，直接說重点
                 - 回答要結論先說，可以使用emoji幫助使用者閱讀，markdown格式
                 - 如果文檔內沒有跟我的問題有關的資訊，就說一句 文檔內未提及 句號 一句話就好  不准廢話 我沒時間看
 

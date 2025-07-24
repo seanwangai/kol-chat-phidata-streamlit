@@ -1,19 +1,30 @@
-# 使用 Python 3.13 的轻量级镜像
-FROM python:3.13-slim-bookworm
+# Use an official Python runtime as a parent image
+FROM python:3.11-slim
 
-# 设置容器内的工作目录
+# Set the working directory in the container
 WORKDIR /app
 
-# 复制并安装依赖
-COPY requirements.txt ./
+# Install system dependencies required for lxml and other packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libxml2-dev \
+    libxslt1-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the requirements file into the container
+COPY requirements.txt .
+
+# Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 复制所有应用代码到容器
-# 注意：此操作会包含 .streamlit/secrets.toml 文件
+# Copy the rest of the application's code into the container
 COPY . .
 
-# 暴露 Streamlit 的默认端口
+# Make port 8501 available to the world outside this container
 EXPOSE 8501
 
-# 定义容器启动命令，允许从任何地址访问
-CMD ["streamlit", "run", "app.py", "--server.port", "8501", "--server.address", "0.0.0.0"] 
+# Define environment variable
+ENV NAME World
+
+# Run app.py when the container launches
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"] 
