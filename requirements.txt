@@ -18,3 +18,4 @@ backoff
 sec-edgar-api
 httpx
 lxml
+newspaper4k
