@@ -17,5 +17,5 @@ firecrawl-py
 backoff
 sec-edgar-api
 httpx
-lxml
-newspaper3k
+lxml==4.9.3
+newspaper3k==0.2.8
