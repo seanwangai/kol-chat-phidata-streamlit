@@ -1,0 +1,865 @@
+2025-07-20 22:32:48,974 - __main__ - INFO - ========== BIDU 6-K 文件测试开始（修复版本） ==========
+2025-07-20 22:32:48,975 - __main__ - INFO - 创建临时目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p
+2025-07-20 22:32:48,975 - __main__ - INFO - SixKProcessor 初始化，临时目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p
+2025-07-20 22:32:48,975 - __main__ - INFO - SECService 初始化完成
+2025-07-20 22:32:48,975 - __main__ - INFO - 开始获取 BIDU 近 2 年的6-K文件
+2025-07-20 22:32:48,975 - __main__ - INFO - ========== 开始获取 BIDU 近 2 年的 6-K 文件 ==========
+2025-07-20 22:32:48,975 - __main__ - INFO - 获取 BIDU 的 CIK
+2025-07-20 22:32:49,062 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:32:49,063 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10418b4d0>
+2025-07-20 22:32:49,063 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:49,063 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:49,063 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:49,063 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:49,064 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:49,064 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:32:49,064 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104228d40> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:32:49,543 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10415fb10>
+2025-07-20 22:32:49,544 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:49,544 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:49,544 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:32:49,544 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:49,544 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:49,987 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Server', b'nginx'), (b'Content-Type', b'application/json'), (b'X-Content-Type-Options', b'nosniff'), (b'Last-Modified', b'Thu, 17 Jul 2025 19:27:41 GMT'), (b'Content-Encoding', b'gzip'), (b'X-Request-ID', b'v-1da689ea-634f-11f0-99f1-4b4ad0f9f106'), (b'X-AH-Environment', b'prod'), (b'X-Age', b'0'), (b'Accept-Ranges', b'bytes'), (b'Content-Length', b'213835'), (b'Cache-Control', b'max-age=35'), (b'Expires', b'Sun, 20 Jul 2025 14:33:25 GMT'), (b'Date', b'Sun, 20 Jul 2025 14:32:50 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:32:49,988 - httpx - INFO - HTTP Request: GET https://www.sec.gov/files/company_tickers.json "HTTP/1.1 200 OK"
+2025-07-20 22:32:49,988 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:32:50,479 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:32:50,479 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:32:50,479 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:32:50,490 - __main__ - DEBUG - 获取到 10072 家公司信息
+2025-07-20 22:32:50,490 - __main__ - INFO - 找到 BIDU 的 CIK: 0001329099
+2025-07-20 22:32:50,491 - __main__ - INFO - SEC API URL: https://data.sec.gov/submissions/CIK0001329099.json
+2025-07-20 22:32:50,599 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:32:50,599 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104264cd0>
+2025-07-20 22:32:50,600 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:50,600 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:50,600 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:50,600 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:50,600 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:50,600 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:32:50,601 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104228f80> server_hostname='data.sec.gov' timeout=30
+2025-07-20 22:32:51,055 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1041ef490>
+2025-07-20 22:32:51,055 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:51,055 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:51,055 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:32:51,055 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:51,055 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:51,597 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json'), (b'x-amzn-RequestId', b'86483def-5f92-4f26-b5a1-31c53458b689'), (b'Access-Control-Allow-Origin', b'*'), (b'x-amz-apigw-id', b'OAyjIGsooAMEfJg='), (b'X-Amzn-Trace-Id', b'Root=1-687cfe13-5e688d441b6d3b5b7ee42503'), (b'Vary', b'Accept-Encoding'), (b'Content-Encoding', b'gzip'), (b'Expires', b'Sun, 20 Jul 2025 14:32:51 GMT'), (b'Cache-Control', b'max-age=0, no-cache, no-store'), (b'Pragma', b'no-cache'), (b'Date', b'Sun, 20 Jul 2025 14:32:51 GMT'), (b'Content-Length', b'17643'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; preload')])
+2025-07-20 22:32:51,598 - httpx - INFO - HTTP Request: GET https://data.sec.gov/submissions/CIK0001329099.json "HTTP/1.1 200 OK"
+2025-07-20 22:32:51,598 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:32:51,599 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:32:51,599 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:32:51,599 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:32:51,606 - __main__ - INFO - 成功获取SEC数据，状态码: 200
+2025-07-20 22:32:51,606 - __main__ - INFO - 总文件数: 524
+2025-07-20 22:32:51,606 - __main__ - INFO - 筛选日期范围: 2023-07-20 至今
+2025-07-20 22:32:51,610 - __main__ - INFO - 添加6-K文件: 2025-07-01 - 0001193125-25-153388
+2025-07-20 22:32:51,610 - __main__ - INFO - 添加6-K文件: 2025-05-21 - 0001193125-25-123961
+2025-07-20 22:32:51,610 - __main__ - INFO - 添加6-K文件: 2025-05-08 - 0001193125-25-115412
+2025-07-20 22:32:51,611 - __main__ - INFO - 添加6-K文件: 2025-04-22 - 0001193125-25-087790
+2025-07-20 22:32:51,611 - __main__ - INFO - 添加6-K文件: 2025-03-28 - 0001193125-25-066370
+2025-07-20 22:32:51,611 - __main__ - INFO - 添加6-K文件: 2025-03-17 - 0001193125-25-055604
+2025-07-20 22:32:51,611 - __main__ - INFO - 添加6-K文件: 2025-03-12 - 0001193125-25-052591
+2025-07-20 22:32:51,611 - __main__ - INFO - 添加6-K文件: 2025-03-07 - 0001193125-25-049110
+2025-07-20 22:32:51,611 - __main__ - INFO - 添加6-K文件: 2025-03-07 - 0001193125-25-048917
+2025-07-20 22:32:51,611 - __main__ - INFO - 添加6-K文件: 2025-03-06 - 0001193125-25-047734
+2025-07-20 22:32:51,612 - __main__ - INFO - 添加6-K文件: 2025-03-05 - 0001193125-25-046152
+2025-07-20 22:32:51,612 - __main__ - INFO - 添加6-K文件: 2025-02-25 - 0001193125-25-034196
+2025-07-20 22:32:51,612 - __main__ - INFO - 添加6-K文件: 2025-02-24 - 0001193125-25-032699
+2025-07-20 22:32:51,612 - __main__ - INFO - 添加6-K文件: 2025-02-18 - 0001193125-25-028182
+2025-07-20 22:32:51,612 - __main__ - INFO - 添加6-K文件: 2025-01-17 - 0001193125-25-008024
+2025-07-20 22:32:51,612 - __main__ - INFO - 添加6-K文件: 2024-11-21 - 0001193125-24-263052
+2025-07-20 22:32:51,612 - __main__ - INFO - 添加6-K文件: 2024-10-28 - 0001193125-24-244546
+2025-07-20 22:32:51,612 - __main__ - INFO - 添加6-K文件: 2024-10-08 - 0001193125-24-234118
+2025-07-20 22:32:51,612 - __main__ - INFO - 添加6-K文件: 2024-08-22 - 0001193125-24-204906
+2025-07-20 22:32:51,612 - __main__ - INFO - 添加6-K文件: 2024-07-17 - 0001193125-24-179952
+2025-07-20 22:32:51,612 - __main__ - INFO - 添加6-K文件: 2024-05-16 - 0001193125-24-140513
+2025-07-20 22:32:51,612 - __main__ - INFO - 添加6-K文件: 2024-05-08 - 0001193125-24-133717
+2025-07-20 22:32:51,613 - __main__ - INFO - 添加6-K文件: 2024-04-12 - 0001193125-24-093850
+2025-07-20 22:32:51,613 - __main__ - INFO - 添加6-K文件: 2024-03-18 - 0001193125-24-069615
+2025-07-20 22:32:51,613 - __main__ - INFO - 添加6-K文件: 2024-02-28 - 0001193125-24-050652
+2025-07-20 22:32:51,613 - __main__ - INFO - 添加6-K文件: 2024-02-06 - 0001193125-24-024692
+2025-07-20 22:32:51,613 - __main__ - INFO - 添加6-K文件: 2024-01-16 - 0001193125-24-008018
+2025-07-20 22:32:51,613 - __main__ - INFO - 添加6-K文件: 2024-01-02 - 0001193125-24-000163
+2025-07-20 22:32:51,613 - __main__ - INFO - 添加6-K文件: 2023-11-21 - 0001193125-23-281151
+2025-07-20 22:32:51,613 - __main__ - INFO - 添加6-K文件: 2023-11-13 - 0001193125-23-275215
+2025-07-20 22:32:51,613 - __main__ - INFO - 添加6-K文件: 2023-10-26 - 0001193125-23-263472
+2025-07-20 22:32:51,613 - __main__ - INFO - 添加6-K文件: 2023-09-01 - 0001193125-23-227640
+2025-07-20 22:32:51,613 - __main__ - INFO - 添加6-K文件: 2023-08-22 - 0001193125-23-217413
+2025-07-20 22:32:51,613 - __main__ - INFO - 添加6-K文件: 2023-08-02 - 0001193125-23-201108
+2025-07-20 22:32:51,615 - __main__ - INFO - 找到 34 个6-K文件
+2025-07-20 22:32:51,616 - __main__ - INFO - 找到 34 个6-K文件，开始处理前3个进行测试
+2025-07-20 22:32:51,616 - __main__ - INFO - ========== 开始处理 3 个6-K文档 ==========
+2025-07-20 22:32:51,616 - __main__ - INFO - 获取 BIDU 的 CIK
+2025-07-20 22:32:51,650 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:32:51,651 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1041efa80>
+2025-07-20 22:32:51,651 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:51,651 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:51,651 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:51,651 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:51,651 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:51,651 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:32:51,651 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104229c70> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:32:52,091 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1042515b0>
+2025-07-20 22:32:52,092 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:52,092 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:52,092 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:32:52,092 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:52,092 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:52,246 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Server', b'nginx'), (b'Content-Type', b'application/json'), (b'X-Content-Type-Options', b'nosniff'), (b'Last-Modified', b'Thu, 17 Jul 2025 19:27:41 GMT'), (b'Content-Encoding', b'gzip'), (b'X-Request-ID', b'v-1da689ea-634f-11f0-99f1-4b4ad0f9f106'), (b'X-AH-Environment', b'prod'), (b'X-Age', b'0'), (b'Accept-Ranges', b'bytes'), (b'Content-Length', b'213835'), (b'Cache-Control', b'max-age=33'), (b'Expires', b'Sun, 20 Jul 2025 14:33:25 GMT'), (b'Date', b'Sun, 20 Jul 2025 14:32:52 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:32:52,247 - httpx - INFO - HTTP Request: GET https://www.sec.gov/files/company_tickers.json "HTTP/1.1 200 OK"
+2025-07-20 22:32:52,247 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:32:52,752 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:32:52,752 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:32:52,752 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:32:52,773 - __main__ - DEBUG - 获取到 10072 家公司信息
+2025-07-20 22:32:52,773 - __main__ - INFO - 找到 BIDU 的 CIK: 0001329099
+2025-07-20 22:32:52,774 - __main__ - INFO - 处理第 1/3 个文档: BIDU 6-K (2025-07-01)
+2025-07-20 22:32:52,774 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:32:52,774 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:32:52,774 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:32:52,774 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/d53884d6k.htm
+2025-07-20 22:32:52,774 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:32:52,775 - __main__ - INFO - Document date: 2025-07-01
+2025-07-20 22:32:52,775 - __main__ - INFO - 提取的 accession number: 0001193125-25-153388 (无破折号: 000119312525153388)
+2025-07-20 22:32:52,776 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-153388
+2025-07-20 22:32:52,776 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:32:52,776 - __main__ - INFO - 原始 CIK: 0001329099
+2025-07-20 22:32:52,776 - __main__ - INFO - 清理后 CIK: 1329099
+2025-07-20 22:32:52,776 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/
+2025-07-20 22:32:52,776 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/index.json
+2025-07-20 22:32:52,776 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:32:52,806 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:32:52,807 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104268270>
+2025-07-20 22:32:52,807 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:52,807 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:52,807 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:52,807 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:52,807 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:52,808 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:32:52,808 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104229d00> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:32:53,282 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1042688d0>
+2025-07-20 22:32:53,283 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:53,283 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:53,283 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:32:53,283 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:53,284 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:53,401 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'230'), (b'Date', b'Sun, 20 Jul 2025 14:32:53 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:32:53,401 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/index.json "HTTP/1.1 200 OK"
+2025-07-20 22:32:53,402 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:32:53,402 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:32:53,402 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:32:53,402 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:32:53,405 - __main__ - INFO - 成功获取索引，状态码: 200
+2025-07-20 22:32:53,405 - __main__ - DEBUG - 索引数据: {
+  "directory": {
+    "item": [
+      {
+        "last-modified": "2025-07-01 06:06:56",
+        "name": "0001193125-25-153388-index-headers.html",
+        "type": "text.gif",
+        "size": ""
+      },
+      {
+        "last-modified": "2025-07-01 06:06:56",
+        "name": "0001193125-25-153388-index.html",
+        "type": "text.gif",
+        "size": ""
+      },
+      {
+        "last-modified": "2025-07-01 06:06:56",
+        "name": "0001193125-25-153388.txt",
+        "type": "text.gif",
+        "size": ""
+      },
+      {
+        "last-modified": "2025-07-01 06:06:56",
+        "name": "d53884d6k.htm",
+        "type": "text.gif",
+        "size": "8507"
+      },
+      {
+        "last-modified": "2025-07-01 06:06:56",
+        "name": "d53884dex991.htm",
+        "type": "text.gif",
+        "size": "8123"
+      }
+    ],
+    "name": "/Archives/edgar/data/1329099/000119312525153388",
+    "parent-dir": "/Archives/edgar/data/1329099"
+  }
+}
+2025-07-20 22:32:53,405 - __main__ - INFO - 找到 5 个文件项
+2025-07-20 22:32:53,405 - __main__ - DEBUG - 检查文件 1: 0001193125-25-153388-index-headers.html
+2025-07-20 22:32:53,405 - __main__ - INFO - 添加目标文件: 0001193125-25-153388-index-headers.html (扩展名: .html)
+2025-07-20 22:32:53,405 - __main__ - DEBUG - 检查文件 2: 0001193125-25-153388-index.html
+2025-07-20 22:32:53,406 - __main__ - INFO - 添加目标文件: 0001193125-25-153388-index.html (扩展名: .html)
+2025-07-20 22:32:53,406 - __main__ - DEBUG - 检查文件 3: 0001193125-25-153388.txt
+2025-07-20 22:32:53,406 - __main__ - DEBUG - 跳过非目标文件类型: 0001193125-25-153388.txt (扩展名: .txt)
+2025-07-20 22:32:53,406 - __main__ - DEBUG - 检查文件 4: d53884d6k.htm
+2025-07-20 22:32:53,406 - __main__ - INFO - 添加目标文件: d53884d6k.htm (扩展名: .htm)
+2025-07-20 22:32:53,406 - __main__ - DEBUG - 检查文件 5: d53884dex991.htm
+2025-07-20 22:32:53,406 - __main__ - INFO - 添加目标文件: d53884dex991.htm (扩展名: .htm)
+2025-07-20 22:32:53,406 - __main__ - INFO - 找到 4 个目标文件，开始下载...
+2025-07-20 22:32:53,406 - __main__ - INFO - 下载文件 1/4: 0001193125-25-153388-index-headers.html
+2025-07-20 22:32:53,406 - __main__ - DEBUG - 文件URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/0001193125-25-153388-index-headers.html
+2025-07-20 22:32:53,406 - __main__ - DEBUG - 保存路径: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-153388/0001193125-25-153388-index-headers.html
+2025-07-20 22:32:53,441 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:32:53,441 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104246150>
+2025-07-20 22:32:53,441 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:53,441 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:53,441 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:53,441 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:53,441 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:53,442 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:32:53,442 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104229be0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:32:53,894 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104246750>
+2025-07-20 22:32:53,894 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:53,895 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:53,895 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:32:53,895 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:53,895 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:54,010 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Accept-Ranges', b'bytes'), (b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'Last-Modified', b'Tue, 01 Jul 2025 10:07:26 GMT'), (b'x-amz-id-2', b'ES2nYlUtiGuc7eMRuBXsgGW4ZuxRBZvLXdL/wDZd20I8bbeT86UXCDKFqg4uarakojycUCzc9mQ='), (b'x-amz-meta-mode', b'33188'), (b'x-amz-replication-status', b'PENDING'), (b'x-amz-request-id', b'NATT3N4975J1STW2'), (b'x-amz-server-side-encryption', b'AES256'), (b'x-amz-version-id', b'0.H3PkF.F64i1u_QCNJrt42q0xx7Jm82'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'1091'), (b'Date', b'Sun, 20 Jul 2025 14:32:54 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:32:54,010 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/0001193125-25-153388-index-headers.html "HTTP/1.1 200 OK"
+2025-07-20 22:32:54,010 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:32:54,010 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:32:54,010 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:32:54,010 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:32:54,012 - __main__ - INFO - 成功获取文件，状态码: 200
+2025-07-20 22:32:54,012 - __main__ - DEBUG - Content-Type: text/html
+2025-07-20 22:32:54,012 - __main__ - DEBUG - Content-Length: 2784 bytes
+2025-07-20 22:32:54,013 - __main__ - INFO - 以文本模式保存: 0001193125-25-153388-index-headers.html
+2025-07-20 22:32:54,013 - __main__ - INFO - 已下载6-K附件: 0001193125-25-153388-index-headers.html
+2025-07-20 22:32:54,013 - __main__ - INFO - 下载文件 2/4: 0001193125-25-153388-index.html
+2025-07-20 22:32:54,013 - __main__ - DEBUG - 文件URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/0001193125-25-153388-index.html
+2025-07-20 22:32:54,013 - __main__ - DEBUG - 保存路径: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-153388/0001193125-25-153388-index.html
+2025-07-20 22:32:54,038 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:32:54,038 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1041cea80>
+2025-07-20 22:32:54,038 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:54,038 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:54,038 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:54,038 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:54,038 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:54,038 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:32:54,038 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104229eb0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:32:54,501 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1041cf2f0>
+2025-07-20 22:32:54,501 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:54,501 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:54,501 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:32:54,501 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:54,501 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:54,620 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'Last-Modified', b'Tue, 01 Jul 2025 10:06:56 GMT'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'2595'), (b'Cache-Control', b'no-cache'), (b'Date', b'Sun, 20 Jul 2025 14:32:54 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:32:54,620 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/0001193125-25-153388-index.html "HTTP/1.1 200 OK"
+2025-07-20 22:32:54,620 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:32:54,620 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:32:54,620 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:32:54,620 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:32:54,626 - __main__ - INFO - 成功获取文件，状态码: 200
+2025-07-20 22:32:54,626 - __main__ - DEBUG - Content-Type: text/html
+2025-07-20 22:32:54,626 - __main__ - DEBUG - Content-Length: 7402 bytes
+2025-07-20 22:32:54,628 - __main__ - INFO - 以文本模式保存: 0001193125-25-153388-index.html
+2025-07-20 22:32:54,628 - __main__ - INFO - 已下载6-K附件: 0001193125-25-153388-index.html
+2025-07-20 22:32:54,628 - __main__ - INFO - 下载文件 3/4: d53884d6k.htm
+2025-07-20 22:32:54,628 - __main__ - DEBUG - 文件URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/d53884d6k.htm
+2025-07-20 22:32:54,628 - __main__ - DEBUG - 保存路径: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-153388/d53884d6k.htm
+2025-07-20 22:32:54,672 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:32:54,673 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10423ea50>
+2025-07-20 22:32:54,673 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:54,673 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:54,673 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:54,673 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:54,673 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:54,676 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:32:54,676 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104229ac0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:32:55,154 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10423ef90>
+2025-07-20 22:32:55,154 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:55,154 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:55,154 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:32:55,155 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:55,155 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:55,279 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Accept-Ranges', b'bytes'), (b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'Last-Modified', b'Tue, 01 Jul 2025 10:07:26 GMT'), (b'x-amz-id-2', b'GXMB6JmYNm5Oa2dcUsk28DIocxOdrZDHqqOiFdlFz663IT3FMtsQhnXnv+2JMNUe6MbtGfB0+B4='), (b'x-amz-meta-mode', b'33188'), (b'x-amz-replication-status', b'PENDING'), (b'x-amz-request-id', b'KPCP12B0NVWJEKMR'), (b'x-amz-server-side-encryption', b'AES256'), (b'x-amz-version-id', b'GICb1wim1R_rRykiqAmc2ERepQXYFJF2'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'1684'), (b'Date', b'Sun, 20 Jul 2025 14:32:55 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:32:55,279 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/d53884d6k.htm "HTTP/1.1 200 OK"
+2025-07-20 22:32:55,279 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:32:55,279 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:32:55,279 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:32:55,279 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:32:55,281 - __main__ - INFO - 成功获取文件，状态码: 200
+2025-07-20 22:32:55,281 - __main__ - DEBUG - Content-Type: text/html
+2025-07-20 22:32:55,281 - __main__ - DEBUG - Content-Length: 8507 bytes
+2025-07-20 22:32:55,282 - __main__ - INFO - 以文本模式保存: d53884d6k.htm
+2025-07-20 22:32:55,282 - __main__ - INFO - 已下载6-K附件: d53884d6k.htm
+2025-07-20 22:32:55,282 - __main__ - INFO - 下载文件 4/4: d53884dex991.htm
+2025-07-20 22:32:55,282 - __main__ - DEBUG - 文件URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/d53884dex991.htm
+2025-07-20 22:32:55,282 - __main__ - DEBUG - 保存路径: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-153388/d53884dex991.htm
+2025-07-20 22:32:55,305 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:32:55,305 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104630390>
+2025-07-20 22:32:55,305 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:55,305 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:55,305 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:55,305 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:55,305 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:55,305 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:32:55,306 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x10422a2a0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:32:56,530 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1041fa210>
+2025-07-20 22:32:56,530 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:56,530 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:56,530 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:32:56,530 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:56,530 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:56,655 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Accept-Ranges', b'bytes'), (b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'Last-Modified', b'Tue, 01 Jul 2025 10:07:26 GMT'), (b'x-amz-id-2', b'uzq3vXWF/ukg1HG8Km9sISLwbsK1kej4q44Fz+0WVYrX2kkq1V99Ng3WukzJb9GsMgzZ74NfIq8='), (b'x-amz-meta-mode', b'33188'), (b'x-amz-replication-status', b'PENDING'), (b'x-amz-request-id', b'KPCGKW1DBG0EM19J'), (b'x-amz-server-side-encryption', b'AES256'), (b'x-amz-version-id', b'YsmpCvm_OXX_zrEaF0_doUoosHdscoQG'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'3034'), (b'Date', b'Sun, 20 Jul 2025 14:32:56 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:32:56,656 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/d53884dex991.htm "HTTP/1.1 200 OK"
+2025-07-20 22:32:56,656 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:32:56,656 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:32:56,656 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:32:56,656 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:32:56,659 - __main__ - INFO - 成功获取文件，状态码: 200
+2025-07-20 22:32:56,659 - __main__ - DEBUG - Content-Type: text/html
+2025-07-20 22:32:56,659 - __main__ - DEBUG - Content-Length: 8123 bytes
+2025-07-20 22:32:56,660 - __main__ - INFO - 以文本模式保存: d53884dex991.htm
+2025-07-20 22:32:56,660 - __main__ - INFO - 已下载6-K附件: d53884dex991.htm
+2025-07-20 22:32:56,660 - __main__ - INFO - 成功下载 4 个6-K目标附件
+2025-07-20 22:32:56,660 - __main__ - INFO - ========== 开始处理 ex99 文件 ==========
+2025-07-20 22:32:56,660 - __main__ - INFO - 总附件数: 4
+2025-07-20 22:32:56,660 - __main__ - DEBUG - 检查文件是否包含ex99: 0001193125-25-153388-index-headers.html
+2025-07-20 22:32:56,660 - __main__ - DEBUG - 检查文件是否包含ex99: 0001193125-25-153388-index.html
+2025-07-20 22:32:56,660 - __main__ - DEBUG - 检查文件是否包含ex99: d53884d6k.htm
+2025-07-20 22:32:56,660 - __main__ - DEBUG - 检查文件是否包含ex99: d53884dex991.htm
+2025-07-20 22:32:56,660 - __main__ - INFO - 找到ex99文件: d53884dex991.htm
+2025-07-20 22:32:56,660 - __main__ - INFO - 找到 1 个ex99文件: ['d53884dex991.htm']
+2025-07-20 22:32:56,661 - __main__ - INFO - HTML文件: d53884dex991.htm
+2025-07-20 22:32:56,661 - __main__ - INFO - 处理 1 个HTML文件
+2025-07-20 22:32:56,661 - __main__ - INFO - 转换HTML文件: d53884dex991.htm
+2025-07-20 22:32:56,661 - __main__ - DEBUG - 开始转换HTML文件: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-153388/d53884dex991.htm
+2025-07-20 22:32:56,662 - __main__ - DEBUG - HTML文件大小: 8123 字符
+2025-07-20 22:32:56,740 - __main__ - ERROR - 缺少必要的库 (bs4 或 markdownify): No module named 'markdownify'
+2025-07-20 22:32:56,740 - __main__ - INFO - 使用简单文本提取，长度: 5686 字符
+2025-07-20 22:32:56,740 - __main__ - INFO - HTML文件转换成功，内容长度: 5686 字符
+2025-07-20 22:32:56,740 - __main__ - INFO - HTML内容总字符数: 5686
+2025-07-20 22:32:56,740 - __main__ - INFO - HTML文件已合并处理，总字符数: 5686
+2025-07-20 22:32:56,740 - __main__ - INFO - ex99处理完成，生成 1 个文档对象
+2025-07-20 22:32:56,740 - __main__ - INFO - 成功处理6-K文件，生成 1 个文档
+2025-07-20 22:32:56,740 - __main__ - INFO - 成功处理，生成 1 个文档
+2025-07-20 22:32:56,741 - __main__ - INFO - 处理第 2/3 个文档: BIDU 6-K (2025-05-21)
+2025-07-20 22:32:56,741 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:32:56,741 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:32:56,741 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:32:56,741 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/d58002d6k.htm
+2025-07-20 22:32:56,741 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:32:56,741 - __main__ - INFO - Document date: 2025-05-21
+2025-07-20 22:32:56,741 - __main__ - INFO - 提取的 accession number: 0001193125-25-123961 (无破折号: 000119312525123961)
+2025-07-20 22:32:56,741 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-123961
+2025-07-20 22:32:56,741 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:32:56,741 - __main__ - INFO - 原始 CIK: 0001329099
+2025-07-20 22:32:56,741 - __main__ - INFO - 清理后 CIK: 1329099
+2025-07-20 22:32:56,741 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/
+2025-07-20 22:32:56,741 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/index.json
+2025-07-20 22:32:56,741 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:32:56,759 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:32:56,759 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104575c10>
+2025-07-20 22:32:56,759 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:56,759 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:56,759 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:56,759 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:56,759 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:56,759 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:32:56,759 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1045e3020> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:32:57,211 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104371440>
+2025-07-20 22:32:57,212 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:57,212 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:57,213 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:32:57,213 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:57,213 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:57,755 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'232'), (b'Date', b'Sun, 20 Jul 2025 14:32:57 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:32:57,756 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/index.json "HTTP/1.1 200 OK"
+2025-07-20 22:32:57,756 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:32:57,757 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:32:57,757 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:32:57,757 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:32:57,762 - __main__ - INFO - 成功获取索引，状态码: 200
+2025-07-20 22:32:57,763 - __main__ - DEBUG - 索引数据: {
+  "directory": {
+    "item": [
+      {
+        "last-modified": "2025-05-21 16:00:58",
+        "name": "0001193125-25-123961-index-headers.html",
+        "type": "text.gif",
+        "size": ""
+      },
+      {
+        "last-modified": "2025-05-21 16:00:58",
+        "name": "0001193125-25-123961-index.html",
+        "type": "text.gif",
+        "size": ""
+      },
+      {
+        "last-modified": "2025-05-21 16:00:58",
+        "name": "0001193125-25-123961.txt",
+        "type": "text.gif",
+        "size": ""
+      },
+      {
+        "last-modified": "2025-05-21 16:00:58",
+        "name": "d58002d6k.htm",
+        "type": "text.gif",
+        "size": "9573"
+      },
+      {
+        "last-modified": "2025-05-21 16:00:58",
+        "name": "d58002dex991.htm",
+        "type": "text.gif",
+        "size": "424873"
+      }
+    ],
+    "name": "/Archives/edgar/data/1329099/000119312525123961",
+    "parent-dir": "/Archives/edgar/data/1329099"
+  }
+}
+2025-07-20 22:32:57,763 - __main__ - INFO - 找到 5 个文件项
+2025-07-20 22:32:57,763 - __main__ - DEBUG - 检查文件 1: 0001193125-25-123961-index-headers.html
+2025-07-20 22:32:57,763 - __main__ - INFO - 添加目标文件: 0001193125-25-123961-index-headers.html (扩展名: .html)
+2025-07-20 22:32:57,764 - __main__ - DEBUG - 检查文件 2: 0001193125-25-123961-index.html
+2025-07-20 22:32:57,764 - __main__ - INFO - 添加目标文件: 0001193125-25-123961-index.html (扩展名: .html)
+2025-07-20 22:32:57,764 - __main__ - DEBUG - 检查文件 3: 0001193125-25-123961.txt
+2025-07-20 22:32:57,764 - __main__ - DEBUG - 跳过非目标文件类型: 0001193125-25-123961.txt (扩展名: .txt)
+2025-07-20 22:32:57,764 - __main__ - DEBUG - 检查文件 4: d58002d6k.htm
+2025-07-20 22:32:57,764 - __main__ - INFO - 添加目标文件: d58002d6k.htm (扩展名: .htm)
+2025-07-20 22:32:57,764 - __main__ - DEBUG - 检查文件 5: d58002dex991.htm
+2025-07-20 22:32:57,764 - __main__ - INFO - 添加目标文件: d58002dex991.htm (扩展名: .htm)
+2025-07-20 22:32:57,764 - __main__ - INFO - 找到 4 个目标文件，开始下载...
+2025-07-20 22:32:57,764 - __main__ - INFO - 下载文件 1/4: 0001193125-25-123961-index-headers.html
+2025-07-20 22:32:57,764 - __main__ - DEBUG - 文件URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/0001193125-25-123961-index-headers.html
+2025-07-20 22:32:57,764 - __main__ - DEBUG - 保存路径: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-123961/0001193125-25-123961-index-headers.html
+2025-07-20 22:32:57,804 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:32:57,804 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104372360>
+2025-07-20 22:32:57,804 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:57,805 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:57,805 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:57,805 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:57,805 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:57,805 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:32:57,805 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1045e30b0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:32:58,244 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104438d70>
+2025-07-20 22:32:58,244 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:58,244 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:58,244 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:32:58,244 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:58,244 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:58,356 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Accept-Ranges', b'bytes'), (b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'Last-Modified', b'Wed, 21 May 2025 20:01:28 GMT'), (b'x-amz-id-2', b'NtIehtGf5U45Ug28AWFJV8IdQ+lDMBrYbyX3In7yPR00S7qd4+JswZZ+zFYkOM6M4gq6wfvTqsU='), (b'x-amz-meta-mode', b'33188'), (b'x-amz-replication-status', b'COMPLETED'), (b'x-amz-request-id', b'WF9ECAKGGWGJ1K51'), (b'x-amz-server-side-encryption', b'AES256'), (b'x-amz-version-id', b'dqzGghkypR8SadxLi3njWObZ1KY3P1S.'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'1089'), (b'Date', b'Sun, 20 Jul 2025 14:32:58 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:32:58,356 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/0001193125-25-123961-index-headers.html "HTTP/1.1 200 OK"
+2025-07-20 22:32:58,356 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:32:58,356 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:32:58,356 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:32:58,356 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:32:58,358 - __main__ - INFO - 成功获取文件，状态码: 200
+2025-07-20 22:32:58,358 - __main__ - DEBUG - Content-Type: text/html
+2025-07-20 22:32:58,358 - __main__ - DEBUG - Content-Length: 2782 bytes
+2025-07-20 22:32:58,359 - __main__ - INFO - 以文本模式保存: 0001193125-25-123961-index-headers.html
+2025-07-20 22:32:58,359 - __main__ - INFO - 已下载6-K附件: 0001193125-25-123961-index-headers.html
+2025-07-20 22:32:58,359 - __main__ - INFO - 下载文件 2/4: 0001193125-25-123961-index.html
+2025-07-20 22:32:58,359 - __main__ - DEBUG - 文件URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/0001193125-25-123961-index.html
+2025-07-20 22:32:58,359 - __main__ - DEBUG - 保存路径: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-123961/0001193125-25-123961-index.html
+2025-07-20 22:32:58,383 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:32:58,384 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104439090>
+2025-07-20 22:32:58,384 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:58,384 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:58,384 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:58,384 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:58,384 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:58,384 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:32:58,384 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1045e32f0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:32:58,856 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1045e3410>
+2025-07-20 22:32:58,856 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:58,856 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:58,857 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:32:58,857 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:58,857 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:58,982 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'Last-Modified', b'Wed, 21 May 2025 20:00:58 GMT'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'2593'), (b'Cache-Control', b'no-cache'), (b'Date', b'Sun, 20 Jul 2025 14:32:59 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:32:58,983 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/0001193125-25-123961-index.html "HTTP/1.1 200 OK"
+2025-07-20 22:32:58,984 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:32:58,984 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:32:58,984 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:32:58,984 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:32:58,991 - __main__ - INFO - 成功获取文件，状态码: 200
+2025-07-20 22:32:58,991 - __main__ - DEBUG - Content-Type: text/html
+2025-07-20 22:32:58,992 - __main__ - DEBUG - Content-Length: 7404 bytes
+2025-07-20 22:32:58,994 - __main__ - INFO - 以文本模式保存: 0001193125-25-123961-index.html
+2025-07-20 22:32:58,994 - __main__ - INFO - 已下载6-K附件: 0001193125-25-123961-index.html
+2025-07-20 22:32:58,994 - __main__ - INFO - 下载文件 3/4: d58002d6k.htm
+2025-07-20 22:32:58,994 - __main__ - DEBUG - 文件URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/d58002d6k.htm
+2025-07-20 22:32:58,994 - __main__ - DEBUG - 保存路径: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-123961/d58002d6k.htm
+2025-07-20 22:32:59,034 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:32:59,035 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104422c50>
+2025-07-20 22:32:59,035 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:59,035 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:59,035 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:59,035 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:59,035 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:59,035 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:32:59,035 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1045e3260> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:32:59,533 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104423150>
+2025-07-20 22:32:59,533 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:59,533 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:59,534 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:32:59,534 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:59,534 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:32:59,659 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Accept-Ranges', b'bytes'), (b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'Last-Modified', b'Wed, 21 May 2025 20:01:28 GMT'), (b'x-amz-id-2', b'ipBKmhiHr01RqHhTC/zsuTn0WQO6XQnx1PgF4Hn+IMeMLGtgsj7qTIl12EAlJx6ZeVDR8IMwWIXRABFRJojB9vAkNZlknq1i'), (b'x-amz-meta-mode', b'33188'), (b'x-amz-replication-status', b'COMPLETED'), (b'x-amz-request-id', b'N04JHFZP001VSNW5'), (b'x-amz-server-side-encryption', b'AES256'), (b'x-amz-version-id', b'3rBVSmS19eIqwOhk4F5ayEfsFKqU9On9'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'1739'), (b'Date', b'Sun, 20 Jul 2025 14:32:59 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:32:59,659 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/d58002d6k.htm "HTTP/1.1 200 OK"
+2025-07-20 22:32:59,659 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:32:59,659 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:32:59,659 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:32:59,659 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:32:59,662 - __main__ - INFO - 成功获取文件，状态码: 200
+2025-07-20 22:32:59,662 - __main__ - DEBUG - Content-Type: text/html
+2025-07-20 22:32:59,663 - __main__ - DEBUG - Content-Length: 9573 bytes
+2025-07-20 22:32:59,664 - __main__ - INFO - 以文本模式保存: d58002d6k.htm
+2025-07-20 22:32:59,664 - __main__ - INFO - 已下载6-K附件: d58002d6k.htm
+2025-07-20 22:32:59,665 - __main__ - INFO - 下载文件 4/4: d58002dex991.htm
+2025-07-20 22:32:59,665 - __main__ - DEBUG - 文件URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/d58002dex991.htm
+2025-07-20 22:32:59,665 - __main__ - DEBUG - 保存路径: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-123961/d58002dex991.htm
+2025-07-20 22:32:59,693 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:32:59,693 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1044357f0>
+2025-07-20 22:32:59,693 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:59,693 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:32:59,693 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:59,693 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:32:59,693 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:32:59,694 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:32:59,694 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1045e2f90> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:33:00,262 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104435a90>
+2025-07-20 22:33:00,262 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:33:00,262 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:33:00,263 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:33:00,263 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:33:00,263 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:33:00,433 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Accept-Ranges', b'bytes'), (b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'Last-Modified', b'Wed, 21 May 2025 20:01:28 GMT'), (b'x-amz-id-2', b'I17JzeEXeIN3Q+GJJ1/bf6yB6NgX5dpgfCgnKtsYmtO0pbvC+cDJKUpQflj0DDFyq1Y3FXHw42cGI1RFx3QN5RNbLc3IZniaZEtxKjfWpgs='), (b'x-amz-meta-mode', b'33188'), (b'x-amz-replication-status', b'COMPLETED'), (b'x-amz-request-id', b'Q21SCW8SQ5X0ZN4F'), (b'x-amz-server-side-encryption', b'AES256'), (b'x-amz-version-id', b'GviWVov.lI31SN1ELDjpOV9D99QUt4Cj'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'21580'), (b'Date', b'Sun, 20 Jul 2025 14:33:00 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:33:00,433 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/d58002dex991.htm "HTTP/1.1 200 OK"
+2025-07-20 22:33:00,433 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:33:00,443 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:33:00,443 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:33:00,443 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:33:00,445 - __main__ - INFO - 成功获取文件，状态码: 200
+2025-07-20 22:33:00,445 - __main__ - DEBUG - Content-Type: text/html
+2025-07-20 22:33:00,445 - __main__ - DEBUG - Content-Length: 424873 bytes
+2025-07-20 22:33:00,446 - __main__ - INFO - 以文本模式保存: d58002dex991.htm
+2025-07-20 22:33:00,446 - __main__ - INFO - 已下载6-K附件: d58002dex991.htm
+2025-07-20 22:33:00,446 - __main__ - INFO - 成功下载 4 个6-K目标附件
+2025-07-20 22:33:00,446 - __main__ - INFO - ========== 开始处理 ex99 文件 ==========
+2025-07-20 22:33:00,446 - __main__ - INFO - 总附件数: 4
+2025-07-20 22:33:00,446 - __main__ - DEBUG - 检查文件是否包含ex99: 0001193125-25-123961-index-headers.html
+2025-07-20 22:33:00,446 - __main__ - DEBUG - 检查文件是否包含ex99: 0001193125-25-123961-index.html
+2025-07-20 22:33:00,446 - __main__ - DEBUG - 检查文件是否包含ex99: d58002d6k.htm
+2025-07-20 22:33:00,446 - __main__ - DEBUG - 检查文件是否包含ex99: d58002dex991.htm
+2025-07-20 22:33:00,446 - __main__ - INFO - 找到ex99文件: d58002dex991.htm
+2025-07-20 22:33:00,446 - __main__ - INFO - 找到 1 个ex99文件: ['d58002dex991.htm']
+2025-07-20 22:33:00,446 - __main__ - INFO - HTML文件: d58002dex991.htm
+2025-07-20 22:33:00,446 - __main__ - INFO - 处理 1 个HTML文件
+2025-07-20 22:33:00,446 - __main__ - INFO - 转换HTML文件: d58002dex991.htm
+2025-07-20 22:33:00,446 - __main__ - DEBUG - 开始转换HTML文件: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-123961/d58002dex991.htm
+2025-07-20 22:33:00,603 - __main__ - DEBUG - HTML文件大小: 424873 字符
+2025-07-20 22:33:00,609 - __main__ - ERROR - 缺少必要的库 (bs4 或 markdownify): No module named 'markdownify'
+2025-07-20 22:33:00,622 - __main__ - INFO - 使用简单文本提取，长度: 56642 字符
+2025-07-20 22:33:00,623 - __main__ - INFO - HTML文件转换成功，内容长度: 56642 字符
+2025-07-20 22:33:00,623 - __main__ - INFO - HTML内容总字符数: 56642
+2025-07-20 22:33:00,623 - __main__ - INFO - HTML文件已合并处理，总字符数: 56642
+2025-07-20 22:33:00,623 - __main__ - INFO - ex99处理完成，生成 1 个文档对象
+2025-07-20 22:33:00,623 - __main__ - INFO - 成功处理6-K文件，生成 1 个文档
+2025-07-20 22:33:00,623 - __main__ - INFO - 成功处理，生成 1 个文档
+2025-07-20 22:33:00,623 - __main__ - INFO - 处理第 3/3 个文档: BIDU 6-K (2025-05-08)
+2025-07-20 22:33:00,623 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:33:00,639 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:33:00,641 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:33:00,642 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/d945299d6k.htm
+2025-07-20 22:33:00,642 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:33:00,642 - __main__ - INFO - Document date: 2025-05-08
+2025-07-20 22:33:00,642 - __main__ - INFO - 提取的 accession number: 0001193125-25-115412 (无破折号: 000119312525115412)
+2025-07-20 22:33:00,659 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-115412
+2025-07-20 22:33:00,659 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:33:00,659 - __main__ - INFO - 原始 CIK: 0001329099
+2025-07-20 22:33:00,659 - __main__ - INFO - 清理后 CIK: 1329099
+2025-07-20 22:33:00,659 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/
+2025-07-20 22:33:00,659 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/index.json
+2025-07-20 22:33:00,659 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:33:00,728 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:33:00,728 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1043f9f10>
+2025-07-20 22:33:00,728 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:00,728 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:33:00,728 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:00,728 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:33:00,728 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:00,729 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:33:00,729 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1045e3140> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:33:01,202 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1043fa0f0>
+2025-07-20 22:33:01,203 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:33:01,203 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:33:01,203 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:33:01,203 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:33:01,204 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:33:01,324 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'239'), (b'Date', b'Sun, 20 Jul 2025 14:33:01 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:33:01,325 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/index.json "HTTP/1.1 200 OK"
+2025-07-20 22:33:01,325 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:33:01,325 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:33:01,325 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:33:01,325 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:33:01,327 - __main__ - INFO - 成功获取索引，状态码: 200
+2025-07-20 22:33:01,327 - __main__ - DEBUG - 索引数据: {
+  "directory": {
+    "item": [
+      {
+        "last-modified": "2025-05-08 06:10:52",
+        "name": "0001193125-25-115412-index-headers.html",
+        "type": "text.gif",
+        "size": ""
+      },
+      {
+        "last-modified": "2025-05-08 06:10:52",
+        "name": "0001193125-25-115412-index.html",
+        "type": "text.gif",
+        "size": ""
+      },
+      {
+        "last-modified": "2025-05-08 06:10:52",
+        "name": "0001193125-25-115412.txt",
+        "type": "text.gif",
+        "size": ""
+      },
+      {
+        "last-modified": "2025-05-08 06:10:52",
+        "name": "d945299d6k.htm",
+        "type": "text.gif",
+        "size": "8959"
+      },
+      {
+        "last-modified": "2025-05-08 06:10:52",
+        "name": "d945299dex991.htm",
+        "type": "text.gif",
+        "size": "4518"
+      },
+      {
+        "last-modified": "2025-05-08 06:10:52",
+        "name": "d945299dex992.htm",
+        "type": "text.gif",
+        "size": "5747"
+      }
+    ],
+    "name": "/Archives/edgar/data/1329099/000119312525115412",
+    "parent-dir": "/Archives/edgar/data/1329099"
+  }
+}
+2025-07-20 22:33:01,327 - __main__ - INFO - 找到 6 个文件项
+2025-07-20 22:33:01,327 - __main__ - DEBUG - 检查文件 1: 0001193125-25-115412-index-headers.html
+2025-07-20 22:33:01,327 - __main__ - INFO - 添加目标文件: 0001193125-25-115412-index-headers.html (扩展名: .html)
+2025-07-20 22:33:01,327 - __main__ - DEBUG - 检查文件 2: 0001193125-25-115412-index.html
+2025-07-20 22:33:01,327 - __main__ - INFO - 添加目标文件: 0001193125-25-115412-index.html (扩展名: .html)
+2025-07-20 22:33:01,327 - __main__ - DEBUG - 检查文件 3: 0001193125-25-115412.txt
+2025-07-20 22:33:01,327 - __main__ - DEBUG - 跳过非目标文件类型: 0001193125-25-115412.txt (扩展名: .txt)
+2025-07-20 22:33:01,327 - __main__ - DEBUG - 检查文件 4: d945299d6k.htm
+2025-07-20 22:33:01,327 - __main__ - INFO - 添加目标文件: d945299d6k.htm (扩展名: .htm)
+2025-07-20 22:33:01,327 - __main__ - DEBUG - 检查文件 5: d945299dex991.htm
+2025-07-20 22:33:01,327 - __main__ - INFO - 添加目标文件: d945299dex991.htm (扩展名: .htm)
+2025-07-20 22:33:01,327 - __main__ - DEBUG - 检查文件 6: d945299dex992.htm
+2025-07-20 22:33:01,327 - __main__ - INFO - 添加目标文件: d945299dex992.htm (扩展名: .htm)
+2025-07-20 22:33:01,327 - __main__ - INFO - 找到 5 个目标文件，开始下载...
+2025-07-20 22:33:01,327 - __main__ - INFO - 下载文件 1/5: 0001193125-25-115412-index-headers.html
+2025-07-20 22:33:01,327 - __main__ - DEBUG - 文件URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/0001193125-25-115412-index-headers.html
+2025-07-20 22:33:01,327 - __main__ - DEBUG - 保存路径: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-115412/0001193125-25-115412-index-headers.html
+2025-07-20 22:33:01,351 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:33:01,351 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1043eb520>
+2025-07-20 22:33:01,352 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:01,352 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:33:01,352 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:01,352 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:33:01,352 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:01,352 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:33:01,352 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1045e39b0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:33:01,802 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1043eb390>
+2025-07-20 22:33:01,802 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:33:01,802 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:33:01,802 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:33:01,802 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:33:01,802 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:33:01,927 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Accept-Ranges', b'bytes'), (b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'Last-Modified', b'Thu, 08 May 2025 10:11:11 GMT'), (b'x-amz-id-2', b'2+sNxTd2OVnJBTejbjnl54tVI+C2COl+JFLGYaBBmWlgNxEngWCrS1ctr4IlN87ANB3RIRnNeEw='), (b'x-amz-meta-mode', b'33188'), (b'x-amz-replication-status', b'COMPLETED'), (b'x-amz-request-id', b'6QQMSZZ6WFDAVSHR'), (b'x-amz-server-side-encryption', b'AES256'), (b'x-amz-version-id', b'vnEirE9BLwZ4SO4WRo58wDYR9NwBZpIK'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'1114'), (b'Date', b'Sun, 20 Jul 2025 14:33:02 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:33:01,928 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/0001193125-25-115412-index-headers.html "HTTP/1.1 200 OK"
+2025-07-20 22:33:01,928 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:33:01,928 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:33:01,928 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:33:01,928 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:33:01,930 - __main__ - INFO - 成功获取文件，状态码: 200
+2025-07-20 22:33:01,930 - __main__ - DEBUG - Content-Type: text/html
+2025-07-20 22:33:01,930 - __main__ - DEBUG - Content-Length: 3008 bytes
+2025-07-20 22:33:01,931 - __main__ - INFO - 以文本模式保存: 0001193125-25-115412-index-headers.html
+2025-07-20 22:33:01,931 - __main__ - INFO - 已下载6-K附件: 0001193125-25-115412-index-headers.html
+2025-07-20 22:33:01,931 - __main__ - INFO - 下载文件 2/5: 0001193125-25-115412-index.html
+2025-07-20 22:33:01,931 - __main__ - DEBUG - 文件URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/0001193125-25-115412-index.html
+2025-07-20 22:33:01,931 - __main__ - DEBUG - 保存路径: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-115412/0001193125-25-115412-index.html
+2025-07-20 22:33:01,952 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:33:01,952 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1043eaee0>
+2025-07-20 22:33:01,952 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:01,952 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:33:01,952 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:01,952 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:33:01,952 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:01,952 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:33:01,952 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1045e3920> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:33:02,564 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10444c140>
+2025-07-20 22:33:02,564 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:33:02,564 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:33:02,564 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:33:02,564 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:33:02,564 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:33:02,685 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'Last-Modified', b'Thu, 08 May 2025 10:10:52 GMT'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'2618'), (b'Cache-Control', b'no-cache'), (b'Date', b'Sun, 20 Jul 2025 14:33:02 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:33:02,686 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/0001193125-25-115412-index.html "HTTP/1.1 200 OK"
+2025-07-20 22:33:02,686 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:33:02,687 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:33:02,687 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:33:02,687 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:33:02,691 - __main__ - INFO - 成功获取文件，状态码: 200
+2025-07-20 22:33:02,692 - __main__ - DEBUG - Content-Type: text/html
+2025-07-20 22:33:02,692 - __main__ - DEBUG - Content-Length: 7736 bytes
+2025-07-20 22:33:02,693 - __main__ - INFO - 以文本模式保存: 0001193125-25-115412-index.html
+2025-07-20 22:33:02,693 - __main__ - INFO - 已下载6-K附件: 0001193125-25-115412-index.html
+2025-07-20 22:33:02,693 - __main__ - INFO - 下载文件 3/5: d945299d6k.htm
+2025-07-20 22:33:02,693 - __main__ - DEBUG - 文件URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/d945299d6k.htm
+2025-07-20 22:33:02,693 - __main__ - DEBUG - 保存路径: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-115412/d945299d6k.htm
+2025-07-20 22:33:02,732 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:33:02,732 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10444f2a0>
+2025-07-20 22:33:02,733 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:02,733 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:33:02,733 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:02,733 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:33:02,733 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:02,733 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:33:02,733 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1045e3650> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:33:03,333 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10444f480>
+2025-07-20 22:33:03,334 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:33:03,334 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:33:03,335 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:33:03,335 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:33:03,335 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:33:03,455 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Accept-Ranges', b'bytes'), (b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'Last-Modified', b'Thu, 08 May 2025 10:11:11 GMT'), (b'x-amz-id-2', b'3j0EbM58O/U/CJFDXDh8MbVUg1F2mbtN7LqhyUY+04ex1IcdrWGxfGSuyTf6ubFoKrAfCINxmjUX1KU4P+JhaR0MJt4YYbWgdY9jkfpd4QU='), (b'x-amz-meta-mode', b'33188'), (b'x-amz-replication-status', b'COMPLETED'), (b'x-amz-request-id', b'9J3FECZ3RATKVN5Y'), (b'x-amz-server-side-encryption', b'AES256'), (b'x-amz-version-id', b'8KL0OYRmQlFh.4U.flgHlGWUvxO_1jm3'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'1720'), (b'Date', b'Sun, 20 Jul 2025 14:33:03 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:33:03,457 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/d945299d6k.htm "HTTP/1.1 200 OK"
+2025-07-20 22:33:03,457 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:33:03,457 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:33:03,458 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:33:03,458 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:33:03,463 - __main__ - INFO - 成功获取文件，状态码: 200
+2025-07-20 22:33:03,463 - __main__ - DEBUG - Content-Type: text/html
+2025-07-20 22:33:03,463 - __main__ - DEBUG - Content-Length: 8959 bytes
+2025-07-20 22:33:03,464 - __main__ - INFO - 以文本模式保存: d945299d6k.htm
+2025-07-20 22:33:03,465 - __main__ - INFO - 已下载6-K附件: d945299d6k.htm
+2025-07-20 22:33:03,465 - __main__ - INFO - 下载文件 4/5: d945299dex991.htm
+2025-07-20 22:33:03,465 - __main__ - DEBUG - 文件URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/d945299dex991.htm
+2025-07-20 22:33:03,465 - __main__ - DEBUG - 保存路径: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-115412/d945299dex991.htm
+2025-07-20 22:33:03,503 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:33:03,504 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10444f660>
+2025-07-20 22:33:03,504 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:03,504 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:33:03,504 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:03,504 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:33:03,504 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:03,504 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:33:03,505 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1045e3e30> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:33:04,494 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10444f8e0>
+2025-07-20 22:33:04,495 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:33:04,495 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:33:04,495 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:33:04,495 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:33:04,495 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:33:04,613 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Accept-Ranges', b'bytes'), (b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'Last-Modified', b'Thu, 08 May 2025 10:11:11 GMT'), (b'x-amz-id-2', b'/JNJnQl6Ex6MJUnO5ZZBtY0sTeTqk0bUd/D3fADdAkL8qNBIBj7BdDjyipKnIYAv/ubwohlo0GDb5a5EwxfXv7W5lBEa4iOh'), (b'x-amz-meta-mode', b'33188'), (b'x-amz-replication-status', b'COMPLETED'), (b'x-amz-request-id', b'949ZG73BSAP0AMAH'), (b'x-amz-server-side-encryption', b'AES256'), (b'x-amz-version-id', b'FrrJA5zPgw4PvgoCxV5Lozh9Cz24dG4B'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'1577'), (b'Date', b'Sun, 20 Jul 2025 14:33:04 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:33:04,614 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/d945299dex991.htm "HTTP/1.1 200 OK"
+2025-07-20 22:33:04,614 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:33:04,614 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:33:04,614 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:33:04,614 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:33:04,619 - __main__ - INFO - 成功获取文件，状态码: 200
+2025-07-20 22:33:04,619 - __main__ - DEBUG - Content-Type: text/html
+2025-07-20 22:33:04,619 - __main__ - DEBUG - Content-Length: 4518 bytes
+2025-07-20 22:33:04,620 - __main__ - INFO - 以文本模式保存: d945299dex991.htm
+2025-07-20 22:33:04,621 - __main__ - INFO - 已下载6-K附件: d945299dex991.htm
+2025-07-20 22:33:04,621 - __main__ - INFO - 下载文件 5/5: d945299dex992.htm
+2025-07-20 22:33:04,621 - __main__ - DEBUG - 文件URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/d945299dex992.htm
+2025-07-20 22:33:04,621 - __main__ - DEBUG - 保存路径: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-115412/d945299dex992.htm
+2025-07-20 22:33:04,658 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:33:04,658 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10444fac0>
+2025-07-20 22:33:04,658 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:04,658 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:33:04,658 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:04,658 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:33:04,658 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:33:04,659 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:33:04,659 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1045e3f50> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:33:05,135 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x10444fc50>
+2025-07-20 22:33:05,135 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:33:05,136 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:33:05,136 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:33:05,136 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:33:05,136 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:33:05,257 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Accept-Ranges', b'bytes'), (b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'Last-Modified', b'Thu, 08 May 2025 10:11:11 GMT'), (b'x-amz-id-2', b'BeyIffxJimT2qappQLOKvgO7Rs1rxOwCSCgRcctRanBokkYSOK66ulBGpxsPdVxRpHGFMBGIWTc='), (b'x-amz-meta-mode', b'33188'), (b'x-amz-replication-status', b'COMPLETED'), (b'x-amz-request-id', b'HG80Q4S36R3JF7JV'), (b'x-amz-server-side-encryption', b'AES256'), (b'x-amz-version-id', b'5gZprAs7d051ob256ZQGlXitLUzEb9dZ'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'1709'), (b'Date', b'Sun, 20 Jul 2025 14:33:05 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:33:05,258 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/d945299dex992.htm "HTTP/1.1 200 OK"
+2025-07-20 22:33:05,259 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:33:05,259 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:33:05,259 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:33:05,259 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:33:05,267 - __main__ - INFO - 成功获取文件，状态码: 200
+2025-07-20 22:33:05,267 - __main__ - DEBUG - Content-Type: text/html
+2025-07-20 22:33:05,267 - __main__ - DEBUG - Content-Length: 5747 bytes
+2025-07-20 22:33:05,269 - __main__ - INFO - 以文本模式保存: d945299dex992.htm
+2025-07-20 22:33:05,269 - __main__ - INFO - 已下载6-K附件: d945299dex992.htm
+2025-07-20 22:33:05,269 - __main__ - INFO - 成功下载 5 个6-K目标附件
+2025-07-20 22:33:05,269 - __main__ - INFO - ========== 开始处理 ex99 文件 ==========
+2025-07-20 22:33:05,269 - __main__ - INFO - 总附件数: 5
+2025-07-20 22:33:05,269 - __main__ - DEBUG - 检查文件是否包含ex99: 0001193125-25-115412-index-headers.html
+2025-07-20 22:33:05,269 - __main__ - DEBUG - 检查文件是否包含ex99: 0001193125-25-115412-index.html
+2025-07-20 22:33:05,269 - __main__ - DEBUG - 检查文件是否包含ex99: d945299d6k.htm
+2025-07-20 22:33:05,269 - __main__ - DEBUG - 检查文件是否包含ex99: d945299dex991.htm
+2025-07-20 22:33:05,269 - __main__ - INFO - 找到ex99文件: d945299dex991.htm
+2025-07-20 22:33:05,269 - __main__ - DEBUG - 检查文件是否包含ex99: d945299dex992.htm
+2025-07-20 22:33:05,269 - __main__ - INFO - 找到ex99文件: d945299dex992.htm
+2025-07-20 22:33:05,269 - __main__ - INFO - 找到 2 个ex99文件: ['d945299dex991.htm', 'd945299dex992.htm']
+2025-07-20 22:33:05,269 - __main__ - INFO - HTML文件: d945299dex991.htm
+2025-07-20 22:33:05,269 - __main__ - INFO - HTML文件: d945299dex992.htm
+2025-07-20 22:33:05,269 - __main__ - INFO - 处理 2 个HTML文件
+2025-07-20 22:33:05,270 - __main__ - INFO - 转换HTML文件: d945299dex991.htm
+2025-07-20 22:33:05,270 - __main__ - DEBUG - 开始转换HTML文件: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-115412/d945299dex991.htm
+2025-07-20 22:33:05,270 - __main__ - DEBUG - HTML文件大小: 4518 字符
+2025-07-20 22:33:05,271 - __main__ - ERROR - 缺少必要的库 (bs4 或 markdownify): No module named 'markdownify'
+2025-07-20 22:33:05,271 - __main__ - INFO - 使用简单文本提取，长度: 2614 字符
+2025-07-20 22:33:05,271 - __main__ - INFO - HTML文件转换成功，内容长度: 2614 字符
+2025-07-20 22:33:05,271 - __main__ - INFO - 转换HTML文件: d945299dex992.htm
+2025-07-20 22:33:05,271 - __main__ - DEBUG - 开始转换HTML文件: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p/6K_BIDU_0001193125-25-115412/d945299dex992.htm
+2025-07-20 22:33:05,280 - __main__ - DEBUG - HTML文件大小: 5747 字符
+2025-07-20 22:33:05,280 - __main__ - ERROR - 缺少必要的库 (bs4 或 markdownify): No module named 'markdownify'
+2025-07-20 22:33:05,281 - __main__ - INFO - 使用简单文本提取，长度: 2449 字符
+2025-07-20 22:33:05,281 - __main__ - INFO - HTML文件转换成功，内容长度: 2449 字符
+2025-07-20 22:33:05,281 - __main__ - INFO - HTML内容总字符数: 5063
+2025-07-20 22:33:05,281 - __main__ - INFO - HTML文件已合并处理，总字符数: 5063
+2025-07-20 22:33:05,281 - __main__ - INFO - ex99处理完成，生成 1 个文档对象
+2025-07-20 22:33:05,281 - __main__ - INFO - 成功处理6-K文件，生成 1 个文档
+2025-07-20 22:33:05,281 - __main__ - INFO - 成功处理，生成 1 个文档
+2025-07-20 22:33:05,281 - __main__ - INFO - 总共处理完成 3 个文档
+2025-07-20 22:33:05,281 - __main__ - INFO - ========== 处理结果统计 ==========
+2025-07-20 22:33:05,281 - __main__ - INFO - 测试6-K文件数: 3
+2025-07-20 22:33:05,281 - __main__ - INFO - 处理后文档数: 3
+2025-07-20 22:33:05,281 - __main__ - INFO - 文档 1: BIDU 6-K ex99 files
+2025-07-20 22:33:05,281 - __main__ - INFO -   - 类型: 6-K-Ex99-HTML-Combined
+2025-07-20 22:33:05,282 - __main__ - INFO -   - 日期: 2025-07-01
+2025-07-20 22:33:05,282 - __main__ - INFO -   - 内容长度: 5712 字符
+2025-07-20 22:33:05,282 - __main__ - INFO -   - 内容预览: === d53884dex991.htm ===
+
+EX-99.1 2 d53884dex991.htm EX-99.1 EX-99.1 Exhibit 99.1 Baidu Announces Management Changes Beijing, July&nbsp;1, 2025 /PRNewswire/ &#151; Baidu, Inc.&nbsp;(NASDAQ: BIDU and H...
+2025-07-20 22:33:05,282 - __main__ - INFO - 文档 2: BIDU 6-K ex99 files
+2025-07-20 22:33:05,282 - __main__ - INFO -   - 类型: 6-K-Ex99-HTML-Combined
+2025-07-20 22:33:05,282 - __main__ - INFO -   - 日期: 2025-05-21
+2025-07-20 22:33:05,282 - __main__ - INFO -   - 内容长度: 56668 字符
+2025-07-20 22:33:05,282 - __main__ - INFO -   - 内容预览: === d58002dex991.htm ===
+
+EX-99.1 2 d58002dex991.htm EX-99.1 EX-99.1 Exhibit 99.1 Baidu Announces First Quarter 2025 Results BEIJING, China, May&nbsp;21, 2025 &#150; Baidu, Inc. (NASDAQ: BIDU and HKEX...
+2025-07-20 22:33:05,282 - __main__ - INFO - 文档 3: BIDU 6-K ex99 files
+2025-07-20 22:33:05,282 - __main__ - INFO -   - 类型: 6-K-Ex99-HTML-Combined
+2025-07-20 22:33:05,282 - __main__ - INFO -   - 日期: 2025-05-08
+2025-07-20 22:33:05,282 - __main__ - INFO -   - 内容长度: 5119 字符
+2025-07-20 22:33:05,282 - __main__ - INFO -   - 内容预览: === d945299dex991.htm ===
+
+EX-99.1 2 d945299dex991.htm EX-99.1 EX-99.1 Exhibit 99.1 Baidu to Hold Annual General Meeting on June 27, 2025 Beijing, May&nbsp;8, 2025 &#151; Baidu, Inc. (&#147;Baidu&#148...
+2025-07-20 22:33:05,282 - __main__ - INFO - 所有文档都有内容
+2025-07-20 22:33:05,282 - __main__ - INFO - 临时文件保存在: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_fixed_mzc9nu_p
+2025-07-20 22:33:05,282 - __main__ - INFO - ========== BIDU 6-K 文件测试结束 ==========

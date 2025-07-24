@@ -1,0 +1,1789 @@
+2025-07-20 22:24:11,759 - __main__ - INFO - ========== BIDU 6-K 文件测试开始 ==========
+2025-07-20 22:24:11,760 - __main__ - INFO - 创建临时目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp
+2025-07-20 22:24:11,760 - __main__ - INFO - SixKProcessor 初始化，临时目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp
+2025-07-20 22:24:11,760 - __main__ - INFO - SECService 初始化完成
+2025-07-20 22:24:11,760 - __main__ - INFO - 开始获取 BIDU 近 2 年的6-K文件
+2025-07-20 22:24:11,760 - __main__ - INFO - ========== 开始获取 BIDU 近 2 年的 6-K 文件 ==========
+2025-07-20 22:24:11,760 - __main__ - INFO - 获取 BIDU 的 CIK
+2025-07-20 22:24:12,035 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:12,040 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104d1f4d0>
+2025-07-20 22:24:12,041 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:12,041 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:12,041 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:12,041 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:12,041 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:12,041 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:12,041 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbccb0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:12,968 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104bf79d0>
+2025-07-20 22:24:12,968 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:12,968 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:12,968 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:12,968 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:12,968 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:13,296 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Server', b'nginx'), (b'Content-Type', b'application/json'), (b'X-Content-Type-Options', b'nosniff'), (b'Last-Modified', b'Thu, 17 Jul 2025 19:27:41 GMT'), (b'Content-Encoding', b'gzip'), (b'X-Request-ID', b'v-1da689ea-634f-11f0-99f1-4b4ad0f9f106'), (b'X-AH-Environment', b'prod'), (b'X-Age', b'0'), (b'Accept-Ranges', b'bytes'), (b'Content-Length', b'213835'), (b'Cache-Control', b'max-age=7'), (b'Expires', b'Sun, 20 Jul 2025 14:24:20 GMT'), (b'Date', b'Sun, 20 Jul 2025 14:24:13 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:13,297 - httpx - INFO - HTTP Request: GET https://www.sec.gov/files/company_tickers.json "HTTP/1.1 200 OK"
+2025-07-20 22:24:13,297 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:13,661 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:13,662 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:13,662 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:13,681 - __main__ - DEBUG - 获取到 10072 家公司信息
+2025-07-20 22:24:13,681 - __main__ - INFO - 找到 BIDU 的 CIK: 0001329099
+2025-07-20 22:24:13,683 - __main__ - INFO - SEC API URL: https://data.sec.gov/submissions/CIK0001329099.json
+2025-07-20 22:24:13,714 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:13,715 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104dfcb90>
+2025-07-20 22:24:13,715 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:13,715 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:13,715 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:13,715 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:13,715 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:13,715 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:13,715 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbcef0> server_hostname='data.sec.gov' timeout=30
+2025-07-20 22:24:14,478 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104d7f5c0>
+2025-07-20 22:24:14,478 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:14,479 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:14,479 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:14,479 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:14,479 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:15,033 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json'), (b'x-amzn-RequestId', b'6c787623-1dcb-43a9-bc0f-b0af5cae92fe'), (b'Access-Control-Allow-Origin', b'*'), (b'x-amz-apigw-id', b'OAxSZHgLIAMEgVg='), (b'X-Amzn-Trace-Id', b'Root=1-687cfc0e-430ca5d662867e89791e8e36'), (b'Vary', b'Accept-Encoding'), (b'Content-Encoding', b'gzip'), (b'Expires', b'Sun, 20 Jul 2025 14:24:15 GMT'), (b'Cache-Control', b'max-age=0, no-cache, no-store'), (b'Pragma', b'no-cache'), (b'Date', b'Sun, 20 Jul 2025 14:24:15 GMT'), (b'Content-Length', b'17643'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; preload')])
+2025-07-20 22:24:15,033 - httpx - INFO - HTTP Request: GET https://data.sec.gov/submissions/CIK0001329099.json "HTTP/1.1 200 OK"
+2025-07-20 22:24:15,033 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:15,034 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:15,034 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:15,034 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:15,040 - __main__ - INFO - 成功获取SEC数据，状态码: 200
+2025-07-20 22:24:15,040 - __main__ - INFO - 总文件数: 524
+2025-07-20 22:24:15,040 - __main__ - INFO - 筛选日期范围: 2023-07-20 至今
+2025-07-20 22:24:15,049 - __main__ - INFO - 添加6-K文件: 2025-07-01 - 0001193125-25-153388
+2025-07-20 22:24:15,049 - __main__ - INFO - 添加6-K文件: 2025-05-21 - 0001193125-25-123961
+2025-07-20 22:24:15,049 - __main__ - INFO - 添加6-K文件: 2025-05-08 - 0001193125-25-115412
+2025-07-20 22:24:15,049 - __main__ - INFO - 添加6-K文件: 2025-04-22 - 0001193125-25-087790
+2025-07-20 22:24:15,049 - __main__ - INFO - 添加6-K文件: 2025-03-28 - 0001193125-25-066370
+2025-07-20 22:24:15,049 - __main__ - INFO - 添加6-K文件: 2025-03-17 - 0001193125-25-055604
+2025-07-20 22:24:15,049 - __main__ - INFO - 添加6-K文件: 2025-03-12 - 0001193125-25-052591
+2025-07-20 22:24:15,049 - __main__ - INFO - 添加6-K文件: 2025-03-07 - 0001193125-25-049110
+2025-07-20 22:24:15,049 - __main__ - INFO - 添加6-K文件: 2025-03-07 - 0001193125-25-048917
+2025-07-20 22:24:15,049 - __main__ - INFO - 添加6-K文件: 2025-03-06 - 0001193125-25-047734
+2025-07-20 22:24:15,049 - __main__ - INFO - 添加6-K文件: 2025-03-05 - 0001193125-25-046152
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2025-02-25 - 0001193125-25-034196
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2025-02-24 - 0001193125-25-032699
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2025-02-18 - 0001193125-25-028182
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2025-01-17 - 0001193125-25-008024
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2024-11-21 - 0001193125-24-263052
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2024-10-28 - 0001193125-24-244546
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2024-10-08 - 0001193125-24-234118
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2024-08-22 - 0001193125-24-204906
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2024-07-17 - 0001193125-24-179952
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2024-05-16 - 0001193125-24-140513
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2024-05-08 - 0001193125-24-133717
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2024-04-12 - 0001193125-24-093850
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2024-03-18 - 0001193125-24-069615
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2024-02-28 - 0001193125-24-050652
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2024-02-06 - 0001193125-24-024692
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2024-01-16 - 0001193125-24-008018
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2024-01-02 - 0001193125-24-000163
+2025-07-20 22:24:15,050 - __main__ - INFO - 添加6-K文件: 2023-11-21 - 0001193125-23-281151
+2025-07-20 22:24:15,051 - __main__ - INFO - 添加6-K文件: 2023-11-13 - 0001193125-23-275215
+2025-07-20 22:24:15,051 - __main__ - INFO - 添加6-K文件: 2023-10-26 - 0001193125-23-263472
+2025-07-20 22:24:15,051 - __main__ - INFO - 添加6-K文件: 2023-09-01 - 0001193125-23-227640
+2025-07-20 22:24:15,051 - __main__ - INFO - 添加6-K文件: 2023-08-22 - 0001193125-23-217413
+2025-07-20 22:24:15,051 - __main__ - INFO - 添加6-K文件: 2023-08-02 - 0001193125-23-201108
+2025-07-20 22:24:15,052 - __main__ - INFO - 找到 34 个6-K文件
+2025-07-20 22:24:15,052 - __main__ - INFO - 找到 34 个6-K文件，开始处理
+2025-07-20 22:24:15,053 - __main__ - INFO - ========== 开始处理 34 个6-K文档 ==========
+2025-07-20 22:24:15,053 - __main__ - INFO - 获取 BIDU 的 CIK
+2025-07-20 22:24:15,087 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:15,087 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104d7fbb0>
+2025-07-20 22:24:15,087 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:15,088 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:15,088 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:15,088 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:15,088 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:15,088 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:15,088 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbdbe0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:15,545 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104de16d0>
+2025-07-20 22:24:15,545 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:15,545 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:15,546 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:15,546 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:15,546 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:15,702 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Server', b'nginx'), (b'Content-Type', b'application/json'), (b'X-Content-Type-Options', b'nosniff'), (b'Last-Modified', b'Thu, 17 Jul 2025 19:27:41 GMT'), (b'Content-Encoding', b'gzip'), (b'X-Request-ID', b'v-1da689ea-634f-11f0-99f1-4b4ad0f9f106'), (b'X-AH-Environment', b'prod'), (b'X-Age', b'0'), (b'Accept-Ranges', b'bytes'), (b'Content-Length', b'213835'), (b'Cache-Control', b'max-age=5'), (b'Expires', b'Sun, 20 Jul 2025 14:24:20 GMT'), (b'Date', b'Sun, 20 Jul 2025 14:24:15 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:15,702 - httpx - INFO - HTTP Request: GET https://www.sec.gov/files/company_tickers.json "HTTP/1.1 200 OK"
+2025-07-20 22:24:15,702 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:16,075 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:16,076 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:16,076 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:16,099 - __main__ - DEBUG - 获取到 10072 家公司信息
+2025-07-20 22:24:16,099 - __main__ - INFO - 找到 BIDU 的 CIK: 0001329099
+2025-07-20 22:24:16,100 - __main__ - INFO - 处理第 1/34 个文档: BIDU 6-K (2025-07-01)
+2025-07-20 22:24:16,100 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:16,100 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:16,100 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:16,100 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525153388/d53884d6k.htm
+2025-07-20 22:24:16,100 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:16,100 - __main__ - INFO - Document date: 2025-07-01
+2025-07-20 22:24:16,101 - __main__ - INFO - 提取的 accession number: 0001193125-25-153388 (无破折号: 000119312525153388)
+2025-07-20 22:24:16,101 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-153388
+2025-07-20 22:24:16,102 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-153388
+2025-07-20 22:24:16,102 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:16,102 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525153388/
+2025-07-20 22:24:16,102 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525153388/index.json
+2025-07-20 22:24:16,102 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:16,133 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:16,134 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094bc050>
+2025-07-20 22:24:16,134 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:16,134 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:16,134 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:16,134 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:16,134 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:16,134 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:16,134 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbdd00> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:16,908 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094bc6b0>
+2025-07-20 22:24:16,908 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:16,909 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:16,909 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:16,909 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:16,909 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:17,032 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:17 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:17,033 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525153388/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:17,034 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:17,034 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:17,034 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:17,034 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:17,040 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525153388/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525153388/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:17,044 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-153388
+2025-07-20 22:24:17,044 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:17,044 - __main__ - INFO - 处理第 2/34 个文档: BIDU 6-K (2025-05-21)
+2025-07-20 22:24:17,044 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:17,044 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:17,044 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:17,044 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525123961/d58002d6k.htm
+2025-07-20 22:24:17,045 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:17,045 - __main__ - INFO - Document date: 2025-05-21
+2025-07-20 22:24:17,045 - __main__ - INFO - 提取的 accession number: 0001193125-25-123961 (无破折号: 000119312525123961)
+2025-07-20 22:24:17,045 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-123961
+2025-07-20 22:24:17,045 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-123961
+2025-07-20 22:24:17,045 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:17,045 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525123961/
+2025-07-20 22:24:17,045 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525123961/index.json
+2025-07-20 22:24:17,045 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:17,144 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:17,145 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104dd6550>
+2025-07-20 22:24:17,145 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:17,145 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:17,145 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:17,145 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:17,145 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:17,145 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:17,145 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbf020> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:17,611 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104dd6b50>
+2025-07-20 22:24:17,611 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:17,611 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:17,611 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:17,611 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:17,611 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:18,167 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:17 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:18,167 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525123961/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:18,168 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:18,168 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:18,168 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:18,168 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:18,173 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525123961/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525123961/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525123961/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:18,174 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-123961
+2025-07-20 22:24:18,174 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:18,174 - __main__ - INFO - 处理第 3/34 个文档: BIDU 6-K (2025-05-08)
+2025-07-20 22:24:18,174 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:18,174 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:18,174 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:18,174 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525115412/d945299d6k.htm
+2025-07-20 22:24:18,174 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:18,175 - __main__ - INFO - Document date: 2025-05-08
+2025-07-20 22:24:18,175 - __main__ - INFO - 提取的 accession number: 0001193125-25-115412 (无破折号: 000119312525115412)
+2025-07-20 22:24:18,175 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-115412
+2025-07-20 22:24:18,175 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-115412
+2025-07-20 22:24:18,176 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:18,176 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525115412/
+2025-07-20 22:24:18,176 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525115412/index.json
+2025-07-20 22:24:18,176 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:18,211 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:18,212 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104d73020>
+2025-07-20 22:24:18,212 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:18,212 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:18,212 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:18,212 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:18,212 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:18,212 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:18,213 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbf140> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:18,654 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104d735c0>
+2025-07-20 22:24:18,654 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:18,654 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:18,654 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:18,654 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:18,654 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:18,772 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:19 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:18,773 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525115412/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:18,773 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:18,773 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:18,773 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:18,773 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:18,778 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525115412/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525115412/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525115412/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:18,779 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-115412
+2025-07-20 22:24:18,780 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:18,780 - __main__ - INFO - 处理第 4/34 个文档: BIDU 6-K (2025-04-22)
+2025-07-20 22:24:18,780 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:18,780 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:18,780 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:18,780 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525087790/d914205d6k.htm
+2025-07-20 22:24:18,780 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:18,780 - __main__ - INFO - Document date: 2025-04-22
+2025-07-20 22:24:18,780 - __main__ - INFO - 提取的 accession number: 0001193125-25-087790 (无破折号: 000119312525087790)
+2025-07-20 22:24:18,781 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-087790
+2025-07-20 22:24:18,781 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-087790
+2025-07-20 22:24:18,781 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:18,781 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525087790/
+2025-07-20 22:24:18,781 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525087790/index.json
+2025-07-20 22:24:18,781 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:18,820 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:18,820 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104dd3070>
+2025-07-20 22:24:18,820 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:18,820 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:18,820 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:18,820 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:18,820 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:18,820 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:18,821 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbf2f0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:19,261 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104dd3770>
+2025-07-20 22:24:19,261 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:19,262 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:19,262 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:19,262 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:19,262 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:19,374 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525087790/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:19 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:19,374 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525087790/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:19,375 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:19,375 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:19,375 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:19,375 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:19,379 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525087790/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525087790/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525087790/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525087790/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:19,381 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-087790
+2025-07-20 22:24:19,381 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:19,381 - __main__ - INFO - 处理第 5/34 个文档: BIDU 6-K (2025-03-28)
+2025-07-20 22:24:19,382 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:19,382 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:19,382 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:19,382 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525066370/d924431d6k.htm
+2025-07-20 22:24:19,382 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:19,382 - __main__ - INFO - Document date: 2025-03-28
+2025-07-20 22:24:19,382 - __main__ - INFO - 提取的 accession number: 0001193125-25-066370 (无破折号: 000119312525066370)
+2025-07-20 22:24:19,383 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-066370
+2025-07-20 22:24:19,383 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-066370
+2025-07-20 22:24:19,383 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:19,383 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525066370/
+2025-07-20 22:24:19,383 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525066370/index.json
+2025-07-20 22:24:19,383 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:19,418 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:19,418 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104df9300>
+2025-07-20 22:24:19,418 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:19,418 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:19,419 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:19,419 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:19,419 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:19,419 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:19,419 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbf530> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:20,036 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104d8d790>
+2025-07-20 22:24:20,036 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:20,036 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:20,036 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:20,036 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:20,036 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:20,151 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525066370/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:20 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:20,151 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525066370/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:20,151 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:20,151 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:20,152 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:20,152 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:20,156 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525066370/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525066370/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525066370/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525066370/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:20,157 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-066370
+2025-07-20 22:24:20,157 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:20,158 - __main__ - INFO - 处理第 6/34 个文档: BIDU 6-K (2025-03-17)
+2025-07-20 22:24:20,158 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:20,158 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:20,158 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:20,158 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525055604/d942864d6k.htm
+2025-07-20 22:24:20,158 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:20,158 - __main__ - INFO - Document date: 2025-03-17
+2025-07-20 22:24:20,158 - __main__ - INFO - 提取的 accession number: 0001193125-25-055604 (无破折号: 000119312525055604)
+2025-07-20 22:24:20,158 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-055604
+2025-07-20 22:24:20,158 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-055604
+2025-07-20 22:24:20,158 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:20,158 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525055604/
+2025-07-20 22:24:20,158 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525055604/index.json
+2025-07-20 22:24:20,158 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:20,195 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:20,196 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104d8f110>
+2025-07-20 22:24:20,196 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:20,196 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:20,196 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:20,196 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:20,196 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:20,196 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:20,196 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbf410> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:20,649 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104dc6af0>
+2025-07-20 22:24:20,649 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:20,650 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:20,650 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:20,650 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:20,650 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:20,776 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525055604/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:21 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:20,776 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525055604/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:20,777 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:20,777 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:20,777 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:20,777 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:20,783 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525055604/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525055604/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525055604/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525055604/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:20,784 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-055604
+2025-07-20 22:24:20,784 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:20,784 - __main__ - INFO - 处理第 7/34 个文档: BIDU 6-K (2025-03-12)
+2025-07-20 22:24:20,784 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:20,784 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:20,784 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:20,784 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525052591/d914591d6k.htm
+2025-07-20 22:24:20,784 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:20,784 - __main__ - INFO - Document date: 2025-03-12
+2025-07-20 22:24:20,785 - __main__ - INFO - 提取的 accession number: 0001193125-25-052591 (无破折号: 000119312525052591)
+2025-07-20 22:24:20,785 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-052591
+2025-07-20 22:24:20,785 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-052591
+2025-07-20 22:24:20,786 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:20,786 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525052591/
+2025-07-20 22:24:20,786 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525052591/index.json
+2025-07-20 22:24:20,786 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:20,825 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:20,826 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104dc6a40>
+2025-07-20 22:24:20,826 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:20,826 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:20,826 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:20,826 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:20,826 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:20,826 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:20,826 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbf380> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:21,803 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e8190>
+2025-07-20 22:24:21,804 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:21,804 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:21,804 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:21,804 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:21,804 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:21,926 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525052591/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:22 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:21,927 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525052591/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:21,927 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:21,927 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:21,927 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:21,927 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:21,932 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525052591/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525052591/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525052591/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525052591/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:21,934 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-052591
+2025-07-20 22:24:21,934 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:21,934 - __main__ - INFO - 处理第 8/34 个文档: BIDU 6-K (2025-03-07)
+2025-07-20 22:24:21,934 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:21,934 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:21,934 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:21,934 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525049110/d890771d6k.htm
+2025-07-20 22:24:21,934 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:21,934 - __main__ - INFO - Document date: 2025-03-07
+2025-07-20 22:24:21,934 - __main__ - INFO - 提取的 accession number: 0001193125-25-049110 (无破折号: 000119312525049110)
+2025-07-20 22:24:21,935 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-049110
+2025-07-20 22:24:21,935 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-049110
+2025-07-20 22:24:21,935 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:21,935 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525049110/
+2025-07-20 22:24:21,935 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525049110/index.json
+2025-07-20 22:24:21,935 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:21,973 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:21,973 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e8370>
+2025-07-20 22:24:21,973 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:21,973 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:21,973 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:21,973 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:21,973 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:21,973 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:21,973 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbf650> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:22,610 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x104dbf770>
+2025-07-20 22:24:22,611 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:22,611 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:22,611 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:22,611 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:22,611 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:22,733 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525049110/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:22 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:22,733 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525049110/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:22,734 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:22,734 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:22,734 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:22,734 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:22,739 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525049110/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525049110/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525049110/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525049110/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:22,740 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-049110
+2025-07-20 22:24:22,740 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:22,741 - __main__ - INFO - 处理第 9/34 个文档: BIDU 6-K (2025-03-07)
+2025-07-20 22:24:22,741 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:22,741 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:22,741 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:22,741 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525048917/d922543d6k.htm
+2025-07-20 22:24:22,741 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:22,741 - __main__ - INFO - Document date: 2025-03-07
+2025-07-20 22:24:22,741 - __main__ - INFO - 提取的 accession number: 0001193125-25-048917 (无破折号: 000119312525048917)
+2025-07-20 22:24:22,742 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-048917
+2025-07-20 22:24:22,742 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-048917
+2025-07-20 22:24:22,742 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:22,742 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525048917/
+2025-07-20 22:24:22,742 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525048917/index.json
+2025-07-20 22:24:22,742 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:22,780 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:22,781 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094ed550>
+2025-07-20 22:24:22,781 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:22,781 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:22,781 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:22,781 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:22,781 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:22,781 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:22,781 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbf4a0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:23,319 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094ed250>
+2025-07-20 22:24:23,319 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:23,319 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:23,319 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:23,319 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:23,319 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:23,898 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525048917/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:23 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:23,898 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525048917/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:23,899 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:23,899 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:23,899 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:23,899 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:23,904 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525048917/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525048917/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525048917/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525048917/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:23,905 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-048917
+2025-07-20 22:24:23,905 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:23,905 - __main__ - INFO - 处理第 10/34 个文档: BIDU 6-K (2025-03-06)
+2025-07-20 22:24:23,905 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:23,906 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:23,906 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:23,906 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525047734/d889946d6k.htm
+2025-07-20 22:24:23,906 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:23,906 - __main__ - INFO - Document date: 2025-03-06
+2025-07-20 22:24:23,906 - __main__ - INFO - 提取的 accession number: 0001193125-25-047734 (无破折号: 000119312525047734)
+2025-07-20 22:24:23,907 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-047734
+2025-07-20 22:24:23,907 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-047734
+2025-07-20 22:24:23,907 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:23,907 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525047734/
+2025-07-20 22:24:23,907 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525047734/index.json
+2025-07-20 22:24:23,907 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:23,942 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:23,942 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094dcf30>
+2025-07-20 22:24:23,942 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:23,942 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:23,942 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:23,942 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:23,942 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:23,943 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:23,943 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbf9b0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:24,419 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094dd1d0>
+2025-07-20 22:24:24,419 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:24,420 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:24,420 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:24,420 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:24,420 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:24,569 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525047734/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:24 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:24,569 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525047734/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:24,569 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:24,569 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:24,569 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:24,569 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:24,574 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525047734/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525047734/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525047734/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525047734/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:24,575 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-047734
+2025-07-20 22:24:24,575 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:24,575 - __main__ - INFO - 处理第 11/34 个文档: BIDU 6-K (2025-03-05)
+2025-07-20 22:24:24,576 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:24,576 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:24,576 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:24,576 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525046152/d888032d6k.htm
+2025-07-20 22:24:24,576 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:24,576 - __main__ - INFO - Document date: 2025-03-05
+2025-07-20 22:24:24,576 - __main__ - INFO - 提取的 accession number: 0001193125-25-046152 (无破折号: 000119312525046152)
+2025-07-20 22:24:24,577 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-046152
+2025-07-20 22:24:24,577 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-046152
+2025-07-20 22:24:24,577 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:24,577 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525046152/
+2025-07-20 22:24:24,577 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525046152/index.json
+2025-07-20 22:24:24,577 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:24,615 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:24,615 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094d9010>
+2025-07-20 22:24:24,616 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:24,616 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:24,616 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:24,616 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:24,616 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:24,616 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:24,616 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbf5c0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:25,067 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094d91f0>
+2025-07-20 22:24:25,067 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:25,067 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:25,068 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:25,068 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:25,068 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:25,190 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525046152/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:25 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:25,190 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525046152/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:25,191 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:25,191 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:25,191 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:25,191 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:25,196 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525046152/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525046152/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525046152/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525046152/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:25,197 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-046152
+2025-07-20 22:24:25,197 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:25,198 - __main__ - INFO - 处理第 12/34 个文档: BIDU 6-K (2025-02-25)
+2025-07-20 22:24:25,198 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:25,198 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:25,198 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:25,198 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525034196/d863379d6k.htm
+2025-07-20 22:24:25,198 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:25,198 - __main__ - INFO - Document date: 2025-02-25
+2025-07-20 22:24:25,198 - __main__ - INFO - 提取的 accession number: 0001193125-25-034196 (无破折号: 000119312525034196)
+2025-07-20 22:24:25,199 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-034196
+2025-07-20 22:24:25,199 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-034196
+2025-07-20 22:24:25,199 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:25,199 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525034196/
+2025-07-20 22:24:25,199 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525034196/index.json
+2025-07-20 22:24:25,199 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:25,235 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:25,235 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e16d0>
+2025-07-20 22:24:25,235 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:25,236 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:25,236 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:25,236 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:25,236 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:25,236 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:25,236 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbfc80> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:25,703 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e1860>
+2025-07-20 22:24:25,703 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:25,703 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:25,703 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:25,704 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:25,704 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:25,835 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525034196/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:26 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:25,836 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525034196/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:25,836 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:25,836 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:25,836 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:25,836 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:25,842 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525034196/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525034196/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525034196/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525034196/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:25,843 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-034196
+2025-07-20 22:24:25,843 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:25,843 - __main__ - INFO - 处理第 13/34 个文档: BIDU 6-K (2025-02-24)
+2025-07-20 22:24:25,843 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:25,843 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:25,843 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:25,843 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525032699/d830333d6k.htm
+2025-07-20 22:24:25,843 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:25,843 - __main__ - INFO - Document date: 2025-02-24
+2025-07-20 22:24:25,843 - __main__ - INFO - 提取的 accession number: 0001193125-25-032699 (无破折号: 000119312525032699)
+2025-07-20 22:24:25,844 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-032699
+2025-07-20 22:24:25,844 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-032699
+2025-07-20 22:24:25,844 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:25,844 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525032699/
+2025-07-20 22:24:25,844 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525032699/index.json
+2025-07-20 22:24:25,844 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:25,883 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:25,884 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e1a40>
+2025-07-20 22:24:25,884 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:25,884 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:25,884 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:25,884 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:25,884 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:25,884 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:25,884 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbfda0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:26,505 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e1bd0>
+2025-07-20 22:24:26,505 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:26,505 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:26,505 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:26,505 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:26,505 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:26,626 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525032699/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:26 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:26,626 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525032699/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:26,627 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:26,627 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:26,627 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:26,627 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:26,630 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525032699/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525032699/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525032699/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525032699/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:26,631 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-032699
+2025-07-20 22:24:26,631 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:26,631 - __main__ - INFO - 处理第 14/34 个文档: BIDU 6-K (2025-02-18)
+2025-07-20 22:24:26,631 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:26,631 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:26,631 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:26,631 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525028182/d896079d6k.htm
+2025-07-20 22:24:26,631 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:26,631 - __main__ - INFO - Document date: 2025-02-18
+2025-07-20 22:24:26,631 - __main__ - INFO - 提取的 accession number: 0001193125-25-028182 (无破折号: 000119312525028182)
+2025-07-20 22:24:26,632 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-028182
+2025-07-20 22:24:26,632 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-028182
+2025-07-20 22:24:26,632 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:26,632 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525028182/
+2025-07-20 22:24:26,632 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525028182/index.json
+2025-07-20 22:24:26,632 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:26,660 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:26,660 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e1e00>
+2025-07-20 22:24:26,660 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:26,660 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:26,660 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:26,660 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:26,660 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:26,661 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:26,661 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbfec0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:27,098 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e1f90>
+2025-07-20 22:24:27,098 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:27,099 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:27,099 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:27,099 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:27,099 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:27,212 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525028182/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:27 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:27,213 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525028182/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:27,213 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:27,213 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:27,213 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:27,214 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:27,220 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525028182/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525028182/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525028182/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525028182/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:27,221 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-028182
+2025-07-20 22:24:27,221 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:27,221 - __main__ - INFO - 处理第 15/34 个文档: BIDU 6-K (2025-01-17)
+2025-07-20 22:24:27,221 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:27,221 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:27,221 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:27,221 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525008024/d921486d6k.htm
+2025-07-20 22:24:27,221 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:27,222 - __main__ - INFO - Document date: 2025-01-17
+2025-07-20 22:24:27,222 - __main__ - INFO - 提取的 accession number: 0001193125-25-008024 (无破折号: 000119312525008024)
+2025-07-20 22:24:27,222 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-25-008024
+2025-07-20 22:24:27,222 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-25-008024
+2025-07-20 22:24:27,223 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:27,223 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525008024/
+2025-07-20 22:24:27,223 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312525008024/index.json
+2025-07-20 22:24:27,223 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:27,261 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:27,262 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e2170>
+2025-07-20 22:24:27,262 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:27,262 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:27,262 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:27,262 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:27,262 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:27,262 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:27,262 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbef00> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:27,739 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e2300>
+2025-07-20 22:24:27,740 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:27,740 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:27,740 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:27,740 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:27,740 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:27,883 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312525008024/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:28 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:27,883 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312525008024/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:27,884 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:27,884 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:27,884 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:27,884 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:27,889 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525008024/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525008024/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312525008024/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312525008024/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:27,890 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-25-008024
+2025-07-20 22:24:27,890 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:27,890 - __main__ - INFO - 处理第 16/34 个文档: BIDU 6-K (2024-11-21)
+2025-07-20 22:24:27,890 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:27,890 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:27,890 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:27,890 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524263052/d802709d6k.htm
+2025-07-20 22:24:27,891 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:27,891 - __main__ - INFO - Document date: 2024-11-21
+2025-07-20 22:24:27,891 - __main__ - INFO - 提取的 accession number: 0001193125-24-263052 (无破折号: 000119312524263052)
+2025-07-20 22:24:27,891 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-24-263052
+2025-07-20 22:24:27,892 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-24-263052
+2025-07-20 22:24:27,892 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:27,892 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524263052/
+2025-07-20 22:24:27,892 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524263052/index.json
+2025-07-20 22:24:27,892 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:27,930 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:27,930 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e24e0>
+2025-07-20 22:24:27,930 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:27,931 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:27,931 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:27,931 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:27,931 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:27,931 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:27,931 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x109400170> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:28,383 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e2670>
+2025-07-20 22:24:28,384 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:28,384 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:28,384 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:28,384 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:28,385 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:28,497 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312524263052/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:28 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:28,498 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312524263052/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:28,499 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:28,499 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:28,499 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:28,499 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:28,505 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524263052/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524263052/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524263052/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524263052/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:28,506 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-24-263052
+2025-07-20 22:24:28,506 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:28,506 - __main__ - INFO - 处理第 17/34 个文档: BIDU 6-K (2024-10-28)
+2025-07-20 22:24:28,506 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:28,506 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:28,506 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:28,506 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524244546/d895664d6k.htm
+2025-07-20 22:24:28,506 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:28,506 - __main__ - INFO - Document date: 2024-10-28
+2025-07-20 22:24:28,506 - __main__ - INFO - 提取的 accession number: 0001193125-24-244546 (无破折号: 000119312524244546)
+2025-07-20 22:24:28,507 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-24-244546
+2025-07-20 22:24:28,508 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-24-244546
+2025-07-20 22:24:28,508 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:28,508 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524244546/
+2025-07-20 22:24:28,508 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524244546/index.json
+2025-07-20 22:24:28,508 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:28,546 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:28,547 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e2850>
+2025-07-20 22:24:28,547 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:28,547 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:28,547 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:28,547 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:28,547 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:28,547 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:28,548 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x109400290> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:29,020 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e29e0>
+2025-07-20 22:24:29,020 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:29,020 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:29,020 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:29,021 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:29,021 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:29,158 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312524244546/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:29 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:29,158 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312524244546/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:29,159 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:29,159 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:29,159 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:29,159 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:29,164 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524244546/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524244546/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524244546/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524244546/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:29,165 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-24-244546
+2025-07-20 22:24:29,165 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:29,165 - __main__ - INFO - 处理第 18/34 个文档: BIDU 6-K (2024-10-08)
+2025-07-20 22:24:29,165 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:29,165 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:29,165 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:29,165 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524234118/d827113d6k.htm
+2025-07-20 22:24:29,165 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:29,166 - __main__ - INFO - Document date: 2024-10-08
+2025-07-20 22:24:29,166 - __main__ - INFO - 提取的 accession number: 0001193125-24-234118 (无破折号: 000119312524234118)
+2025-07-20 22:24:29,167 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-24-234118
+2025-07-20 22:24:29,167 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-24-234118
+2025-07-20 22:24:29,167 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:29,167 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524234118/
+2025-07-20 22:24:29,167 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524234118/index.json
+2025-07-20 22:24:29,167 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:29,204 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:29,204 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e2bc0>
+2025-07-20 22:24:29,204 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:29,205 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:29,205 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:29,205 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:29,205 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:29,205 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:29,205 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x109400050> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:29,683 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e2d50>
+2025-07-20 22:24:29,683 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:29,683 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:29,683 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:29,684 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:29,684 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:29,815 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312524234118/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:30 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:29,816 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312524234118/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:29,816 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:29,816 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:29,816 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:29,817 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:29,821 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524234118/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524234118/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524234118/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524234118/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:29,823 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-24-234118
+2025-07-20 22:24:29,823 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:29,823 - __main__ - INFO - 处理第 19/34 个文档: BIDU 6-K (2024-08-22)
+2025-07-20 22:24:29,823 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:29,823 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:29,823 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:29,823 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524204906/d227518d6k.htm
+2025-07-20 22:24:29,823 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:29,823 - __main__ - INFO - Document date: 2024-08-22
+2025-07-20 22:24:29,823 - __main__ - INFO - 提取的 accession number: 0001193125-24-204906 (无破折号: 000119312524204906)
+2025-07-20 22:24:29,824 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-24-204906
+2025-07-20 22:24:29,824 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-24-204906
+2025-07-20 22:24:29,824 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:29,824 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524204906/
+2025-07-20 22:24:29,824 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524204906/index.json
+2025-07-20 22:24:29,824 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:29,863 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:29,864 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e2ee0>
+2025-07-20 22:24:29,864 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:29,864 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:29,864 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:29,864 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:29,864 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:29,864 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:29,865 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x109400680> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:30,338 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e3070>
+2025-07-20 22:24:30,338 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:30,338 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:30,339 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:30,339 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:30,339 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:30,466 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312524204906/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:30 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:30,466 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312524204906/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:30,467 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:30,467 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:30,467 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:30,467 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:30,471 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524204906/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524204906/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524204906/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524204906/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:30,472 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-24-204906
+2025-07-20 22:24:30,472 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:30,472 - __main__ - INFO - 处理第 20/34 个文档: BIDU 6-K (2024-07-17)
+2025-07-20 22:24:30,472 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:30,472 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:30,472 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:30,472 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524179952/d861188d6k.htm
+2025-07-20 22:24:30,472 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:30,472 - __main__ - INFO - Document date: 2024-07-17
+2025-07-20 22:24:30,473 - __main__ - INFO - 提取的 accession number: 0001193125-24-179952 (无破折号: 000119312524179952)
+2025-07-20 22:24:30,473 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-24-179952
+2025-07-20 22:24:30,473 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-24-179952
+2025-07-20 22:24:30,473 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:30,473 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524179952/
+2025-07-20 22:24:30,473 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524179952/index.json
+2025-07-20 22:24:30,473 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:30,510 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:30,511 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e3250>
+2025-07-20 22:24:30,511 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:30,511 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:30,511 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:30,511 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:30,511 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:30,511 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:30,512 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1094003b0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:30,991 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e33e0>
+2025-07-20 22:24:30,991 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:30,992 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:30,992 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:30,992 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:30,992 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:31,270 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312524179952/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:31 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:31,270 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312524179952/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:31,270 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:31,271 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:31,271 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:31,271 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:31,276 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524179952/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524179952/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524179952/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524179952/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:31,277 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-24-179952
+2025-07-20 22:24:31,277 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:31,277 - __main__ - INFO - 处理第 21/34 个文档: BIDU 6-K (2024-05-16)
+2025-07-20 22:24:31,277 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:31,277 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:31,277 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:31,277 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524140513/d782149d6k.htm
+2025-07-20 22:24:31,278 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:31,278 - __main__ - INFO - Document date: 2024-05-16
+2025-07-20 22:24:31,278 - __main__ - INFO - 提取的 accession number: 0001193125-24-140513 (无破折号: 000119312524140513)
+2025-07-20 22:24:31,278 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-24-140513
+2025-07-20 22:24:31,278 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-24-140513
+2025-07-20 22:24:31,279 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:31,279 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524140513/
+2025-07-20 22:24:31,279 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524140513/index.json
+2025-07-20 22:24:31,279 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:31,317 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:31,317 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e35c0>
+2025-07-20 22:24:31,317 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:31,318 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:31,318 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:31,318 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:31,318 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:31,318 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:31,318 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1094009e0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:31,782 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e3750>
+2025-07-20 22:24:31,782 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:31,782 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:31,782 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:31,783 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:31,783 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:31,900 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312524140513/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:32 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:31,901 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312524140513/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:31,901 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:31,901 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:31,901 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:31,901 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:31,907 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524140513/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524140513/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524140513/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524140513/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:31,908 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-24-140513
+2025-07-20 22:24:31,908 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:31,908 - __main__ - INFO - 处理第 22/34 个文档: BIDU 6-K (2024-05-08)
+2025-07-20 22:24:31,908 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:31,909 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:31,909 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:31,909 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524133717/d836502d6k.htm
+2025-07-20 22:24:31,909 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:31,909 - __main__ - INFO - Document date: 2024-05-08
+2025-07-20 22:24:31,909 - __main__ - INFO - 提取的 accession number: 0001193125-24-133717 (无破折号: 000119312524133717)
+2025-07-20 22:24:31,910 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-24-133717
+2025-07-20 22:24:31,910 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-24-133717
+2025-07-20 22:24:31,910 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:31,910 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524133717/
+2025-07-20 22:24:31,910 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524133717/index.json
+2025-07-20 22:24:31,910 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:31,949 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:31,950 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e3930>
+2025-07-20 22:24:31,950 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:31,950 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:31,950 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:31,950 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:31,950 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:31,950 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:31,950 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x109400c20> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:32,388 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e3ac0>
+2025-07-20 22:24:32,389 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:32,389 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:32,389 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:32,389 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:32,389 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:32,508 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312524133717/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:32 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:32,509 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312524133717/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:32,509 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:32,509 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:32,509 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:32,509 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:32,515 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524133717/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524133717/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524133717/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524133717/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:32,516 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-24-133717
+2025-07-20 22:24:32,516 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:32,516 - __main__ - INFO - 处理第 23/34 个文档: BIDU 6-K (2024-04-12)
+2025-07-20 22:24:32,516 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:32,516 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:32,516 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:32,516 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524093850/d818938d6k.htm
+2025-07-20 22:24:32,516 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:32,517 - __main__ - INFO - Document date: 2024-04-12
+2025-07-20 22:24:32,517 - __main__ - INFO - 提取的 accession number: 0001193125-24-093850 (无破折号: 000119312524093850)
+2025-07-20 22:24:32,517 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-24-093850
+2025-07-20 22:24:32,518 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-24-093850
+2025-07-20 22:24:32,518 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:32,518 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524093850/
+2025-07-20 22:24:32,518 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524093850/index.json
+2025-07-20 22:24:32,518 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:32,555 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:32,556 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e3ca0>
+2025-07-20 22:24:32,556 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:32,556 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:32,556 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:32,556 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:32,556 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:32,556 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:32,556 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1094007a0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:32,993 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e3e30>
+2025-07-20 22:24:32,993 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:32,993 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:32,993 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:32,993 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:32,993 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:33,107 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312524093850/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:33 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:33,108 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312524093850/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:33,108 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:33,108 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:33,108 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:33,108 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:33,113 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524093850/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524093850/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524093850/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524093850/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:33,114 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-24-093850
+2025-07-20 22:24:33,115 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:33,115 - __main__ - INFO - 处理第 24/34 个文档: BIDU 6-K (2024-03-18)
+2025-07-20 22:24:33,115 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:33,115 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:33,115 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:33,115 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524069615/d786408d6k.htm
+2025-07-20 22:24:33,115 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:33,115 - __main__ - INFO - Document date: 2024-03-18
+2025-07-20 22:24:33,115 - __main__ - INFO - 提取的 accession number: 0001193125-24-069615 (无破折号: 000119312524069615)
+2025-07-20 22:24:33,116 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-24-069615
+2025-07-20 22:24:33,116 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-24-069615
+2025-07-20 22:24:33,116 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:33,116 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524069615/
+2025-07-20 22:24:33,116 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524069615/index.json
+2025-07-20 22:24:33,116 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:33,153 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:33,153 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e3f70>
+2025-07-20 22:24:33,153 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:33,153 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:33,153 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:33,153 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:33,153 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:33,154 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:33,154 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x109400f80> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:33,598 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x109463e30>
+2025-07-20 22:24:33,598 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:33,598 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:33,598 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:33,598 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:33,599 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:33,710 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312524069615/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:33 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:33,711 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312524069615/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:33,711 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:33,711 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:33,711 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:33,712 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:33,717 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524069615/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524069615/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524069615/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524069615/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:33,718 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-24-069615
+2025-07-20 22:24:33,718 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:33,718 - __main__ - INFO - 处理第 25/34 个文档: BIDU 6-K (2024-02-28)
+2025-07-20 22:24:33,718 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:33,719 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:33,719 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:33,719 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524050652/d789091d6k.htm
+2025-07-20 22:24:33,719 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:33,719 - __main__ - INFO - Document date: 2024-02-28
+2025-07-20 22:24:33,719 - __main__ - INFO - 提取的 accession number: 0001193125-24-050652 (无破折号: 000119312524050652)
+2025-07-20 22:24:33,720 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-24-050652
+2025-07-20 22:24:33,720 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-24-050652
+2025-07-20 22:24:33,720 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:33,720 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524050652/
+2025-07-20 22:24:33,720 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524050652/index.json
+2025-07-20 22:24:33,720 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:33,759 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:33,760 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x109463c50>
+2025-07-20 22:24:33,760 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:33,760 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:33,760 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:33,760 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:33,760 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:33,760 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:33,760 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1094010a0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:34,357 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x109463ac0>
+2025-07-20 22:24:34,358 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:34,358 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:34,358 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:34,358 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:34,358 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:34,518 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312524050652/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:34 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:34,519 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312524050652/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:34,519 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:34,519 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:34,519 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:34,519 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:34,524 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524050652/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524050652/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524050652/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524050652/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:34,526 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-24-050652
+2025-07-20 22:24:34,526 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:34,526 - __main__ - INFO - 处理第 26/34 个文档: BIDU 6-K (2024-02-06)
+2025-07-20 22:24:34,526 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:34,526 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:34,526 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:34,526 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524024692/d761118d6k.htm
+2025-07-20 22:24:34,526 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:34,526 - __main__ - INFO - Document date: 2024-02-06
+2025-07-20 22:24:34,526 - __main__ - INFO - 提取的 accession number: 0001193125-24-024692 (无破折号: 000119312524024692)
+2025-07-20 22:24:34,527 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-24-024692
+2025-07-20 22:24:34,527 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-24-024692
+2025-07-20 22:24:34,527 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:34,527 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524024692/
+2025-07-20 22:24:34,527 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524024692/index.json
+2025-07-20 22:24:34,527 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:34,596 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:34,596 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e3fc0>
+2025-07-20 22:24:34,596 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:34,596 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:34,597 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:34,597 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:34,597 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:34,597 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:34,597 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x1094011c0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:35,034 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e3c00>
+2025-07-20 22:24:35,034 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:35,034 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:35,035 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:35,035 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:35,035 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:35,145 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312524024692/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:35 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:35,145 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312524024692/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:35,146 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:35,146 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:35,146 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:35,146 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:35,154 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524024692/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524024692/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524024692/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524024692/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:35,155 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-24-024692
+2025-07-20 22:24:35,155 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:35,155 - __main__ - INFO - 处理第 27/34 个文档: BIDU 6-K (2024-01-16)
+2025-07-20 22:24:35,155 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:35,155 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:35,155 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:35,155 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524008018/d661285d6k.htm
+2025-07-20 22:24:35,155 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:35,155 - __main__ - INFO - Document date: 2024-01-16
+2025-07-20 22:24:35,155 - __main__ - INFO - 提取的 accession number: 0001193125-24-008018 (无破折号: 000119312524008018)
+2025-07-20 22:24:35,156 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-24-008018
+2025-07-20 22:24:35,156 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-24-008018
+2025-07-20 22:24:35,156 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:35,156 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524008018/
+2025-07-20 22:24:35,156 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524008018/index.json
+2025-07-20 22:24:35,156 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:35,193 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:35,193 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e3980>
+2025-07-20 22:24:35,194 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:35,194 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:35,194 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:35,194 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:35,194 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:35,194 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:35,194 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbfec0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:35,628 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e37a0>
+2025-07-20 22:24:35,628 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:35,629 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:35,629 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:35,629 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:35,629 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:35,739 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312524008018/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:35 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:35,740 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312524008018/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:35,740 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:35,740 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:35,740 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:35,740 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:35,744 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524008018/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524008018/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524008018/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524008018/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:35,745 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-24-008018
+2025-07-20 22:24:35,745 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:35,745 - __main__ - INFO - 处理第 28/34 个文档: BIDU 6-K (2024-01-02)
+2025-07-20 22:24:35,746 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:35,746 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:35,746 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:35,746 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524000163/d682034d6k.htm
+2025-07-20 22:24:35,746 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:35,746 - __main__ - INFO - Document date: 2024-01-02
+2025-07-20 22:24:35,746 - __main__ - INFO - 提取的 accession number: 0001193125-24-000163 (无破折号: 000119312524000163)
+2025-07-20 22:24:35,747 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-24-000163
+2025-07-20 22:24:35,747 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-24-000163
+2025-07-20 22:24:35,747 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:35,747 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524000163/
+2025-07-20 22:24:35,747 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312524000163/index.json
+2025-07-20 22:24:35,747 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:35,783 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:35,784 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e3480>
+2025-07-20 22:24:35,784 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:35,784 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:35,784 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:35,784 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:35,784 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:35,784 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:35,784 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbfda0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:36,417 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e34d0>
+2025-07-20 22:24:36,417 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:36,418 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:36,418 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:36,418 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:36,418 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:36,545 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312524000163/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:36 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:36,545 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312524000163/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:36,545 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:36,546 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:36,546 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:36,546 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:36,547 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524000163/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524000163/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312524000163/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312524000163/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:36,548 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-24-000163
+2025-07-20 22:24:36,548 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:36,548 - __main__ - INFO - 处理第 29/34 个文档: BIDU 6-K (2023-11-21)
+2025-07-20 22:24:36,548 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:36,548 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:36,548 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:36,548 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523281151/d551070d6k.htm
+2025-07-20 22:24:36,548 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:36,548 - __main__ - INFO - Document date: 2023-11-21
+2025-07-20 22:24:36,548 - __main__ - INFO - 提取的 accession number: 0001193125-23-281151 (无破折号: 000119312523281151)
+2025-07-20 22:24:36,548 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-23-281151
+2025-07-20 22:24:36,548 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-23-281151
+2025-07-20 22:24:36,548 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:36,549 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523281151/
+2025-07-20 22:24:36,549 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523281151/index.json
+2025-07-20 22:24:36,549 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:36,568 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:36,568 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e2b70>
+2025-07-20 22:24:36,568 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:36,568 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:36,569 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:36,569 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:36,569 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:36,569 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:36,569 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbfc80> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:37,156 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e2f30>
+2025-07-20 22:24:37,157 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:37,157 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:37,157 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:37,157 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:37,157 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:37,393 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312523281151/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:37 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:37,393 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312523281151/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:37,393 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:37,393 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:37,393 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:37,393 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:37,397 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312523281151/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312523281151/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312523281151/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312523281151/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:37,398 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-23-281151
+2025-07-20 22:24:37,398 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:37,398 - __main__ - INFO - 处理第 30/34 个文档: BIDU 6-K (2023-11-13)
+2025-07-20 22:24:37,398 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:37,398 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:37,398 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:37,398 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523275215/d92297d6k.htm
+2025-07-20 22:24:37,398 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:37,399 - __main__ - INFO - Document date: 2023-11-13
+2025-07-20 22:24:37,399 - __main__ - INFO - 提取的 accession number: 0001193125-23-275215 (无破折号: 000119312523275215)
+2025-07-20 22:24:37,400 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-23-275215
+2025-07-20 22:24:37,400 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-23-275215
+2025-07-20 22:24:37,400 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:37,400 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523275215/
+2025-07-20 22:24:37,400 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523275215/index.json
+2025-07-20 22:24:37,400 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:37,433 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:37,433 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e2490>
+2025-07-20 22:24:37,433 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:37,433 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:37,433 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:37,433 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:37,433 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:37,434 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:37,434 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbf5c0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:38,212 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e2850>
+2025-07-20 22:24:38,212 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:38,212 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:38,212 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:38,212 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:38,212 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:38,331 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312523275215/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:38 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:38,331 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312523275215/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:38,332 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:38,332 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:38,332 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:38,333 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:38,339 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312523275215/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312523275215/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312523275215/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312523275215/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:38,340 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-23-275215
+2025-07-20 22:24:38,340 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:38,340 - __main__ - INFO - 处理第 31/34 个文档: BIDU 6-K (2023-10-26)
+2025-07-20 22:24:38,340 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:38,340 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:38,340 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:38,340 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523263472/d554190d6k.htm
+2025-07-20 22:24:38,340 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:38,340 - __main__ - INFO - Document date: 2023-10-26
+2025-07-20 22:24:38,341 - __main__ - INFO - 提取的 accession number: 0001193125-23-263472 (无破折号: 000119312523263472)
+2025-07-20 22:24:38,342 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-23-263472
+2025-07-20 22:24:38,342 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-23-263472
+2025-07-20 22:24:38,342 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:38,342 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523263472/
+2025-07-20 22:24:38,342 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523263472/index.json
+2025-07-20 22:24:38,342 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:38,379 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:38,380 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e2710>
+2025-07-20 22:24:38,380 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:38,380 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:38,380 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:38,380 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:38,380 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:38,380 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:38,381 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbfd10> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:38,850 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e2760>
+2025-07-20 22:24:38,850 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:38,851 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:38,851 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:38,851 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:38,851 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:38,977 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312523263472/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:39 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:38,978 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312523263472/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:38,978 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:38,978 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:38,978 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:38,979 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:38,983 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312523263472/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312523263472/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312523263472/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312523263472/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:38,985 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-23-263472
+2025-07-20 22:24:38,985 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:38,985 - __main__ - INFO - 处理第 32/34 个文档: BIDU 6-K (2023-09-01)
+2025-07-20 22:24:38,985 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:38,985 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:38,985 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:38,985 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523227640/d548018d6k.htm
+2025-07-20 22:24:38,985 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:38,985 - __main__ - INFO - Document date: 2023-09-01
+2025-07-20 22:24:38,985 - __main__ - INFO - 提取的 accession number: 0001193125-23-227640 (无破折号: 000119312523227640)
+2025-07-20 22:24:38,986 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-23-227640
+2025-07-20 22:24:38,986 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-23-227640
+2025-07-20 22:24:38,986 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:38,986 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523227640/
+2025-07-20 22:24:38,986 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523227640/index.json
+2025-07-20 22:24:38,986 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:39,024 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:39,024 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e20d0>
+2025-07-20 22:24:39,025 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:39,025 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:39,025 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:39,025 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:39,025 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:39,025 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:39,025 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbfa40> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:39,513 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e2260>
+2025-07-20 22:24:39,514 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:39,514 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:39,514 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:39,515 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:39,515 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:39,639 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312523227640/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:39 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:39,640 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312523227640/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:39,640 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:39,640 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:39,640 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:39,640 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:39,645 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312523227640/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312523227640/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312523227640/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312523227640/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:39,646 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-23-227640
+2025-07-20 22:24:39,646 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:39,647 - __main__ - INFO - 处理第 33/34 个文档: BIDU 6-K (2023-08-22)
+2025-07-20 22:24:39,647 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:39,647 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:39,647 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:39,647 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523217413/d502468d6k.htm
+2025-07-20 22:24:39,647 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:39,647 - __main__ - INFO - Document date: 2023-08-22
+2025-07-20 22:24:39,647 - __main__ - INFO - 提取的 accession number: 0001193125-23-217413 (无破折号: 000119312523217413)
+2025-07-20 22:24:39,648 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-23-217413
+2025-07-20 22:24:39,648 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-23-217413
+2025-07-20 22:24:39,648 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:39,648 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523217413/
+2025-07-20 22:24:39,648 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523217413/index.json
+2025-07-20 22:24:39,648 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:39,685 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:39,685 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e1e50>
+2025-07-20 22:24:39,685 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:39,685 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:39,685 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:39,685 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:39,685 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:39,685 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:39,685 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbf770> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:40,148 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e1d10>
+2025-07-20 22:24:40,148 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:40,149 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:40,149 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:40,149 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:40,150 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:40,325 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312523217413/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:40 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:40,326 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312523217413/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:40,326 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:40,327 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:40,327 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:40,327 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:40,332 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312523217413/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312523217413/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312523217413/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312523217413/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:40,333 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-23-217413
+2025-07-20 22:24:40,333 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:40,333 - __main__ - INFO - 处理第 34/34 个文档: BIDU 6-K (2023-08-02)
+2025-07-20 22:24:40,334 - __main__ - INFO - ========== 开始处理 6-K 文件 ==========
+2025-07-20 22:24:40,334 - __main__ - INFO - Ticker: BIDU
+2025-07-20 22:24:40,334 - __main__ - INFO - CIK: 0001329099
+2025-07-20 22:24:40,334 - __main__ - INFO - Filing URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523201108/d526118d6k.htm
+2025-07-20 22:24:40,334 - __main__ - INFO - Document title: BIDU 6-K
+2025-07-20 22:24:40,334 - __main__ - INFO - Document date: 2023-08-02
+2025-07-20 22:24:40,334 - __main__ - INFO - 提取的 accession number: 0001193125-23-201108 (无破折号: 000119312523201108)
+2025-07-20 22:24:40,335 - __main__ - INFO - 创建文件目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp/6K_BIDU_0001193125-23-201108
+2025-07-20 22:24:40,335 - __main__ - INFO - 开始处理6-K文件: BIDU - 0001193125-23-201108
+2025-07-20 22:24:40,335 - __main__ - INFO - ========== 开始下载 6-K 附件 ==========
+2025-07-20 22:24:40,335 - __main__ - INFO - Base URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523201108/
+2025-07-20 22:24:40,335 - __main__ - INFO - Index URL: https://www.sec.gov/Archives/edgar/data/0001329099/000119312523201108/index.json
+2025-07-20 22:24:40,335 - __main__ - INFO - 正在获取附件索引...
+2025-07-20 22:24:40,372 - httpcore.connection - DEBUG - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 22:24:40,373 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e0b90>
+2025-07-20 22:24:40,373 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:40,373 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:40,373 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:40,373 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:40,373 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 22:24:40,373 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 22:24:40,374 - httpcore.proxy - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x104dbf800> server_hostname='www.sec.gov' timeout=30
+2025-07-20 22:24:41,068 - httpcore.proxy - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1094e1860>
+2025-07-20 22:24:41,069 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:41,069 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-07-20 22:24:41,069 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'GET']>
+2025-07-20 22:24:41,069 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-07-20 22:24:41,069 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 22:24:41,188 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 301, b'Moved Permanently', [(b'Content-Length', b'0'), (b'Location', b'https://www.sec.gov/Archives/edgar/data/1329099/000119312523201108/index.json'), (b'Date', b'Sun, 20 Jul 2025 14:24:41 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 22:24:41,189 - httpx - INFO - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/0001329099/000119312523201108/index.json "HTTP/1.1 301 Moved Permanently"
+2025-07-20 22:24:41,189 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 22:24:41,189 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-07-20 22:24:41,189 - httpcore.http11 - DEBUG - response_closed.started
+2025-07-20 22:24:41,190 - httpcore.http11 - DEBUG - response_closed.complete
+2025-07-20 22:24:41,195 - __main__ - ERROR - 获取6-K附件列表失败: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312523201108/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312523201108/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+Traceback (most recent call last):
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/test_bidu_6k_debug.py", line 123, in _download_6k_attachments
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/sean/Documents/GitHub/kol-chat-phidata-streamlit/.venv/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '301 Moved Permanently' for url 'https://www.sec.gov/Archives/edgar/data/0001329099/000119312523201108/index.json'
+Redirect location: 'https://www.sec.gov/Archives/edgar/data/1329099/000119312523201108/index.json'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301
+2025-07-20 22:24:41,196 - __main__ - WARNING - 未找到6-K附件: BIDU - 0001193125-23-201108
+2025-07-20 22:24:41,196 - __main__ - WARNING - 处理结果为空
+2025-07-20 22:24:41,196 - __main__ - INFO - 总共处理完成 0 个文档
+2025-07-20 22:24:41,196 - __main__ - INFO - ========== 处理结果统计 ==========
+2025-07-20 22:24:41,197 - __main__ - INFO - 原始6-K文件数: 34
+2025-07-20 22:24:41,197 - __main__ - INFO - 处理后文档数: 0
+2025-07-20 22:24:41,197 - __main__ - INFO - 所有文档都有内容
+2025-07-20 22:24:41,197 - __main__ - INFO - 临时文件保存在: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_test_ltmj3txp
+2025-07-20 22:24:41,197 - __main__ - INFO - ========== BIDU 6-K 文件测试结束 ==========

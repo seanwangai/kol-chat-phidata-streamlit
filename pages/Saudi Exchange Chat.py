@@ -44,6 +44,7 @@ import httpx
 from google import genai
 from google.genai import types
 from itertools import cycle
+from newspaper import Article
 
 # 页面配置
 try:
@@ -66,10 +67,10 @@ logger = logging.getLogger(__name__)
 # 语言配置
 LANGUAGE_CONFIG = {
     "English": {
-        "title": "📊 Financial Disclosure & Earnings Insights",
+        "title": "📊 Saudi Exchange Chat",
         "sidebar_header": "📋 Configuration",
         "ticker_label": "Ticker",
-        "ticker_placeholder": "e.g., AAPL, 1024 HK",
+        "ticker_placeholder": "e.g., AAPL, 1024 HK, 2222 SA",
         "years_label": "Years of Data",
         "data_type_header": "📄 Data Type",
         "sec_reports_us": "Quarterly & Annual (10-K, 10-Q, 20-F, 6-K, 424B4)",
@@ -97,6 +98,7 @@ LANGUAGE_CONFIG = {
         "language_label": "Select Language",
         "hk_stock_info": "🏢 Hong Kong Stock - Standardized to: {}",
         "us_stock_info": "🇺🇸 US Stock",
+        "saudi_stock_info": "🇸🇦 Saudi Stock",
         "chat_placeholder": "Please enter your question...",
         "status_header": "📋 STATUS",
         "stop_button": "⏹️ Stop Processing",
@@ -105,10 +107,10 @@ LANGUAGE_CONFIG = {
         "processing_stopped": "Processing has been stopped by user request."
     },
     "中文": {
-        "title": "📊 Financial Disclosure & Earnings Insights",
+        "title": "📊 沙特交易所聊天",
         "sidebar_header": "📋 Configuration",
         "ticker_label": "Ticker",
-        "ticker_placeholder": "e.g., AAPL, 1024 HK",
+        "ticker_placeholder": "e.g., AAPL, 1024 HK, 2222 SA",
         "years_label": "数据年份",
         "data_type_header": "📄 Data Type",
         "sec_reports_us": "Quarterly & Annual (10-K, 10-Q, 20-F, 6-K, 424B4)",
@@ -136,12 +138,53 @@ LANGUAGE_CONFIG = {
         "language_label": "Select Language",
         "hk_stock_info": "🏢 港股 - 已标准化为: {}",
         "us_stock_info": "🇺🇸 美股",
+        "saudi_stock_info": "🇸🇦 沙特股票",
         "chat_placeholder": "请输入您的问题...",
         "status_header": "📋 STATUS",
         "stop_button": "⏹️ 停止处理",
-        "progress_text": "进度: {}/{} 个文档",
+        "progress_text": "Progress: {}/{} documents",
         "stop_success": "⏹️ 用户已停止处理",
         "processing_stopped": "处理已被用户停止。"
+    },
+    "العربية": {
+        "title": "📊 دردشة السوق السعودية",
+        "sidebar_header": "📋 الإعدادات",
+        "ticker_label": "رمز السهم",
+        "ticker_placeholder": "مثال: AAPL, 1024 HK, 2222 SA",
+        "years_label": "سنوات البيانات",
+        "data_type_header": "📄 نوع البيانات",
+        "sec_reports_us": "التقارير الفصلية والسنوية (10-K, 10-Q, 20-F, 6-K, 424B4)",
+        "sec_others_us": "أخرى (8-K, S-8, DEF 14A, F-3)",
+        "sec_reports_hk": "النتائج الفصلية والسنوية",
+        "sec_others_hk": "إعلانات أخرى",
+        "earnings_label": "نصوص مكالمات الأرباح",
+        "earnings_caption": "نصوص مكالمات الأرباح",
+        "model_header": "🤖 نموذج الذكاء الاصطناعي",
+        "model_label": "اختر النموذج",
+        "analysis_mode_header": "⚡ وضع التحليل",
+        "analysis_mode_label": "اختر الوضع",
+        "fast_mode": "الوضع السريع",
+        "detailed_mode": "الوضع المفصل",
+        "fast_mode_caption": "تحليل جميع المستندات معاً في مرة واحدة",
+        "detailed_mode_caption": "تحليل كل مستند على حدة، ثم دمج النتائج",
+        "api_header": "💳 إعدادات واجهة برمجة التطبيقات",
+        "access_code_label": "أدخل رمز الوصول",
+        "access_code_placeholder": "أدخل رمز الوصول لتفعيل خدمة API المميزة",
+        "premium_enabled": "✅ تم تفعيل خدمة API المميزة",
+        "free_api": "ℹ️ استخدام خدمة API المجانية",
+        "access_code_error": "❌ رمز وصول غير صحيح",
+        "premium_success": "🎉 تم تفعيل خدمة API المميزة!",
+        "language_header": "🌐 اللغة",
+        "language_label": "اختر اللغة",
+        "hk_stock_info": "🏢 سهم هونغ كونغ - تم التوحيد القياسي إلى: {}",
+        "us_stock_info": "🇺🇸 سهم أمريكي",
+        "saudi_stock_info": "🇸🇦 سهم سعودي",
+        "chat_placeholder": "يرجى إدخال سؤالك...",
+        "status_header": "📋 الحالة",
+        "stop_button": "⏹️ إيقاف المعالجة",
+        "progress_text": "التقدم: {}/{} مستند",
+        "stop_success": "⏹️ تم إيقاف المعالجة بواسطة المستخدم",
+        "processing_stopped": "تم إيقاف المعالجة بناءً على طلب المستخدم."
     }
 }
 
@@ -298,12 +341,55 @@ def is_hk_stock(ticker: str) -> bool:
     if ' HK' in ticker_upper:
         return True
     
-    # 检查是否是纯数字（港股代码通常是数字）
+    # 检查是否是纯数字，但排除4位数字（优先给沙特交易所）
+    ticker_clean = ticker.strip()
+    if ticker_clean.isdigit() and len(ticker_clean) != 4:
+        return True
+    
+    return False
+
+def is_saudi_stock(ticker: str) -> bool:
+    """检测是否为沙特交易所代码"""
+    if not ticker:
+        return False
+    
+    ticker_upper = ticker.upper().strip()
+    
+    # 检查是否以.SA结尾
+    if ticker_upper.endswith('.SA'):
+        return True
+    
+    # 检查是否是 "数字 SA" 格式
+    if ' SA' in ticker_upper:
+        return True
+    
+    # 检查是否是数字（沙特交易所代码通常是数字，优先识别）
     ticker_clean = ticker.strip()
     if ticker_clean.isdigit():
         return True
     
     return False
+
+def normalize_saudi_ticker(ticker: str) -> str:
+    """标准化沙特交易所代码为 XXXX 格式（4位数字）"""
+    if not ticker:
+        return ""
+    
+    ticker_clean = ticker.upper().strip()
+    
+    # 移除.SA后缀
+    if ticker_clean.endswith('.SA'):
+        ticker_clean = ticker_clean[:-3]
+    
+    # 移除空格和SA
+    if ' SA' in ticker_clean:
+        ticker_clean = ticker_clean.replace(' SA', '')
+    
+    # 确保是4位数字
+    if ticker_clean.isdigit():
+        return ticker_clean.zfill(4)  # 补零到4位
+    
+    return ticker_clean
 
 def normalize_hk_ticker(ticker: str) -> str:
     """标准化港股代码为 XXXX.HK 格式，自動補0成四位數"""
@@ -1294,7 +1380,7 @@ class SessionManager:
         defaults = {
             "analyzer_messages": [],
             "analyzer_ticker": "",
-            "analyzer_years": 2,
+            "analyzer_years": 1,
             "analyzer_use_sec_reports": True,
             "analyzer_use_sec_others": False,
             "analyzer_use_earnings": True,
@@ -1879,6 +1965,440 @@ class HKStockService:
             logger.error(f"下载港股文件失败: {e}")
             return f"下载港股文件时出错: {e}"
 
+# 沙特交易所服务
+class SaudiExchangeService:
+    """沙特交易所公告服务"""
+    
+    def __init__(self, cache_manager: CacheManager):
+        self.rate_limiter = RateLimiter(max_calls=30, window=60)
+        self.cache_manager = cache_manager
+        self.session = requests.Session()
+        self.base_url = "https://www.saudiexchange.sa"
+        self.announcement_api = "https://www.saudiexchange.sa/wps/portal/saudiexchange/newsandreports/issuer-news/issuer-announcements/!ut/p/z1/lY_NDoIwHMOfhQcwqxD-zOPUODAgTBjiLmYHY0h0ejA-v8Qb-BHsrcmvacsMa5hx9tGe7L29Onvu_N7QIRQEP-bIEVcLEEpJuuLTpU9s1wd4JglqI1TuRyFkDWb-yqMsQqhVkQUptpCgcXl8kRjRb_pILmZRt2A9l0kqAk7REPhwcVDy_uEF_BhZHh27XbRu0CYT4XlP_MzK5g!!/p0/IZ7_5A602H80O0HTC060SG6UT81DI1=CZ6_5A602H80O0HTC060SG6UT81D26=NJgetAnnouncementListData=/"
+        
+        # 设置请求头
+        self.headers = {
+            "accept": "*/*",
+            "accept-language": "en-US,en;q=0.9,zh-TW;q=0.8,zh;q=0.7",
+            "cache-control": "no-cache",
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "pragma": "no-cache",
+            "priority": "u=1, i",
+            "sec-ch-ua": '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"macOS"',
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "x-requested-with": "XMLHttpRequest",
+            "referer": "https://www.saudiexchange.sa/wps/portal/saudiexchange/newsandreports/issuer-news/issuer-announcements?locale=en&page=1",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
+        }
+    
+    def parse_saudi_date(self, date_str: str) -> Optional[datetime.date]:
+        """解析沙特交易所日期格式: 27/05/2025 15:51:58 (dd/MM/yyyy HH:mm:ss)"""
+        try:
+            # 格式: dd/MM/yyyy HH:mm:ss
+            dt = datetime.strptime(date_str, '%d/%m/%Y %H:%M:%S')
+            return dt.date()
+        except Exception as e:
+            logger.warning(f"解析沙特日期失败: {date_str}, 错误: {e}")
+            return None
+    
+    @retry_on_failure(max_retries=3)
+    def get_saudi_filings(self, symbol: str, years: int = 3, status_callback=None) -> List[Document]:
+        """获取沙特交易所公告列表"""
+        self.rate_limiter.wait_if_needed()
+        
+        cache_key = self.cache_manager.get_cache_key("saudi_filings", symbol, years)
+        cached_result = self.cache_manager.get(cache_key)
+        if cached_result:
+            return cached_result
+        
+        try:
+            # 计算日期范围
+            current_date = datetime.now()
+            cutoff_date = current_date - timedelta(days=years * 365)
+            
+            logger.info(f"获取沙特交易所 {symbol} 公告，日期范围: {cutoff_date.date()} 到 {current_date.date()}")
+            
+            all_documents = []
+            page = 1
+            page_size = 50  # 每页获取更多数据
+            
+            while True:
+                if status_callback:
+                    status_callback(f"正在获取第 {page} 页公告...")
+                
+                # 构建请求数据
+                post_data = {
+                    "annoucmentType": "1_-1",
+                    "symbol": symbol,
+                    "sectorDpId": "",
+                    "searchType": "",
+                    "fromDate": "",
+                    "toDate": "",
+                    "datePeriod": "",
+                    "productType": "",
+                    "advisorsList": "",
+                    "textSearch": "",
+                    "pageNumberDb": str(page),
+                    "pageSize": str(page_size)
+                }
+                
+                logger.info(f"🔍 [SAUDI] 请求第 {page} 页，symbol: {symbol}")
+                
+                response = self.session.post(
+                    self.announcement_api,
+                    data=post_data,
+                    headers=self.headers,
+                    timeout=30
+                )
+                response.raise_for_status()
+                
+                # 解析响应
+                try:
+                    data = response.json()
+                    logger.info(f"🔍 [SAUDI] 第 {page} 页响应成功，数据类型: {type(data)}")
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON解析失败: {e}")
+                    logger.error(f"响应内容: {response.text[:500]}")
+                    break
+                
+                # 检查是否有公告数据
+                announcements = data.get('announcementList', [])
+                total_count = data.get('totalCount', 0)
+                
+                logger.info(f"🔍 [SAUDI] 第 {page} 页找到 {len(announcements)} 个公告，总数: {total_count}")
+                
+                if not announcements:
+                    logger.info(f"第 {page} 页没有公告，停止获取")
+                    break
+                
+                # 处理当前页的公告
+                page_documents = []
+                for announcement in announcements:
+                    try:
+                        # 解析日期
+                        date_str = announcement.get('newsDateStr', '')
+                        filing_date = self.parse_saudi_date(date_str)
+                        
+                        if not filing_date:
+                            logger.warning(f"跳过日期解析失败的公告: {date_str}")
+                            continue
+                        
+                        # 检查日期是否在范围内
+                        if filing_date < cutoff_date.date():
+                            logger.info(f"公告日期 {filing_date} 早于截止日期 {cutoff_date.date()}，停止处理")
+                            # 先将当前页已处理的文档添加到all_documents，然后停止
+                            if page_documents:
+                                logger.info(f"🔍 [SAUDI] 停止前添加当前页文档: {len(page_documents)} 个")
+                                all_documents.extend(page_documents)
+                                logger.info(f"🔍 [SAUDI] 停止前all_documents长度: {len(all_documents)}")
+                            return all_documents
+                        
+                        # 获取公告URL
+                        announcement_url = announcement.get('announcementUrl', '')
+                        if not announcement_url:
+                            logger.warning("公告URL为空，跳过")
+                            continue
+                        
+                        # 构建完整URL
+                        if not announcement_url.startswith('http'):
+                            announcement_url = urljoin(self.base_url, announcement_url)
+                        
+                        # 创建文档对象
+                        raw_title = announcement.get('announcementTitle', '').strip()
+                        if not raw_title:
+                            title = f"{symbol} Announcement"
+                        elif raw_title.startswith(symbol):
+                            title = raw_title  # 如果标题已经包含symbol，直接使用
+                        else:
+                            title = f"{symbol} - {raw_title}"  # 否则添加前缀
+                        
+                        document = Document(
+                            type='Saudi Exchange Filing',
+                            title=title,
+                            date=filing_date,
+                            url=announcement_url,
+                            form_type="Saudi Announcement"
+                        )
+                        
+                        page_documents.append(document)
+                        logger.info(f"✅ [SAUDI] 添加公告: {title}, 日期: {filing_date}")
+                        
+                    except Exception as e:
+                        logger.warning(f"处理公告失败: {e}")
+                        continue
+                
+                logger.info(f"🔍 [SAUDI] 第{page}页处理完成: page_documents长度={len(page_documents)}")
+                all_documents.extend(page_documents)
+                logger.info(f"🔍 [SAUDI] extend后: all_documents长度={len(all_documents)}")
+                
+                # 检查是否需要继续翻页
+                if len(announcements) < page_size:
+                    logger.info(f"第 {page} 页公告数量 {len(announcements)} 小于页面大小 {page_size}，停止翻页")
+                    break
+                
+                page += 1
+                
+                # 防止无限循环
+                if page > 100:
+                    logger.warning("已获取100页，停止翻页")
+                    break
+                
+                # 短暂延迟避免请求过快
+                time.sleep(0.5)
+            
+            # 按日期排序（新到旧）
+            all_documents.sort(key=lambda x: x.date, reverse=True)
+            
+            logger.info(f"✅ [SAUDI] 共获取 {len(all_documents)} 个沙特交易所公告")
+            logger.info(f"🔍 [SAUDI] 返回前调试: all_documents类型={type(all_documents)}, 长度={len(all_documents)}")
+            if all_documents:
+                for i, doc in enumerate(all_documents[:3]):  # 只显示前3个
+                    logger.info(f"🔍 [SAUDI] all_documents[{i}]: {doc.title}, 类型={doc.type}, 日期={doc.date}")
+            
+            # 缓存结果
+            self.cache_manager.set(cache_key, all_documents)
+            return all_documents
+            
+        except Exception as e:
+            logger.error(f"获取沙特交易所公告失败: {e}")
+            raise DataRetrievalError(f"获取沙特交易所公告失败: {e}")
+    
+    @retry_on_failure(max_retries=3)
+    def download_saudi_filing(self, filing_url: str) -> str:
+        """下载沙特交易所公告内容，包括PDF附件"""
+        self.rate_limiter.wait_if_needed()
+        
+        try:
+            logger.info(f"🔍 [SAUDI] 开始下载公告内容: {filing_url}")
+            
+            # 首先获取HTML页面
+            response = self.session.get(filing_url, headers=self.headers, timeout=30)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # 提取主要内容
+            content = ""
+            
+            # 使用 newspaper3k 提取文章内容
+            try:
+                article = Article(filing_url)
+                article.download()
+                article.parse()
+                main_content = article.text
+                
+                if main_content and len(main_content.strip()) > 50:
+                    content += "=== 公告主要内容 ===\n"
+                    content += main_content.strip()
+                    content += "\n\n"
+            except Exception as e:
+                logger.warning(f"newspaper3k 提取失败: {e}")
+            
+            # 如果主要内容为空，尝试直接解析HTML
+            if not content:
+                # 移除脚本和样式
+                for script in soup(["script", "style"]):
+                    script.decompose()
+                
+                main_content = soup.get_text(separator='\n', strip=True)
+                if main_content:
+                    content += "=== 公告主要内容 ===\n"
+                    content += main_content
+                    content += "\n\n"
+            
+            # 检查PDF附件
+            pdf_attachments = self._extract_pdf_attachments(soup, filing_url)
+            
+            if pdf_attachments:
+                logger.info(f"🔍 [SAUDI-PDF] 发现 {len(pdf_attachments)} 个PDF附件")
+                
+                for i, pdf_info in enumerate(pdf_attachments):
+                    try:
+                        pdf_content = self._download_and_extract_pdf(pdf_info['url'], pdf_info['filename'])
+                        if pdf_content:
+                            content += f"=== PDF附件 {i+1}: {pdf_info['filename']} ===\n"
+                            content += pdf_content
+                            content += "\n\n"
+                            logger.info(f"✅ [SAUDI-PDF] 成功提取PDF内容: {pdf_info['filename']}")
+                        else:
+                            logger.warning(f"❌ [SAUDI-PDF] PDF内容提取失败: {pdf_info['filename']}")
+                    except Exception as e:
+                        logger.error(f"❌ [SAUDI-PDF] 处理PDF附件失败: {pdf_info['filename']} - {e}")
+                        content += f"=== PDF附件 {i+1}: {pdf_info['filename']} (处理失败) ===\n"
+                        content += f"PDF处理失败: {str(e)}\n\n"
+            
+            # 限制内容长度
+            if len(content) > config.MAX_CONTENT_LENGTH:
+                content = content[:config.MAX_CONTENT_LENGTH] + "\n[内容已截断]"
+            
+            logger.info(f"✅ [SAUDI] 成功提取内容，长度: {len(content)}")
+            return content.strip() if content.strip() else "未能提取到内容"
+            
+        except Exception as e:
+            logger.error(f"下载沙特交易所公告失败: {e}")
+            return f"下载失败: {str(e)}"
+    
+    def download_saudi_filings_batch(self, documents: List[Document], max_workers: int = 5, status_callback=None) -> List[Document]:
+        """批量并发下载沙特交易所公告内容"""
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        import streamlit as st
+        
+        def download_single_filing(doc_with_index):
+            index, document = doc_with_index
+            try:
+                content = self.download_saudi_filing(document.url)
+                document.content = content
+                logger.info(f"✅ [SAUDI-BATCH] 完成下载 {index+1}/{len(saudi_docs)}: {document.title[:50]}...")
+                return index, document
+            except Exception as e:
+                logger.error(f"❌ [SAUDI-BATCH] 下载失败 {index+1}/{len(saudi_docs)}: {document.title[:50]}... - {e}")
+                document.content = f"下载失败: {str(e)}"
+                return index, document
+        
+        # 过滤出需要下载内容的沙特文档
+        saudi_docs = [doc for doc in documents if doc.type == 'Saudi Exchange Filing' and not doc.content]
+        
+        if not saudi_docs:
+            logger.info("🔍 [SAUDI-BATCH] 没有需要下载的沙特文档")
+            return documents
+        
+        logger.info(f"🚀 [SAUDI-BATCH] 开始批量下载 {len(saudi_docs)} 个沙特公告，并发数: {max_workers}")
+        
+        # 使用线程池并发下载
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # 提交所有下载任务
+            future_to_index = {
+                executor.submit(download_single_filing, (i, doc)): i 
+                for i, doc in enumerate(saudi_docs)
+            }
+            
+            completed_count = 0
+            results = {}
+            
+            # 初始化状态显示
+            if status_callback:
+                status_callback("🚀 开始批量下载沙特交易所公告...", 0, len(saudi_docs))
+            
+            for future in as_completed(future_to_index):
+                completed_count += 1
+                try:
+                    index, result_doc = future.result()
+                    results[index] = result_doc
+                    logger.info(f"📊 [SAUDI-BATCH] 进度: {completed_count}/{len(saudi_docs)} 完成")
+                    
+                    # 在主线程中更新状态
+                    if status_callback:
+                        progress_percent = (completed_count / len(saudi_docs)) * 100
+                        status_callback(f"📊 Downloading: {completed_count}/{len(saudi_docs)} ({progress_percent:.0f}%)", completed_count, len(saudi_docs))
+                        
+                except Exception as e:
+                    logger.error(f"❌ [SAUDI-BATCH] 任务执行失败: {e}")
+        
+        # 最终状态更新
+        if status_callback:
+            status_callback(f"🎉 批量下载完成! 共 {len(saudi_docs)} 个文档", len(saudi_docs), len(saudi_docs))
+        
+        logger.info(f"🎉 [SAUDI-BATCH] 批量下载完成! 总计: {len(saudi_docs)} 个文档")
+        return documents
+    
+    def _extract_pdf_attachments(self, soup: BeautifulSoup, base_url: str) -> List[Dict]:
+        """从HTML页面提取PDF附件链接"""
+        pdf_attachments = []
+        
+        try:
+            # 查找所有tr元素
+            for tr in soup.find_all('tr'):
+                tds = tr.find_all('td')
+                
+                # 检查是否有至少两个td，且第一个td包含"Attached Documents"
+                if len(tds) >= 2:
+                    first_td = tds[0].get_text(strip=True)
+                    if "Attached Documents" in first_td:
+                        # 检查第二个td中是否有PDF链接
+                        second_td = tds[1]
+                        pdf_links = second_td.find_all('a', href=True)
+                        
+                        for link in pdf_links:
+                            href = link['href']
+                            if href.endswith('.pdf'):
+                                # 构建完整URL
+                                if href.startswith('/'):
+                                    full_url = urljoin(self.base_url, href)
+                                else:
+                                    full_url = urljoin(base_url, href)
+                                
+                                # 提取文件名
+                                filename = href.split('/')[-1]
+                                
+                                pdf_attachments.append({
+                                    'url': full_url,
+                                    'filename': filename,
+                                    'original_href': href
+                                })
+                                
+                                logger.info(f"🔍 [SAUDI-PDF] 发现PDF附件: {filename} -> {full_url}")
+            
+            return pdf_attachments
+            
+        except Exception as e:
+            logger.error(f"提取PDF附件失败: {e}")
+            return []
+    
+    def _download_and_extract_pdf(self, pdf_url: str, filename: str) -> str:
+        """下载PDF文件并提取文本内容"""
+        import tempfile
+        import os
+        import fitz  # PyMuPDF
+        
+        try:
+            logger.info(f"🔍 [SAUDI-PDF] 开始下载PDF: {filename}")
+            
+            # 下载PDF文件
+            response = self.session.get(pdf_url, headers=self.headers, timeout=30)
+            response.raise_for_status()
+            
+            # 保存到临时文件
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
+                temp_file.write(response.content)
+                temp_file_path = temp_file.name
+            
+            try:
+                # 使用PyMuPDF提取文本
+                doc = fitz.open(temp_file_path)
+                text = ""
+                
+                for page_num in range(doc.page_count):
+                    page = doc[page_num]
+                    page_text = page.get_text()
+                    if page_text.strip():
+                        text += f"\n--- 第 {page_num + 1} 页 ---\n"
+                        text += page_text
+                        text += "\n"
+                
+                doc.close()
+                
+                # 清理文本
+                import re
+                text = re.sub(r'\n{3,}', '\n\n', text)
+                
+                logger.info(f"✅ [SAUDI-PDF] PDF文本提取成功: {filename}, 长度: {len(text)}")
+                return text.strip()
+                
+            finally:
+                # 清理临时文件
+                try:
+                    os.unlink(temp_file_path)
+                except:
+                    pass
+            
+        except Exception as e:
+            logger.error(f"下载或提取PDF失败 {filename}: {e}")
+            return ""
+
 # 财报会议记录服务
 class EarningsService:
     """财报会议记录服务"""
@@ -2240,6 +2760,7 @@ class SECEarningsAnalyzer:
         self.cache_manager = CacheManager()
         self.sec_service = SECService(self.cache_manager)
         self.hk_service = HKStockService(self.cache_manager)
+        self.saudi_service = SaudiExchangeService(self.cache_manager)
         self.earnings_service = EarningsService(self.cache_manager)
         self.session_manager = SessionManager()
         self.document_manager = DocumentManager()
@@ -2276,6 +2797,36 @@ class SECEarningsAnalyzer:
             {{
                 "processing_prompt": "Document processing prompt",
                 "integration_prompt": "Integration prompt"
+            }}
+            ```
+            """
+        elif language == "العربية":
+            analysis_prompt = f"""
+            أنت مساعد محلل مالي محترف، متخصص في تحليل أسئلة المستخدمين وتقسيمها إلى خطوتين رئيسيتين للمعالجة.
+
+            سؤال المستخدم: {question}
+            رمز السهم: {ticker}
+
+            مهمتك:
+            1. تحليل سؤال المستخدم وفهم قصده الأساسي
+            2. توليد مطالبتين عالية الجودة:
+               - مطالبة معالجة المستند: تستخدم لاستخراج المعلومات المتعلقة بسؤال المستخدم من مستند واحد
+               - مطالبة التكامل: تستخدم لدمج نتائج التحليل من ردود معالجة المستندات المتعددة
+
+            المتطلبات:
+            - يجب أن تكون مطالبة معالجة المستند محددة ومهنية، قادرة على استخراج جميع المعلومات ذات الصلة من مستند واحد
+            - يجب أن تكون مطالبة التكامل قادرة على دمج نتائج من مستندات متعددة، وتقديم تحليل ورؤى كاملة
+            - يجب أن تكون كلا المطالبتين موجزة وواضحة، مع تسليط الضوء على النقاط الرئيسية
+            - يجب أن تنتج المطالبات المولدة نتائج تحليل مهنية وقابلة للقراءة
+            - يجب أن يظهر السؤال الأصلي للمستخدم في كل من مطالبة معالجة المستند ومطالبة التكامل
+            - اجب دائماً باللغة العربية
+            - **يجب إرجاع تنسيق JSON فقط، لا تشمل أي نص أو تفسيرات أخرى.**
+
+            يرجى الإرجاع مباشرة بتنسيق JSON:
+            ```json
+            {{
+                "processing_prompt": "مطالبة معالجة المستند",
+                "integration_prompt": "مطالبة التكامل"
             }}
             ```
             """
@@ -2334,7 +2885,10 @@ class SECEarningsAnalyzer:
             if language == "English":
                 processing_prompt = f"Please extract information related to '{question}' from the following document and provide detailed analysis. Keep answers concise and to the point. Start with conclusions, use appropriate emojis and markdown format. If not found, briefly state 'Not mentioned in document'. Always answer in English."
                 integration_prompt = f"Please integrate all the following analysis results to answer the user's question: '{question}', and provide a complete analysis report. Keep answers concise and to the point. Start with conclusions, use appropriate emojis and markdown format. If not found, briefly state 'Not mentioned in documents'. Always answer in English."
-            else:
+            elif language == "العربية":
+                processing_prompt = f"يرجى استخراج المعلومات المتعلقة بـ '{question}' من المستند التالي وتقديم تحليل مفصل. اجعل الإجابات موجزة ومباشرة. ابدأ بالنتائج، استخدم الرموز التعبيرية المناسبة وتنسيق markdown. إذا لم توجد، اذكر بإيجاز 'غير مذكور في المستند'. اجب دائماً باللغة العربية."
+                integration_prompt = f"يرجى دمج جميع نتائج التحليل التالية للإجابة على سؤال المستخدم: '{question}'، وتقديم تقرير تحليل كامل. اجعل الإجابات موجزة ومباشرة. ابدأ بالنتائج، استخدم الرموز التعبيرية المناسبة وتنسيق markdown. إذا لم توجد، اذكر بإيجاز 'غير مذكور في المستندات'. اجب دائماً باللغة العربية."
+            else:  # 中文
                 processing_prompt = f"请从以下文档中提取与'{question}'相关的信息，并进行详细分析，只回答重點就好，記得不廢話。回答要結論先說，可以適當使用emoji，markdown格式，如果沒找到就簡短回答，說未提及就好。"
                 integration_prompt = f"请整合以下所有分析结果，回答用户问题：'{question}'，并提供完整的分析报告，只回答重點就好，記得不廢話。回答要結論先說，可以適當使用emoji，markdown格式，如果沒找到就簡短回答，說未提及就好。"
             
@@ -2367,6 +2921,31 @@ class SECEarningsAnalyzer:
             ```json
             {{
                 "fast_mode_prompt": "Comprehensive analysis prompt for all documents"
+            }}
+            ```
+            """
+        elif language == "العربية":
+            analysis_prompt = f"""
+            أنت مساعد محلل مالي محترف، متخصص في تحليل أسئلة المستخدمين وتوليد مطالبات محسنة للتحليل السريع للمستندات.
+
+            سؤال المستخدم: {question}
+            رمز السهم: {ticker}
+
+            مهمتك:
+            توليد مطالبة شاملة واحدة يمكنها تحليل جميع المستندات المقدمة دفعة واحدة للإجابة على سؤال المستخدم.
+
+            المتطلبات:
+            - يجب أن تكون المطالبة محسنة لمعالجة مستندات متعددة في نفس الوقت
+            - يجب أن تستخرج وتدمج المعلومات من جميع المستندات لتقديم إجابة كاملة
+            - يجب أن تكون المطالبة مهنية وقادرة على إنتاج تحليل منظم وقابل للقراءة
+            - يجب أن يظهر السؤال الأصلي للمستخدم في المطالبة المولدة
+            - اجب دائماً باللغة العربية
+            - **يجب إرجاع تنسيق JSON فقط، لا تشمل أي نص أو تفسيرات أخرى.**
+
+            يرجى الإرجاع مباشرة بتنسيق JSON:
+            ```json
+            {{
+                "fast_mode_prompt": "مطالبة تحليل شاملة لجميع المستندات"
             }}
             ```
             """
@@ -2418,7 +2997,9 @@ class SECEarningsAnalyzer:
             # 使用默认提示词
             if language == "English":
                 return f"Please analyze all the provided documents to answer the user's question: '{question}'. Extract relevant information from all documents and provide a comprehensive analysis. Keep answers concise and to the point. Start with conclusions, use appropriate emojis and markdown format. If not found, briefly state 'Not mentioned in documents'. Always answer in English."
-            else:
+            elif language == "العربية":
+                return f"يرجى تحليل جميع المستندات المقدمة للإجابة على سؤال المستخدم: '{question}'. استخرج المعلومات ذات الصلة من جميع المستندات وقدم تحليلاً شاملاً. اجعل الإجابات موجزة ومباشرة. ابدأ بالنتائج، استخدم الرموز التعبيرية المناسبة وتنسيق markdown. إذا لم توجد، اذكر بإيجاز 'غير مذكور في المستندات'. اجب دائماً باللغة العربية."
+            else:  # 中文
                 return f"请分析所有提供的文档来回答用户问题：'{question}'。从所有文档中提取相关信息并提供综合分析。只回答重点就好，记得不废话。回答要结论先说，可以适当使用emoji，markdown格式，如果没找到就简短回答，说未提及就好。"
     
     def process_document(self, document: Document, processing_prompt: str, model_type: str) -> str:
@@ -2434,13 +3015,21 @@ class SECEarningsAnalyzer:
                     if hasattr(document, 'form_type') and document.form_type == '6-K':
                         # 6-K文件应该已经在SixKProcessor中处理过了。如果这里内容仍然为空，说明没有找到ex99附件
                         logger.info(f"ℹ️ [6K-PROCESS] 6-K文件内容为空: {document.title} (可能没有ex99附件)")
-                        document.content = "6-K文件未包含ex99附件" if language == "中文" else "6-K file contains no ex99 attachments"
+                        if language == "中文":
+                            document.content = "6-K文件未包含ex99附件"
+                        elif language == "العربية":
+                            document.content = "ملف 6-K لا يحتوي على مرفقات ex99"
+                        else:
+                            document.content = "6-K file contains no ex99 attachments"
                     else:
                         # 普通SEC文件处理
                         document.content = self.sec_service.download_filing(document.url)
                 elif document.type == 'HK Stock Filing':
                     # 港股文件处理
                     document.content = self.hk_service.download_hk_filing(document.url)
+                elif document.type == 'Saudi Exchange Filing':
+                    # 沙特交易所文件处理
+                    document.content = self.saudi_service.download_saudi_filing(document.url)
                 elif document.type == 'Earnings Call':
                     # 在新的流程中，内容已预先获取
                     logger.warning(f"处理文档时发现财报记录内容为空: {document.title}")
@@ -2532,13 +3121,21 @@ class SECEarningsAnalyzer:
                     if hasattr(document, 'form_type') and document.form_type == '6-K':
                         # 6-K文件应该已经在SixKProcessor中处理过了。如果这里内容仍然为空，说明没有找到ex99附件
                         logger.info(f"ℹ️ [6K-PROCESS] 6-K文件内容为空: {document.title} (可能没有ex99附件)")
-                        document.content = "6-K文件未包含ex99附件" if language == "中文" else "6-K file contains no ex99 attachments"
+                        if language == "中文":
+                            document.content = "6-K文件未包含ex99附件"
+                        elif language == "العربية":
+                            document.content = "ملف 6-K لا يحتوي على مرفقات ex99"
+                        else:
+                            document.content = "6-K file contains no ex99 attachments"
                     else:
                         # 普通SEC文件处理
                         document.content = self.sec_service.download_filing(document.url)
                 elif document.type == 'HK Stock Filing':
                     # 港股文件处理
                     document.content = self.hk_service.download_hk_filing(document.url)
+                elif document.type == 'Saudi Exchange Filing':
+                    # 沙特交易所文件处理
+                    document.content = self.saudi_service.download_saudi_filing(document.url)
                 elif document.type == 'Earnings Call':
                     # 在新的流程中，内容已预先获取
                     logger.warning(f"处理文档时发现财报记录内容为空: {document.title}")
@@ -2783,13 +3380,20 @@ class SECEarningsAnalyzer:
             
             # 预处理6-K文件
             logger.info(f"🔍 [6K-FAST] 开始预处理文档，总数: {len(documents)}")
+            
+            # 调试日志：显示传入的文档
+            for i, doc in enumerate(documents):
+                logger.info(f"🔍 [6K-FAST] 传入文档{i+1}: {doc.title}, 类型: {doc.type}, form_type: {getattr(doc, 'form_type', 'None')}")
+            
             processed_documents = []
             
             for i, document in enumerate(documents):
                 logger.info(f"🔍 [6K-FAST] 处理文档{i+1}: {document.title}, 类型: {document.type}")
+                logger.info(f"🔍 [6K-FAST] 文档属性: form_type={getattr(document, 'form_type', 'None')}, date={document.date}")
                 
                 # 特殊处理6-K文件
                 if hasattr(document, 'form_type') and document.form_type == '6-K':
+                    logger.info(f"🔍 [6K-FAST] ✅ 进入6-K处理分支: {document.title}")
                     logger.info(f"🔍 [6K-FAST] 检测到6-K文件，开始处理: {document.title}")
                     
                     # 初始化6-K处理器
@@ -2817,6 +3421,7 @@ class SECEarningsAnalyzer:
                         # 不添加空的6-K文档
                 else:
                     # 非6-K文件，直接添加
+                    logger.info(f"🔍 [6K-FAST] ✅ 非6-K文件，直接添加: {document.title}")
                     processed_documents.append(document)
             
             logger.info(f"🔍 [6K-FAST] 预处理完成，最终文档数: {len(processed_documents)}")
@@ -2829,6 +3434,8 @@ class SECEarningsAnalyzer:
                         document.content = self.sec_service.download_filing(document.url)
                     elif document.type == 'HK Stock Filing':
                         document.content = self.hk_service.download_hk_filing(document.url)
+                    elif document.type == 'Saudi Exchange Filing':
+                        document.content = self.saudi_service.download_saudi_filing(document.url)
                     elif document.type == 'Earnings Call':
                         logger.warning(f"处理文档时发现财报记录内容为空: {document.title}")
                         document.content = "内容未找到" if language == "中文" else "Content not found"
@@ -2887,6 +3494,37 @@ class SECEarningsAnalyzer:
                 - 變化這個字眼，如果問的是變化，就是把多個時間點的資料，整理成表格，下面再文字說明，注意是多個時間點的資料，不是只有兩個時間點的資料
 
                 All Document Contents:
+                {all_content}
+                """
+            elif language == "العربية":
+                prompt = f"""
+                أنت محلل مالي محترف، متخصص في تحليل مستندات مالية متعددة في نفس الوقت.
+
+                متطلبات التحليل: {fast_mode_prompt}
+                
+                المتطلبات:
+                - تحليل جميع المستندات المقدمة بشكل شامل
+                - استخراج المعلومات ذات الصلة وفقاً لمتطلبات المستخدم المحددة
+                - تقديم تحليل دقيق ومهني
+                - تأكد من أن الإجابات تأتي من محتوى المستندات، لا تتخيل
+                - ليس لدي وقت للقراءة، تأكد من أن الإجابات مباشرة ومحددة، لا حاجة للمحادثة المهذبة
+                - اجب دائماً باللغة العربية
+                - عند إخراج markdown، تجنب استخدام $ للعملة واستخدم ＄ لمنع Markdown من عرضها كرياضيات.
+                
+                متطلبات الإجابة:
+                - ابدأ بـ 📊 emoji، متبوعاً بملخص موجز للمستندات التي تم تحليلها
+                - السطر الثاني يبدأ بـ 💡 في سطر جديد، اذكر النتائج مباشرة المتعلقة بسؤال المستخدم
+                - يرجى تقديم نتائج تحليل منظمة، أجب على النقاط الرئيسية فقط، تذكر عدم الثرثرة
+                - الجملة الأولى يجب أن تذكر النقاط الرئيسية بدون مجاملات
+                - يجب أن تبدأ الإجابة بالنتائج، يمكن استخدام الرموز التعبيرية لمساعدة المستخدمين على القراءة، تنسيق markdown
+                - إذا لم تحتو المستندات على معلومات متعلقة بالسؤال، فقط قل "غير مذكور في المستندات" نقطة، جملة واحدة فقط
+                
+                متطلبات الجدول:
+                - إذا احتوى المحتوى على أرقام لنفس المؤشر في نقاط زمنية مختلفة، أو كان السؤال حول التوجيهات، ضع جدولاً محورياً في بداية الإجابة. التنسيق: أسماء صفوف الجدول المحوري هي مؤشرات مختلفة، أسماء الأعمدة هي الوقت الذي تم نشر المؤشرات فيه، الخلايا هي أرقام المؤشرات. ضع كلاً من أرقام التوجيه والأرقام الفعلية من تقرير الربع التالي. ثم اشرح أسفل الجدول المحوري بعد الإنشاء.
+                - إذا احتوى المحتوى على أوصاف تجارية لنفس المؤشر في نقاط زمنية مختلفة، أو كان السؤال حول التوجيهات، ضع جدولاً محورياً في بداية الإجابة. التنسيق: أسماء صفوف الجدول المحوري هي مؤشرات مختلفة، أسماء الأعمدة هي الوقت الذي تم نشر المؤشرات فيه، الخلايا هي أوصاف المؤشرات. ضع كلاً من أرقام التوجيه والأرقام الفعلية من تقرير الربع التالي. ثم اشرح أسفل الجدول المحوري بعد الإنشاء.
+                - إخراج الجدول باستخدام تنسيق markdown، تأكد من أن تنسيق markdown صحيح، بدون أخطاء
+                
+                جميع محتويات المستندات:
                 {all_content}
                 """
             else:  # 中文
@@ -2950,7 +3588,10 @@ class SECEarningsAnalyzer:
 @st.cache_resource
 def initialize_app():
     """初始化应用"""
-    return SECEarningsAnalyzer()
+    analyzer = SECEarningsAnalyzer()
+    # 确保所有服务都已正确初始化
+    logger.info(f"🔧 [INIT] 初始化完成，服务列表: {[attr for attr in dir(analyzer) if attr.endswith('_service')]}")
+    return analyzer
 
 # 主页面
 def main():
@@ -3017,6 +3658,13 @@ def main():
     # 初始化应用
     analyzer = initialize_app()
     
+    # 检查analyzer是否有所需的服务
+    if not hasattr(analyzer, 'saudi_service'):
+        st.error("❌ 应用初始化错误：缺少沙特交易所服务")
+        st.info("🔄 正在清除缓存并重新初始化...")
+        st.cache_resource.clear()
+        st.rerun()
+    
     # 获取当前语言设置
     current_language = st.session_state.get("selected_language", "English")
     lang_config = LANGUAGE_CONFIG[current_language]
@@ -3037,7 +3685,10 @@ def main():
         
         # 智能处理ticker格式
         if ticker_input:
-            if is_hk_stock(ticker_input):
+            if is_saudi_stock(ticker_input):
+                ticker = normalize_saudi_ticker(ticker_input)
+                st.info(f"{lang_config['saudi_stock_info']} - {ticker}")
+            elif is_hk_stock(ticker_input):
                 ticker = normalize_hk_ticker(ticker_input)
                 st.info(lang_config["hk_stock_info"].format(ticker))
             else:
@@ -3068,7 +3719,21 @@ def main():
         # 数据类型选择 - 根据股票类型显示不同选项
         st.subheader(lang_config["data_type_header"])
         
-        if is_hk_stock(ticker):
+        if is_saudi_stock(ticker):
+            # 沙特交易所选项 - 简化为所有公告类型
+            use_sec_reports = True  # 自动选择所有公告
+            use_sec_others = True   # 自动选择所有公告
+            use_earnings = False    # 沙特交易所没有earnings call
+            
+            # 显示信息给用户
+            if current_language == "العربية":
+                st.info("🇸🇦 سيتم تحليل جميع أنواع الإعلانات من السوق السعودية")
+            elif current_language == "中文":
+                st.info("🇸🇦 将分析沙特交易所的所有公告类型")
+            else:
+                st.info("🇸🇦 Will analyze all announcement types from Saudi Exchange")
+                
+        elif is_hk_stock(ticker):
             # 港股选项
             use_sec_reports = st.checkbox(lang_config["sec_reports_hk"], value=st.session_state.analyzer_use_sec_reports)
             use_sec_others = st.checkbox(lang_config["sec_others_hk"], value=st.session_state.analyzer_use_sec_others)
@@ -3141,13 +3806,19 @@ def main():
         st.subheader(lang_config["language_header"])
         selected_language = st.selectbox(
             lang_config["language_label"],
-            options=["English", "中文"],
-            index=0 if st.session_state.get("selected_language", "English") == "English" else 1
+            options=["English", "中文", "العربية"],
+            index=0 if st.session_state.get("selected_language", "English") == "English" else (1 if st.session_state.get("selected_language", "English") == "中文" else 2)
         )
         
         # 如果语言改变，更新session state并重新运行
         if selected_language != st.session_state.get("selected_language", "English"):
             st.session_state.selected_language = selected_language
+            st.rerun()
+        
+        # 调试：清除缓存按钮
+        if st.button("🔄 清除应用缓存", help="如果遇到初始化问题，点击此按钮"):
+            st.cache_resource.clear()
+            st.success("✅ 缓存已清除，页面将重新加载")
             st.rerun()
         
         # 更新session state
@@ -3292,6 +3963,37 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
     status = analyzer.session_manager.get_processing_status()
     language = st.session_state.get("selected_language", "English")
     
+    # 调试参数
+    logger.info(f"🔍 [DEBUG] 函数参数: ticker={ticker}, use_sec_reports={use_sec_reports}, use_sec_others={use_sec_others}, use_earnings={use_earnings}")
+    
+    # 检查对话缓存 - 同一个ticker和years的数据可以复用
+    conversation_cache_key = f"conversation_data_{ticker}_{years}_{use_sec_reports}_{use_sec_others}_{use_earnings}"
+    cached_documents = analyzer.cache_manager.get(conversation_cache_key)
+    
+    if cached_documents and len(cached_documents) > 0:
+        logger.info(f"🔄 [CACHE] 找到缓存的对话数据: {ticker}, {years}年, 共{len(cached_documents)}个文档")
+        # 直接使用缓存的文档，跳过数据获取步骤
+        status.documents = cached_documents
+        status.total_documents = len(cached_documents)
+        
+        # 根据分析模式设置正确的处理步骤
+        if analysis_mode == "fast_mode":
+            status.processing_step = 5  # 快速模式：跳转到快速模式处理
+        else:
+            status.processing_step = 3  # 详细模式：跳到文档处理步骤
+        
+        if language == "English":
+            status.add_status_message(f"📂 Using cached data: {len(cached_documents)} documents")
+            status.current_status_label = f"📂 Using cached conversation data ({len(cached_documents)} documents)"
+        else:
+            status.add_status_message(f"📂 使用缓存数据: {len(cached_documents)} 个文档")
+            status.current_status_label = f"📂 使用缓存的对话数据 ({len(cached_documents)} 个文档)"
+        
+        analyzer.session_manager.update_processing_status(status)
+        logger.info(f"🚀 [CACHE] 跳过数据获取，直接开始处理缓存文档")
+    else:
+        logger.info(f"🔍 [CACHE] 未找到缓存数据，将重新获取: {conversation_cache_key}")
+    
     # 检查是否已请求停止
     if status.stop_requested:
         return
@@ -3320,13 +4022,13 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                 status.add_status_message("🔍 解析問題內容...")
                 analyzer.session_manager.update_processing_status(status)
                 
-                status.current_status_label = "🤖 調用AI模型分析..."
-                status.add_status_message("🤖 調用AI模型分析...")
+                status.current_status_label = "🤖 AI is analyzing..."
+                status.add_status_message("🤖 AI is analyzing...")
                 analyzer.session_manager.update_processing_status(status)
             
             # 创建AI分析状态显示
             ai_analysis_placeholder = st.empty()
-            with ai_analysis_placeholder.status("🤖 AI正在分析您的问题...", expanded=True) as ai_analysis_status:
+            with ai_analysis_placeholder.status("🤖 AI is analyzing...", expanded=True) as ai_analysis_status:
                 if language == "English":
                     ai_analysis_status.write("🔍 Parsing question intent...")
                     ai_analysis_status.write(f"📝 Question: {status.user_question}")
@@ -3334,11 +4036,11 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                     ai_analysis_status.write("🧠 Calling AI model to generate analysis prompts...")
                     ai_analysis_status.write("⏳ Waiting for AI response...")
                 else:
-                    ai_analysis_status.write("🔍 正在解析问题意图...")
-                    ai_analysis_status.write(f"📝 问题: {status.user_question}")
-                    ai_analysis_status.write(f"📊 股票: {ticker}")
-                    ai_analysis_status.write("🧠 正在调用AI模型生成分析提示词...")
-                    ai_analysis_status.write("⏳ 等待AI响应中...")
+                    ai_analysis_status.write("🔍 Parsing question intent...")
+                    ai_analysis_status.write(f"📝 Question: {status.user_question}")
+                    ai_analysis_status.write(f"📊 Stock: {ticker}")
+                    ai_analysis_status.write("🧠 Calling AI model to generate analysis prompts...")
+                    ai_analysis_status.write("⏳ Waiting for AI response...")
                 
                 # 根据分析模式选择不同的处理逻辑
                 if analysis_mode == "fast_mode":
@@ -3391,6 +4093,8 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                     selected_forms.extend(OTHER_FORMS)
 
                 # 获取文件 - 根据股票代码类型选择不同的服务
+                logger.info(f"🔍 [DEBUG-EN] 股票类型判断: ticker={ticker}, is_hk={is_hk_stock(ticker)}, is_saudi={is_saudi_stock(ticker)}")
+                logger.info(f"🔍 [DEBUG-EN] selected_forms: {selected_forms}")
                 if selected_forms:
                     if is_hk_stock(ticker):
                         # 港股文件
@@ -3416,6 +4120,29 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                         hk_filings = analyzer.hk_service.get_hk_filings(ticker, years, forms_to_include=hk_forms, status_callback=hk_status_callback)
                         all_docs.extend(hk_filings)
                         status.add_status_message(f"✅ Successfully retrieved {len(hk_filings)} Hong Kong stock filings")
+                    elif is_saudi_stock(ticker):
+                        # 沙特交易所文件
+                        logger.info(f"🔍 [DEBUG-EN] 检测到沙特股票: {ticker}")
+                        status.current_status_label = "🇸🇦 Connecting to Saudi Exchange..."
+                        status.add_status_message("🇸🇦 Connecting to Saudi Exchange...")
+                        analyzer.session_manager.update_processing_status(status)
+                        
+                        status.current_status_label = "📄 Retrieving Saudi Exchange announcements..."
+                        status.add_status_message("📄 Retrieving Saudi Exchange announcements...")
+                        analyzer.session_manager.update_processing_status(status)
+                        
+                        def saudi_status_callback(msg):
+                            status.add_status_message(msg)
+                            analyzer.session_manager.update_processing_status(status)
+                        
+                        saudi_filings = analyzer.saudi_service.get_saudi_filings(ticker, years, status_callback=saudi_status_callback)
+                        logger.info(f"🔍 [DEBUG-EN] saudi_filings 返回结果: 类型={type(saudi_filings)}, 长度={len(saudi_filings) if saudi_filings else 'None'}")
+                        if saudi_filings:
+                            for i, doc in enumerate(saudi_filings[:3]):  # 只显示前3个
+                                logger.info(f"🔍 [DEBUG-EN] saudi_filings[{i}]: {doc.title}, 类型={doc.type}, 日期={doc.date}")
+                        all_docs.extend(saudi_filings)
+                        logger.info(f"🔍 [DEBUG-EN] all_docs.extend后: all_docs长度={len(all_docs)}")
+                        status.add_status_message(f"✅ Successfully retrieved {len(saudi_filings)} Saudi Exchange announcements")
                     else:
                         # 美股SEC文件
                         status.current_status_label = "🇺🇸 Connecting to SEC database..."
@@ -3542,9 +4269,52 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                 analyzer.session_manager.update_processing_status(status)
                 
                 all_docs.sort(key=lambda x: x.date, reverse=True)
+                
+                # 沙特交易所文档并发下载内容
+                saudi_docs = [doc for doc in all_docs if doc.type == 'Saudi Exchange Filing']
+                if saudi_docs:
+                    status.add_status_message(f"🚀 Pre-downloading {len(saudi_docs)} Saudi Exchange documents...")
+                    analyzer.session_manager.update_processing_status(status)
+                    logger.info(f"🚀 [SAUDI-BATCH] 开始预下载 {len(saudi_docs)} 个沙特文档")
+                    
+                    # 创建沙特下载状态显示
+                    saudi_download_placeholder = st.empty()
+                    
+                    def saudi_status_callback(message, completed, total):
+                        with saudi_download_placeholder.container():
+                            st.info(f"🇸🇦 **Saudi Exchange Download Status**")
+                            st.progress(completed / total if total > 0 else 0)
+                            st.write(f"{message}")
+                            st.write(f"Progress: {completed}/{total}")
+                    
+                    # 使用批量下载
+                    all_docs = analyzer.saudi_service.download_saudi_filings_batch(
+                        all_docs, 
+                        max_workers=5, 
+                        status_callback=saudi_status_callback
+                    )
+                    
+                    # 清除下载状态显示
+                    saudi_download_placeholder.empty()
+                    
+                    status.add_status_message(f"✅ Saudi Exchange documents pre-downloaded")
+                    analyzer.session_manager.update_processing_status(status)
+                
                 status.documents = all_docs
                 status.update_progress(0, len(all_docs), "Document list ready")
                 status.add_status_message(f"✅ Document list ready, total {len(all_docs)} documents")
+                
+                # 缓存对话数据 - 供后续对话复用
+                analyzer.cache_manager.set(conversation_cache_key, all_docs)
+                logger.info(f"💾 [CACHE] 已缓存对话数据: {conversation_cache_key}, 共{len(all_docs)}个文档")
+                
+                # 调试日志：显示文档类型分布
+                doc_types = {}
+                for doc in all_docs:
+                    doc_type = doc.type
+                    doc_types[doc_type] = doc_types.get(doc_type, 0) + 1
+                logger.info(f"📊 [DEBUG] 文档类型分布: {doc_types}")
+                logger.info(f"📊 [DEBUG] 设置status.documents，总数: {len(all_docs)}")
                 
                 # 根据分析模式选择不同的处理步骤
                 if analysis_mode == "fast_mode":
@@ -3600,6 +4370,23 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                         hk_filings = analyzer.hk_service.get_hk_filings(ticker, years, forms_to_include=hk_forms, status_callback=hk_status_callback)
                         all_docs.extend(hk_filings)
                         status.add_status_message(f"✅ 成功获取 {len(hk_filings)} 份港股文件")
+                    elif is_saudi_stock(ticker):
+                        # 沙特交易所文件
+                        status.current_status_label = "🇸🇦 正在連接沙特交易所..."
+                        status.add_status_message("🇸🇦 正在連接沙特交易所...")
+                        analyzer.session_manager.update_processing_status(status)
+                        
+                        status.current_status_label = "📄 正在获取沙特交易所公告..."
+                        status.add_status_message("📄 正在获取沙特交易所公告...")
+                        analyzer.session_manager.update_processing_status(status)
+                        
+                        def saudi_status_callback(msg):
+                            status.add_status_message(msg)
+                            analyzer.session_manager.update_processing_status(status)
+                        
+                        saudi_filings = analyzer.saudi_service.get_saudi_filings(ticker, years, status_callback=saudi_status_callback)
+                        all_docs.extend(saudi_filings)
+                        status.add_status_message(f"✅ 成功获取 {len(saudi_filings)} 份沙特交易所公告")
                     else:
                         # 美股SEC文件
                         status.current_status_label = "🇺🇸 正在連接SEC數據庫..."
@@ -3726,9 +4513,59 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                 analyzer.session_manager.update_processing_status(status)
                 
                 all_docs.sort(key=lambda x: x.date, reverse=True)
+                
+                # 沙特交易所文档并发下载内容
+                saudi_docs = [doc for doc in all_docs if doc.type == 'Saudi Exchange Filing']
+                if saudi_docs:
+                    status.add_status_message(f"🚀 预下载 {len(saudi_docs)} 个沙特交易所文档...")
+                    analyzer.session_manager.update_processing_status(status)
+                    logger.info(f"🚀 [SAUDI-BATCH] 开始预下载 {len(saudi_docs)} 个沙特文档")
+                    
+                    # 创建沙特下载状态显示
+                    saudi_download_placeholder = st.empty()
+                    
+                    def saudi_status_callback_cn(message, completed, total):
+                        current_language = st.session_state.get("selected_language", "English")
+                        with saudi_download_placeholder.container():
+                            if current_language == "العربية":
+                                st.info(f"🇸🇦 **حالة تحميل السوق السعودية**")
+                                st.progress(completed / total if total > 0 else 0)
+                                st.write(f"{message}")
+                                st.write(f"التقدم: {completed}/{total}")
+                            else:
+                                st.info(f"🇸🇦 **Saudi Exchange Download Status**")
+                                st.progress(completed / total if total > 0 else 0)
+                                st.write(f"{message}")
+                                st.write(f"Progress: {completed}/{total}")
+                    
+                    # 使用批量下载
+                    all_docs = analyzer.saudi_service.download_saudi_filings_batch(
+                        all_docs, 
+                        max_workers=5, 
+                        status_callback=saudi_status_callback_cn
+                    )
+                    
+                    # 清除下载状态显示
+                    saudi_download_placeholder.empty()
+                    
+                    status.add_status_message(f"✅ 沙特交易所文档预下载完成")
+                    analyzer.session_manager.update_processing_status(status)
+                
                 status.documents = all_docs
-                status.update_progress(0, len(all_docs), "文档列表准备就绪")
+                status.update_progress(0, len(all_docs), "AI is thinking...")
                 status.add_status_message(f"✅ 文档列表准备就绪，共 {len(all_docs)} 份")
+                
+                # 缓存对话数据 - 供后续对话复用
+                analyzer.cache_manager.set(conversation_cache_key, all_docs)
+                logger.info(f"💾 [CACHE] 已缓存对话数据: {conversation_cache_key}, 共{len(all_docs)}个文档")
+                
+                # 调试日志：显示文档类型分布
+                doc_types = {}
+                for doc in all_docs:
+                    doc_type = doc.type
+                    doc_types[doc_type] = doc_types.get(doc_type, 0) + 1
+                logger.info(f"📊 [DEBUG-CN] 文档类型分布: {doc_types}")
+                logger.info(f"📊 [DEBUG-CN] 设置status.documents，总数: {len(all_docs)}")
                 
                 # 根据分析模式选择不同的处理步骤
                 if analysis_mode == "fast_mode":
@@ -4065,13 +4902,12 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
             with ai_status_placeholder.status("⚡ 快速模式AI分析中...", expanded=True) as ai_status:
                 ai_status.write(f"📊 正在同时分析 {len(status.documents)} 个文档")
                 ai_status.write("🧠 正在调用AI模型进行综合分析...")
-                ai_status.write("⏳ 开始流式响应...")
                 
                 # 执行快速模式分析
                 fast_stream = analyzer.process_all_documents_fast(status.documents, fast_mode_prompt, model_type)
                 
-                ai_status.write("✅ 快速分析开始！")
-                ai_status.update(label="✅ 快速分析开始", state="complete")
+                ai_status.write("✅ 快速分析准备完成！")
+                ai_status.update(label="✅ 快速分析准备完成", state="complete")
             
             # 清除AI状态显示
             ai_status_placeholder.empty()
@@ -4079,8 +4915,21 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
             # 显示快速分析结果
             st.markdown("### ⚡ 快速分析结果" if language == "中文" else "### ⚡ Fast Analysis Results")
             
+            # 添加AI思考状态
+            thinking_placeholder = st.empty()
+            if language == "English":
+                thinking_msg = "🤖 AI is thinking now..."
+            elif language == "العربية":
+                thinking_msg = "🤖 الذكاء الاصطناعي يفكر الآن..."
+            else:
+                thinking_msg = "🤖 AI正在思考中..."
+            thinking_placeholder.info(thinking_msg)
+            
             # 使用流式响应显示结果
             final_result = st.write_stream(fast_stream)
+            
+            # 清除思考状态
+            thinking_placeholder.empty()
             
             # 将结果添加到聊天历史中
             result_content = f"### ⚡ {'快速分析结果' if language == '中文' else 'Fast Analysis Results'}\n\n{final_result}"

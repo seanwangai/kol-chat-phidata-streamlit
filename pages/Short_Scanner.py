@@ -49,11 +49,15 @@ from google.genai import types
 from itertools import cycle
 
 # 页面配置
-st.set_page_config(
-    page_title="Short Signal Scanner",
-    page_icon="🎯",
-    layout="wide"
-)
+try:
+    st.set_page_config(
+                    page_title="Short Signal Scanner",
+                    page_icon="🎯",
+        layout="wide"
+    )
+except Exception:
+    # 静默处理页面配置错误
+    pass
 
 # 日志配置
 logging.basicConfig(
@@ -61,6 +65,43 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# 环境变量回退函数
+def get_secret_value(key: str, default=None):
+    """从 st.secrets 或环境变量中获取密钥值"""
+    import os
+    import json
+    from pathlib import Path
+    
+    # 检查 secrets.toml 文件是否存在
+    secrets_paths = [
+        Path(".streamlit/secrets.toml"),
+        Path("/root/.streamlit/secrets.toml"),
+        Path("/app/.streamlit/secrets.toml")
+    ]
+    
+    secrets_file_exists = any(path.exists() for path in secrets_paths)
+    
+    if secrets_file_exists:
+        try:
+            return st.secrets[key]
+        except KeyError:
+            # 如果 secrets.toml 存在但没有该键，回退到环境变量
+            pass
+    
+    # 直接从环境变量读取
+    env_value = os.environ.get(key, default)
+    if env_value is None:
+        return default
+        
+    # 尝试解析 JSON 格式的环境变量（用于列表类型的密钥）
+    if isinstance(env_value, str) and env_value.startswith('[') and env_value.endswith(']'):
+        try:
+            return json.loads(env_value)
+        except json.JSONDecodeError:
+            return env_value
+    
+    return env_value
 
 # 做空信号检测相关的数据类
 @dataclass
@@ -128,6 +169,28 @@ class ShortDetector(ABC):
     def get_analysis_prompt(self, documents: List) -> str:
         """获取分析提示词"""
         pass
+    
+    def _handle_detection_error(self, e: Exception) -> str:
+        """统一处理检测错误，返回友好的错误信息"""
+        error_str = str(e)
+        
+        if "429" in error_str and "RESOURCE_EXHAUSTED" in error_str:
+            # 提取重试延迟时间
+            import re
+            retry_delay_match = re.search(r"'retryDelay': '(\d+)s'", error_str)
+            if retry_delay_match:
+                delay = retry_delay_match.group(1)
+                return f"🚫 Gemini API 配额已用尽，建议等待 {delay} 秒后重试。如果您有付费账户，请检查配额设置。"
+            else:
+                return "🚫 Gemini API 配额已用尽，请稍后重试。如果您有付费账户，请检查您的配额设置。"
+        elif "PERMISSION_DENIED" in error_str:
+            return "🔑 API密钥权限不足，请检查您的Gemini API密钥设置。"
+        elif "INVALID_ARGUMENT" in error_str:
+            return "📝 请求参数无效，可能是输入内容过长或格式不正确。"
+        elif "UNAVAILABLE" in error_str:
+            return "🌐 Gemini API 服务暂时不可用，请稍后重试。"
+        else:
+            return f"❌ {self.name}检测过程中发生错误: {str(e)}"
     
     def parse_ai_response(self, response: str) -> List[ShortSignal]:
         """解析AI响应为做空信号"""
@@ -233,7 +296,7 @@ class AccountsReceivableDetector(ShortDetector):
                 signals=[],
                 processing_time=time.time() - start_time,
                 success=False,
-                error_message=str(e)
+                error_message=self._handle_detection_error(e)
             )
     
     def get_analysis_prompt(self, documents: List) -> str:
@@ -349,7 +412,7 @@ class MarketPositionDetector(ShortDetector):
                 signals=[],
                 processing_time=time.time() - start_time,
                 success=False,
-                error_message=str(e)
+                error_message=self._handle_detection_error(e)
             )
     
     def get_analysis_prompt(self, documents: List) -> str:
@@ -473,7 +536,7 @@ class InconsistencyDetector(ShortDetector):
                 signals=[],
                 processing_time=time.time() - start_time,
                 success=False,
-                error_message=str(e)
+                error_message=self._handle_detection_error(e)
             )
     
     def get_analysis_prompt(self, documents: List) -> str:
@@ -591,7 +654,7 @@ class MetricsDisclosureDetector(ShortDetector):
                 signals=[],
                 processing_time=time.time() - start_time,
                 success=False,
-                error_message=str(e)
+                error_message=self._handle_detection_error(e)
             )
     
     def get_analysis_prompt(self, documents: List) -> str:
@@ -718,7 +781,7 @@ class EarningsCallAnalysisDetector(ShortDetector):
                 signals=[],
                 processing_time=time.time() - start_time,
                 success=False,
-                error_message=str(e)
+                error_message=self._handle_detection_error(e)
             )
     
     def get_analysis_prompt(self, documents: List) -> str:
@@ -855,7 +918,7 @@ class PeterLynchTurnaroundDetector(ShortDetector):
                 success=False,
                 signals=[],
                 processing_time=processing_time,
-                error_message=str(e)
+                error_message=self._handle_detection_error(e)
             )
     
     def get_analysis_prompt(self, documents: List) -> str:
@@ -892,6 +955,9 @@ class PeterLynchTurnaroundDetector(ShortDetector):
             7. 负面催化剂：监管冲击、诉讼风险、关键客户流失
             8. 管理层失信：频繁变动、执行力差、承诺无法兑现
 
+            title 正面转机前面放📈 负面恶化前面放📉
+            description中 要寫好是 正面转机还是负面恶化
+            
             请仔细分析以下文档，寻找Peter Lynch反转股的信号：
 
             文档内容：
@@ -1026,7 +1092,7 @@ class ShortSignalAnalyzer:
                         signals=[],
                         processing_time=0,
                         success=False,
-                        error_message=str(e)
+                        error_message=handle_gemini_api_error(e)
                     )
                     results.append(error_result)
                     
@@ -2234,8 +2300,30 @@ class HKStockFilingsDownloader:
             return None
 
 # 装饰器
+def handle_gemini_api_error(e: Exception) -> str:
+    """统一处理Gemini API错误，返回友好的错误信息"""
+    error_str = str(e)
+    
+    if "429" in error_str and "RESOURCE_EXHAUSTED" in error_str:
+        # 提取重试延迟时间
+        import re
+        retry_delay_match = re.search(r"'retryDelay': '(\d+)s'", error_str)
+        if retry_delay_match:
+            delay = retry_delay_match.group(1)
+            return f"🚫 Gemini API 配额已用尽，建议等待 {delay} 秒后重试。如果您有付费账户，请检查配额设置。"
+        else:
+            return "🚫 Gemini API 配额已用尽，请稍后重试。如果您有付费账户，请检查您的配额设置。"
+    elif "PERMISSION_DENIED" in error_str:
+        return "🔑 API密钥权限不足，请检查您的Gemini API密钥设置。"
+    elif "INVALID_ARGUMENT" in error_str:
+        return "📝 请求参数无效，可能是输入内容过长或格式不正确。"
+    elif "UNAVAILABLE" in error_str:
+        return "🌐 Gemini API 服务暂时不可用，请稍后重试。"
+    else:
+        return f"❌ API调用失败: {str(e)}"
+
 def retry_on_failure(max_retries: int = config.MAX_RETRIES, delay: float = config.RETRY_DELAY):
-    """重试装饰器"""
+    """重试装饰器 - 智能处理不同类型的错误"""
     def decorator(func):
         def wrapper(*args, **kwargs):
             last_exception = None
@@ -2244,11 +2332,33 @@ def retry_on_failure(max_retries: int = config.MAX_RETRIES, delay: float = confi
                     return func(*args, **kwargs)
                 except Exception as e:
                     last_exception = e
-                    logger.warning(f"函数 {func.__name__} 第 {attempt + 1} 次尝试失败: {e}")
+                    error_str = str(e)
+                    
+                    # 检查是否是配额限制错误
+                    if "429" in error_str and "RESOURCE_EXHAUSTED" in error_str:
+                        logger.warning(f"🚫 API配额限制: {func.__name__} 第 {attempt + 1} 次尝试失败")
+                        
+                        # 从错误信息中提取重试延迟时间
+                        import re
+                        retry_delay_match = re.search(r"'retryDelay': '(\d+)s'", error_str)
+                        if retry_delay_match:
+                            suggested_delay = int(retry_delay_match.group(1))
+                            logger.info(f"⏳ Google建议等待 {suggested_delay} 秒后重试")
+                            if attempt < max_retries - 1:
+                                time.sleep(suggested_delay + 3)  # 额外等待5秒确保配额恢复
+                        else:
+                            # 如果没有找到建议延迟，使用更长的等待时间
+                            quota_delay = 60 * (attempt + 1)  # 第一次60秒，第二次120秒
+                            logger.info(f"⏳ 配额限制，等待 {quota_delay} 秒后重试")
+                            if attempt < max_retries - 1:
+                                time.sleep(quota_delay)
+                    else:
+                        # 其他类型的错误使用正常的指数退避
+                        logger.warning(f"⚠️ {func.__name__} 第 {attempt + 1} 次尝试失败: {e}")
                     if attempt < max_retries - 1:
                         time.sleep(delay * (2 ** attempt))  # 指数退避
             
-            logger.error(f"函数 {func.__name__} 在 {max_retries} 次尝试后仍然失败")
+            logger.error(f"❌ 函数 {func.__name__} 在 {max_retries} 次尝试后仍然失败")
             raise last_exception
         return wrapper
     return decorator
@@ -2278,7 +2388,7 @@ class SessionManager:
             "analyzer_use_sec_others": False,
             "analyzer_use_earnings": True,
             "analyzer_model": "gemini-2.5-flash",
-            "api_key_cycle": cycle(st.secrets["GOOGLE_API_KEYS"]),
+            "api_key_cycle": cycle(get_secret_value("GOOGLE_API_KEYS", [])),
             "processing_status": ProcessingStatus().__dict__,
             "cache": {},
             "use_premium_api": False,
@@ -2317,7 +2427,7 @@ class GeminiService:
         """获取下一个API密钥"""
         # 檢查是否使用付費API
         if st.session_state.get("use_premium_api", False):
-            return st.secrets["PREMIUM_API_KEY"]
+            return get_secret_value("PREMIUM_API_KEY")
         
         # 使用一般的輪換API
         if hasattr(st.session_state, 'api_key_cycle'):
@@ -2325,7 +2435,7 @@ class GeminiService:
         else:
             # 如果session state未初始化，使用备用方案
             if not hasattr(self, '_api_key_cycle'):
-                api_keys = st.secrets["GOOGLE_API_KEYS"]
+                api_keys = get_secret_value("GOOGLE_API_KEYS", [])
                 self._api_key_cycle = cycle(api_keys)
             return next(self._api_key_cycle)
     
@@ -3665,7 +3775,8 @@ def main():
     query_params = st.query_params
     if "p" in query_params:
         param_value = query_params["p"]
-        if param_value.lower() == st.secrets["ACCESS_CODE"].lower():
+        access_code = get_secret_value("ACCESS_CODE", "")
+        if param_value.lower() == access_code.lower():
             st.session_state.use_premium_api = True
             st.session_state.premium_access_code = param_value
             st.success("🎉 已啟用付費API服務！")
@@ -3713,6 +3824,16 @@ def main():
             value=st.session_state.analyzer_years,
             step=1
         )
+        
+        # 动态显示 cutoff date
+        current_year = datetime.now().year
+        cutoff_date = datetime(current_year - years + 1, 1, 1).date()
+        
+        # 添加说明
+        if current_language == "中文":
+            st.caption(f"📅 Data Date: {cutoff_date} ~ now")
+        else:
+            st.caption(f"📅 Data Date: {cutoff_date} ~ now")
         
         # 数据类型选择 - 根据股票类型显示不同选项
         st.subheader(lang_config["data_type_header"])
@@ -3802,7 +3923,8 @@ def main():
         
         # 檢查輸入
         if access_code:
-            if access_code.lower() == st.secrets["ACCESS_CODE"].lower():
+            valid_access_code = get_secret_value("ACCESS_CODE", "")
+            if access_code.lower() == valid_access_code.lower():
                 if not st.session_state.get("use_premium_api", False):
                     st.session_state.use_premium_api = True
                     st.session_state.premium_access_code = access_code
@@ -4232,7 +4354,7 @@ def process_short_signal_scan(analyzer: SECEarningsAnalyzer, short_analyzer: Sho
                         signals=[],
                         processing_time=0,
                         success=False,
-                        error_message=str(e)
+                        error_message=handle_gemini_api_error(e)
                     )
                     
                     if 'current_scan_results' not in st.session_state:

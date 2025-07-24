@@ -27,10 +27,8 @@ SPEAKER_EMOJIS = ["👨‍💼", "👩‍💼", "👨‍💻", "👩‍💻", "�
 
 # 定义可用的模型
 MODELS = {
-    "gemini-2.0-flash-exp": "Gemini Flash",
-    "gemini-2.0-flash-thinking-exp-1219": "Gemini Flash Thinking",
-    "gemini-exp-1206": "Gemini 1206",
-    "deepseek": "DeepSeek"
+    "gemini-2.5-flash": "Gemini 2.5 Flash",
+    "gemini-2.5-pro": "Gemini 2.5 Pro"
 }
 
 # 初始化所有必要的 session state 变量
@@ -45,7 +43,7 @@ def init_session_state():
     if "transcripts_data" not in st.session_state:
         st.session_state.transcripts_data = {}
     if "current_model" not in st.session_state:
-        st.session_state.current_model = "gemini-2.0-flash-exp"
+        st.session_state.current_model = "gemini-2.5-flash"
     if "company_quarters_info" not in st.session_state:
         st.session_state.company_quarters_info = []
     if "competitor_count" not in st.session_state:

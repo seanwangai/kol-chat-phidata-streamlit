@@ -8,6 +8,42 @@ from utils import get_expert_content
 import random
 from itertools import cycle
 
+def get_secret_value(key: str, default=None):
+    """从 st.secrets 或环境变量中获取密钥值"""
+    import os
+    import json
+    from pathlib import Path
+    
+    # 检查 secrets.toml 文件是否存在
+    secrets_paths = [
+        Path(".streamlit/secrets.toml"),
+        Path("/root/.streamlit/secrets.toml"),
+        Path("/app/.streamlit/secrets.toml")
+    ]
+    
+    secrets_file_exists = any(path.exists() for path in secrets_paths)
+    
+    if secrets_file_exists:
+        try:
+            return st.secrets[key]
+        except KeyError:
+            # 如果 secrets.toml 存在但没有该键，回退到环境变量
+            pass
+    
+    # 直接从环境变量读取
+    env_value = os.environ.get(key, default)
+    if env_value is None:
+        return default
+        
+    # 尝试解析 JSON 格式的环境变量（用于列表类型的密钥）
+    if isinstance(env_value, str) and env_value.startswith('[') and env_value.endswith(']'):
+        try:
+            return json.loads(env_value)
+        except json.JSONDecodeError:
+            return env_value
+    
+    return env_value
+
 
 # 定义可用的头像列表
 AVATARS = ["🤓", "🧙‍♂️", "👨‍🔬", "👩‍🔬", "👨‍💻", "👩‍💻",
@@ -27,7 +63,8 @@ def get_next_api_key():
     """获取下一个API key"""
     global api_key_cycle
     if api_key_cycle is None:
-        api_key_cycle = cycle(st.secrets["GOOGLE_API_KEYS"])
+        api_keys = get_secret_value("GOOGLE_API_KEYS", [])
+        api_key_cycle = cycle(api_keys)
     return next(api_key_cycle)
 
 
@@ -40,7 +77,7 @@ def create_model(model_type: str):
         )
     elif model_type == "deepseek":
         return DeepSeekChat(
-            api_key=st.secrets["DEEPSEEK_API_KEY"],
+            api_key=get_secret_value("DEEPSEEK_API_KEY"),
         )
     else:
         raise ValueError(f"不支持的模型类型: {model_type}")

@@ -9,6 +9,7 @@ Features:
 - 实时进度跟踪
 - 错误处理和重试机制
 - 缓存优化
+- 做空信号自动检测系统
 """
 
 import streamlit as st
@@ -33,6 +34,8 @@ import html
 from urllib.parse import urljoin
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+from abc import ABC, abstractmethod
+from enum import Enum
 
 # 配置选项：是否保存transcript文件到磁盘
 SAVE_TRANSCRIPT_FILES = os.getenv("SAVE_TRANSCRIPT_FILES", "false").lower() == "true"
@@ -44,12 +47,13 @@ import httpx
 from google import genai
 from google.genai import types
 from itertools import cycle
+from newspaper import Article
 
 # 页面配置
 try:
     st.set_page_config(
-        page_title="SEC & 财报会议记录分析师",
-        page_icon="📊",
+                    page_title="Short Signal Scanner",
+                    page_icon="🎯",
         layout="wide"
     )
 except Exception:
@@ -63,13 +67,1429 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# 环境变量回退函数
+def get_secret_value(key: str, default=None):
+    """从 st.secrets 或环境变量中获取密钥值"""
+    import os
+    import json
+    from pathlib import Path
+    
+    # 检查 secrets.toml 文件是否存在
+    secrets_paths = [
+        Path(".streamlit/secrets.toml"),
+        Path("/root/.streamlit/secrets.toml"),
+        Path("/app/.streamlit/secrets.toml")
+    ]
+    
+    secrets_file_exists = any(path.exists() for path in secrets_paths)
+    
+    if secrets_file_exists:
+        try:
+            return st.secrets[key]
+        except KeyError:
+            # 如果 secrets.toml 存在但没有该键，回退到环境变量
+            pass
+    
+    # 直接从环境变量读取
+    env_value = os.environ.get(key, default)
+    if env_value is None:
+        return default
+        
+    # 尝试解析 JSON 格式的环境变量（用于列表类型的密钥）
+    if isinstance(env_value, str) and env_value.startswith('[') and env_value.endswith(']'):
+        try:
+            return json.loads(env_value)
+        except json.JSONDecodeError:
+            return env_value
+    
+    return env_value
+
+# 做空信号检测相关的数据类
+@dataclass
+class ShortSignal:
+    """做空信号数据类"""
+    signal_type: str
+    severity: str  # "High", "Medium", "Low"
+    confidence: float  # 0-1
+    title: str
+    description: str
+    evidence: str
+    recommendation: str
+    source_documents: List[str]
+    detected_at: datetime
+    
+class SignalSeverity(Enum):
+    HIGH = "High"
+    MEDIUM = "Medium"
+    LOW = "Low"
+
+@dataclass
+class DetectionResult:
+    """检测结果数据类"""
+    detector_name: str
+    signals: List[ShortSignal]
+    processing_time: float
+    success: bool
+    error_message: Optional[str] = None
+    analyzed_documents: List[str] = field(default_factory=list)
+
+# 做空信号检测器基类
+class ShortDetector(ABC):
+    """做空信号检测器基类"""
+    
+    def __init__(self, name_zh: str, name_en: str, description_zh: str, description_en: str, priority: int = 50):
+        self.name_zh = name_zh
+        self.name_en = name_en
+        self.description_zh = description_zh
+        self.description_en = description_en
+        self.priority = priority  # 优先级，数字越小优先级越高
+        self.gemini_service = None
+    
+    @property
+    def name(self) -> str:
+        """根据当前语言返回名称"""
+        language = st.session_state.get("selected_language", "English")
+        return self.name_zh if language == "中文" else self.name_en
+    
+    @property
+    def description(self) -> str:
+        """根据当前语言返回描述"""
+        language = st.session_state.get("selected_language", "English")
+        return self.description_zh if language == "中文" else self.description_en
+        
+    def set_gemini_service(self, service):
+        """设置Gemini服务"""
+        self.gemini_service = service
+    
+    @abstractmethod
+    def detect(self, documents: List, model_type: str) -> DetectionResult:
+        """检测做空信号"""
+        pass
+    
+    @abstractmethod
+    def get_analysis_prompt(self, documents: List) -> str:
+        """获取分析提示词"""
+        pass
+    
+    def _handle_detection_error(self, e: Exception) -> str:
+        """统一处理检测错误，返回友好的错误信息"""
+        error_str = str(e)
+        
+        if "429" in error_str and "RESOURCE_EXHAUSTED" in error_str:
+            # 提取重试延迟时间
+            import re
+            retry_delay_match = re.search(r"'retryDelay': '(\d+)s'", error_str)
+            if retry_delay_match:
+                delay = retry_delay_match.group(1)
+                return f"🚫 Gemini API 配额已用尽，建议等待 {delay} 秒后重试。如果您有付费账户，请检查配额设置。"
+            else:
+                return "🚫 Gemini API 配额已用尽，请稍后重试。如果您有付费账户，请检查您的配额设置。"
+        elif "PERMISSION_DENIED" in error_str:
+            return "🔑 API密钥权限不足，请检查您的Gemini API密钥设置。"
+        elif "INVALID_ARGUMENT" in error_str:
+            return "📝 请求参数无效，可能是输入内容过长或格式不正确。"
+        elif "UNAVAILABLE" in error_str:
+            return "🌐 Gemini API 服务暂时不可用，请稍后重试。"
+        else:
+            return f"❌ {self.name}检测过程中发生错误: {str(e)}"
+    
+    def parse_ai_response(self, response: str) -> List[ShortSignal]:
+        """解析AI响应为做空信号"""
+        try:
+            # 尝试解析JSON响应
+            match = re.search(r"```json\s*(\{.*?\})\s*```", response, re.DOTALL)
+            if match:
+                json_str = match.group(1)
+            else:
+                json_str = response.strip()
+            
+            # 清理可能的转义字符问题
+            json_str = self._clean_json_string(json_str)
+            
+            data = json.loads(json_str)
+            signals = []
+            
+            for signal_data in data.get("signals", []):
+                # 确保所有字符串字段都是字符串类型
+                def safe_str(value, default=""):
+                    if value is None:
+                        return default
+                    if isinstance(value, (dict, list)):
+                        return str(value)
+                    return str(value)
+                
+                signal = ShortSignal(
+                    signal_type=safe_str(signal_data.get("signal_type"), "Unknown"),
+                    severity=safe_str(signal_data.get("severity"), "Low"),
+                    confidence=float(signal_data.get("confidence", 0.5)),
+                    title=safe_str(signal_data.get("title")),
+                    description=safe_str(signal_data.get("description")),
+                    evidence=safe_str(signal_data.get("evidence")),
+                    recommendation=safe_str(signal_data.get("recommendation")),
+                    source_documents=signal_data.get("source_documents", []),
+                    detected_at=datetime.now()
+                )
+                signals.append(signal)
+            
+            return signals
+            
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.warning(f"解析AI响应失败: {e}")
+            logger.warning(f"原始响应: {response[:200]}...")
+            # 如果JSON解析失败，创建一个通用信号
+            return [ShortSignal(
+                signal_type=self.name,
+                severity="Medium",
+                confidence=0.3,
+                title="检测结果",
+                description=response[:500] + "..." if len(response) > 500 else response,
+                evidence="AI检测结果",
+                recommendation="需要人工审核",
+                source_documents=[],
+                detected_at=datetime.now()
+            )]
+    
+    def _clean_json_string(self, json_str: str) -> str:
+        """清理JSON字符串中的问题转义字符"""
+        # 修复常见的转义字符问题
+        json_str = json_str.replace('$', '＄')  # 修复美元符号转义
+        # json_str = json_str.replace('\\"', '"')  # 确保引号正确转义
+        # json_str = json_str.replace('\\\\', '\\')  # 修复双反斜杠
+        
+        # 移除可能的控制字符
+        json_str = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', json_str)
+        
+        return json_str
+
+# 具体的检测器实现
+class AccountsReceivableDetector(ShortDetector):
+    """应收账款异常检测器"""
+    
+    def __init__(self):
+        super().__init__(
+            name_zh="应收账款异常检测",
+            name_en="Accounts Receivable Anomaly Detection",
+            description_zh="检测应收账款的异常变动，如突然减少但转移到长期应收款的原因",
+            description_en="Detects abnormal changes in accounts receivable, such as sudden decreases while transferring to long-term receivables",
+            priority=50
+        )
+    
+    def detect(self, documents: List, model_type: str) -> DetectionResult:
+        start_time = time.time()
+        
+        try:
+            prompt = self.get_analysis_prompt(documents)
+            response = self.gemini_service.call_api(prompt, model_type)
+            signals = self.parse_ai_response(response)
+            
+            return DetectionResult(
+                detector_name=self.name,
+                signals=signals,
+                processing_time=time.time() - start_time,
+                success=True,
+                analyzed_documents=[doc.title for doc in documents]
+            )
+            
+        except Exception as e:
+            logger.error(f"应收账款检测失败: {e}")
+            return DetectionResult(
+                detector_name=self.name,
+                signals=[],
+                processing_time=time.time() - start_time,
+                success=False,
+                error_message=self._handle_detection_error(e)
+            )
+    
+    def get_analysis_prompt(self, documents: List) -> str:
+        language = st.session_state.get("selected_language", "中文")
+        
+        if language == "中文":
+            return f"""
+            你是一个专业的财务造假检测专家，专门检测应收账款的异常变动。你還是專業的Hedge Fund基金經理分析師，熟知各種金融知識，熟知各種金融知識
+
+            检测重点：
+            1. 应收账款突然大幅减少，但同时长期应收款增加
+            2. 应收账款周转率异常变化
+            3. 应收账款减少的原因说明是否合理
+            4. 是否存在将流动资产转为非流动资产的造假行为
+
+            请仔细分析以下文档，寻找应收账款相关的异常信号：
+
+            文档内容：
+            {self._format_documents(documents)}
+
+            请以JSON格式返回检测结果：
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "应收账款异常",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "信号标题",
+                        "description": "详细描述发现的异常",
+                        "evidence": "具体证据和数据，純文字說明",
+                        "recommendation": "建议采取的行动",
+                        "source_documents": ["文档1", "文档2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+        elif language == "العربية":
+            return f"""
+            أنت خبير متخصص في كشف الاحتيال المالي، وتختص في كشف التغيرات الشاذة في الذمم المدينة. أنت أيضاً محلل صندوق تحوط محترف يعرف جميع أنواع المعرفة المالية.
+
+            نقاط التركيز في الكشف:
+            1. انخفاض مفاجئ وكبير في الذمم المدينة مع زيادة في الذمم المدينة طويلة الأجل
+            2. تغيرات شاذة في معدل دوران الذمم المدينة
+            3. ما إذا كانت التفسيرات لانخفاض الذمم المدينة معقولة
+            4. هل يوجد دليل على تحويل الأصول المتداولة إلى أصول غير متداولة بطريقة احتيالية
+
+            يرجى تحليل الوثائق التالية للعثور على الإشارات الشاذة المتعلقة بالذمم المدينة:
+
+            محتوى الوثائق:
+            {self._format_documents(documents)}
+
+            يرجى إرجاع نتائج الكشف بصيغة JSON:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "شذوذ في الذمم المدينة",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "عنوان الإشارة",
+                        "description": "وصف مفصل للشذوذ المكتشف",
+                        "evidence": "الأدلة والبيانات المحددة، شرح نصي بحت",
+                        "recommendation": "الإجراء المقترح",
+                        "source_documents": ["الوثيقة1", "الوثيقة2"]
+                    }}
+                ]
+            }}
+            ```
+            
+            Always answer in Arabic.
+            """
+        else:
+            return f"""
+            You are a professional financial fraud detection expert specializing in accounts receivable anomaly detection.
+
+            Detection Focus:
+            1. Sudden significant decrease in accounts receivable with simultaneous increase in long-term receivables
+            2. Abnormal changes in accounts receivable turnover ratio
+            3. Whether explanations for accounts receivable decreases are reasonable
+            4. Evidence of fraudulent conversion of current assets to non-current assets
+
+            Please analyze the following documents for accounts receivable related anomalies:
+
+            Document Content:
+            {self._format_documents(documents)}
+
+            Return detection results in JSON format:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "Accounts Receivable Anomaly",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "Signal Title",
+                        "description": "Detailed description of anomaly",
+                        "evidence": "Specific evidence and data, explain in text",
+                        "recommendation": "Recommended action",
+                        "source_documents": ["Document1", "Document2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+    
+    def _format_documents(self, documents: List) -> str:
+        """格式化文档内容"""
+        formatted = ""
+        for doc in documents:
+            formatted += f"\n=== {doc.title} ({doc.date}) ===\n"
+            formatted += f"{doc.content}\n"
+        return formatted
+
+class MarketPositionDetector(ShortDetector):
+    """市场地位变化检测器"""
+    
+    def __init__(self):
+        super().__init__(
+            name_zh="市场地位变化检测",
+            name_en="Market Position Change Detection",
+            description_zh="检测公司从行业龙头地位下滑或面临强劲竞争对手，重点关注护城河是否被打破",
+            description_en="Detects company's decline from industry leadership or facing strong competitors, focusing on whether competitive moats are being breached",
+            priority=20
+        )
+    
+    def detect(self, documents: List, model_type: str) -> DetectionResult:
+        start_time = time.time()
+        
+        try:
+            prompt = self.get_analysis_prompt(documents)
+            response = self.gemini_service.call_api(prompt, model_type)
+            signals = self.parse_ai_response(response)
+            
+            return DetectionResult(
+                detector_name=self.name,
+                signals=signals,
+                processing_time=time.time() - start_time,
+                success=True,
+                analyzed_documents=[doc.title for doc in documents]
+            )
+            
+        except Exception as e:
+            logger.error(f"市场地位检测失败: {e}")
+            return DetectionResult(
+                detector_name=self.name,
+                signals=[],
+                processing_time=time.time() - start_time,
+                success=False,
+                error_message=self._handle_detection_error(e)
+            )
+    
+    def get_analysis_prompt(self, documents: List) -> str:
+        language = st.session_state.get("selected_language", "中文")
+        
+        if language == "中文":
+            return f"""
+            你是一个专业的行业分析师，专门检测公司市场地位的变化。你還是專業的Hedge Fund基金經理分析師，熟知各種金融知識
+
+            检测重点：
+            1. 公司市场份额是否在下降
+            2. 是否出现强劲的竞争对手
+            3. 行业排名是否从第一名滑落
+            4. 竞争优势是否在减弱
+            5. 管理层对竞争态势的描述变化
+            6. 护城河是否被打破（技术壁垒、品牌优势、规模经济、网络效应等）
+            7. 传统竞争优势是否被新技术或商业模式颠覆
+            8. earning call transcript 中，Q&A環節分析師是否問了公司競爭對手相關的問題，然後公司回答是否合理
+
+            请仔细分析以下文档，寻找市场地位变化的信号：
+
+            文档内容：
+            {self._format_documents(documents)}
+
+            请以JSON格式返回检测结果：
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "市场地位下滑",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "信号标题",
+                        "description": "详细描述市场地位变化",
+                        "evidence": "具体证据和数据，純文字說明",
+                        "recommendation": "建议采取的行动",
+                        "source_documents": ["文档1", "文档2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+        elif language == "العربية":
+            return f"""
+            أنت محلل صناعة محترف متخصص في كشف التغيرات في موقف الشركة السوقي. أنت أيضاً محلل صندوق تحوط محترف يعرف جميع أنواع المعرفة المالية.
+
+            نقاط التركيز في الكشف:
+            1. هل تتراجع حصة الشركة في السوق
+            2. هل ظهر منافسون أقوياء
+            3. هل انزلقت من المرتبة الأولى في الصناعة
+            4. هل تتضعف الميزة التنافسية
+            5. تغيرات في وصف الإدارة للوضع التنافسي
+            6. هل تم كسر الخندق المائي (الحواجز التكنولوجية، مزايا العلامة التجارية، وفورات الحجم، تأثيرات الشبكة، إلخ)
+            7. هل يتم تعطيل الميزة التنافسية التقليدية بواسطة تقنيات أو نماذج أعمال جديدة
+            8. في نص مكالمة الأرباح، هل طرح المحللون أسئلة حول المنافسين في جلسة الأسئلة والأجوبة، وهل كانت إجابة الشركة معقولة
+
+            يرجى تحليل الوثائق التالية للعثور على إشارات تغير الموقف السوقي:
+
+            محتوى الوثائق:
+            {self._format_documents(documents)}
+
+            يرجى إرجاع نتائج الكشف بصيغة JSON:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "تراجع الموقف السوقي",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "عنوان الإشارة",
+                        "description": "وصف مفصل لتغير الموقف السوقي",
+                        "evidence": "الأدلة والبيانات المحددة، شرح نصي بحت",
+                        "recommendation": "الإجراء المقترح",
+                        "source_documents": ["الوثيقة1", "الوثيقة2"]
+                    }}
+                ]
+            }}
+            ```
+            
+            Always answer in Arabic.
+            """
+        else:
+            return f"""
+            You are a professional industry analyst specializing in detecting changes in company market position.
+
+            Detection Focus:
+            1. Declining market share
+            2. Emergence of strong competitors
+            3. Fall from industry leadership position
+            4. Weakening competitive advantages
+            5. Changes in management's description of competitive landscape
+            6. Breach of competitive moats (technology barriers, brand advantages, economies of scale, network effects, etc.)
+            7. Traditional competitive advantages being disrupted by new technologies or business models
+            8. Whether analysts asked questions about competitors in the Q&A session of the earnings call transcript.
+
+            Please analyze the following documents for market position change signals:
+
+            Document Content:
+            {self._format_documents(documents)}
+
+            Return detection results in JSON format:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "Market Position Decline",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "Signal Title",
+                        "description": "Detailed description of position change",
+                        "evidence": "Specific evidence and data, explain in text",
+                        "recommendation": "Recommended action",
+                        "source_documents": ["Document1", "Document2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+    
+    def _format_documents(self, documents: List) -> str:
+        """格式化文档内容"""
+        formatted = ""
+        for doc in documents:
+            formatted += f"\n=== {doc.title} ({doc.date}) ===\n"
+            formatted += f"{doc.content}\n"
+        return formatted
+
+class InconsistencyDetector(ShortDetector):
+    """前后不一致检测器"""
+    
+    def __init__(self):
+        super().__init__(
+            name_zh="前后不一致检测",
+            name_en="Internal Inconsistency Detection",
+            description_zh="检测同一文档内不同部门描述不一致或前后矛盾",
+            description_en="Detects inconsistencies or contradictions between different departments or sections within the same document",
+            priority=15
+        )
+    
+    def detect(self, documents: List, model_type: str) -> DetectionResult:
+        start_time = time.time()
+        
+        try:
+            prompt = self.get_analysis_prompt(documents)
+            response = self.gemini_service.call_api(prompt, model_type)
+            signals = self.parse_ai_response(response)
+            
+            return DetectionResult(
+                detector_name=self.name,
+                signals=signals,
+                processing_time=time.time() - start_time,
+                success=True,
+                analyzed_documents=[doc.title for doc in documents]
+            )
+            
+        except Exception as e:
+            logger.error(f"前后不一致检测失败: {e}")
+            return DetectionResult(
+                detector_name=self.name,
+                signals=[],
+                processing_time=time.time() - start_time,
+                success=False,
+                error_message=self._handle_detection_error(e)
+            )
+    
+    def get_analysis_prompt(self, documents: List) -> str:
+        language = st.session_state.get("selected_language", "中文")
+        
+        if language == "中文":
+            return f"""
+            你是一个专业的财务造假检测专家，专门检测文档内部的前后不一致。你還是專業的Hedge Fund基金經理分析師，熟知各種金融知識
+
+            检测重点：
+            1. 同一文档中 同一個業務 在不同章節內的描述是否一致 是否矛盾
+            2. 数字与文字描述是否匹配 (特別是年報不同章節可能是不同部門寫的，有造假的公司如果部門之間沒有配合好，會有前後不一致)
+            3. 关键指标的描述是否前后一致
+            4. 比對同一天的財報和earning call transcript，對同一件事情的描述是否存在矛盾
+            5. earning call transcript 比對管理層前面說的，和後面Q&A環節回答的，是否存在矛盾
+
+            请仔细分析以下文档，寻找前后不一致的信号：
+
+            文档内容：
+            {self._format_documents(documents)}
+
+            请以JSON格式返回检测结果：
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "前后不一致",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "信号标题",
+                        "description": "详细描述不一致之处",
+                        "evidence": "具体证据和矛盾点，純文字說明",
+                        "recommendation": "建议采取的行动",
+                        "source_documents": ["文档1", "文档2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+        elif language == "العربية":
+            return f"""
+            أنت خبير متخصص في كشف الاحتيال المالي ومحلل يختص في كشف التناقضات الداخلية. أنت أيضاً محلل صندوق تحوط محترف يعرف جميع أنواع المعرفة المالية.
+
+            نقاط التركيز في الكشف:
+            1. هل أوصاف نفس الأعمال ضمن أقسام مختلفة من نفس الوثيقة متسقة أم متناقضة
+            2. هل تتطابق البيانات الرقمية مع الأوصاف المكتوبة (خاصة أن أقسام مختلفة من التقارير السنوية قد تكون مكتوبة من قبل إدارات مختلفة - إذا كانت الشركة تمارس الاحتيال وهناك نقص في التنسيق بين الإدارات، قد تظهر تناقضات)
+            3. هل أوصاف المؤشرات الرئيسية متسقة داخلياً عبر الوثيقة
+            4. مقارنة التقرير المالي ونص مكالمة الأرباح من نفس اليوم للتحقق من وجود تناقضات في وصف نفس الحدث
+            5. مقارنة تصريحات الإدارة في الجزء الرئيسي من مكالمة الأرباح وردودهم خلال جلسة الأسئلة والأجوبة لمعرفة ما إذا كانت هناك تناقضات
+
+            يرجى تحليل الوثائق التالية للعثور على إشارات التناقض:
+
+            محتوى الوثائق:
+            {self._format_documents(documents)}
+
+            يرجى إرجاع نتائج الكشف بصيغة JSON:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "تناقض داخلي",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "عنوان الإشارة",
+                        "description": "وصف مفصل للتناقض",
+                        "evidence": "الأدلة المحددة ونقاط التناقض، شرح نصي بحت",
+                        "recommendation": "الإجراء المقترح",
+                        "source_documents": ["الوثيقة1", "الوثيقة2"]
+                    }}
+                ]
+            }}
+            ```
+            
+            Always answer in Arabic.
+            """
+        else:
+            return f"""
+            You are a professional financial fraud detection expert analyst specializing in internal inconsistency detection.
+
+            Detection Focus:
+            1. Whether the descriptions of the same business within different sections of the same document are consistent or contradictory.
+            2. Whether the numerical data matches the written descriptions (especially since different sections of annual reports might be written by different departments—if a company is engaged in fraud and there's a lack of coordination between departments, inconsistencies may arise).
+            3. Whether the descriptions of key metrics are internally consistent throughout the document.
+            4. Compare the financial report and the earnings call transcript from the same day to check if there are contradictions in the description of the same event.
+            5. Compare the management's statements in the main part of the earnings call and their responses during the Q&A session to see if any contradictions exist.
+
+            Please analyze the following documents for inconsistency signals:
+
+            Document Content:
+            {self._format_documents(documents)}
+
+            Return detection results in JSON format:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "Internal Inconsistency",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "Signal Title",
+                        "description": "Detailed description of inconsistency",
+                        "evidence": "Specific evidence and contradictions, explain in text",
+                        "recommendation": "Recommended action",
+                        "source_documents": ["Document1", "Document2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+    
+    def _format_documents(self, documents: List) -> str:
+        """格式化文档内容"""
+        formatted = ""
+        for doc in documents:
+            formatted += f"\n=== {doc.title} ({doc.date}) ===\n"
+            formatted += f"{doc.content}\n"
+        return formatted
+
+class MetricsDisclosureDetector(ShortDetector):
+    """关键指标披露停止检测器"""
+    
+    def __init__(self):
+        super().__init__(
+            name_zh="关键指标披露停止检测",
+            name_en="Key Metrics Disclosure Cessation Detection",
+            description_zh="检测原本披露的关键指标突然停止公布",
+            description_en="Detects when previously disclosed key metrics suddenly stop being reported",
+            priority=25
+        )
+    
+    def detect(self, documents: List, model_type: str) -> DetectionResult:
+        start_time = time.time()
+        
+        try:
+            prompt = self.get_analysis_prompt(documents)
+            response = self.gemini_service.call_api(prompt, model_type)
+            signals = self.parse_ai_response(response)
+            
+            return DetectionResult(
+                detector_name=self.name,
+                signals=signals,
+                processing_time=time.time() - start_time,
+                success=True,
+                analyzed_documents=[doc.title for doc in documents]
+            )
+            
+        except Exception as e:
+            logger.error(f"指标披露检测失败: {e}")
+            return DetectionResult(
+                detector_name=self.name,
+                signals=[],
+                processing_time=time.time() - start_time,
+                success=False,
+                error_message=self._handle_detection_error(e)
+            )
+    
+    def get_analysis_prompt(self, documents: List) -> str:
+        language = st.session_state.get("selected_language", "中文")
+        
+        if language == "中文":
+            return f"""
+            你是一个专业的财务分析师，专门检测关键指标披露的变化。你還是專業的Hedge Fund基金經理分析師，熟知各種金融知識
+
+            检测重点：
+            1. 原本定期披露的关键指标是否突然停止公布
+            2. 关键运营指标的披露变化，包括但是不限于GMV、活跃用户、订单量等
+            3. 分业务线数据的披露变化
+            4. 对停止披露的解释是否充分
+
+            请仔细分析以下文档，寻找指标披露停止的信号：
+
+            文档内容：
+            {self._format_documents(documents)}
+
+            请以JSON格式返回检测结果：
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "关键指标披露停止",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "信号标题",
+                        "description": "详细描述停止披露的指标",
+                        "evidence": "具体证据和时间点，純文字說明",
+                        "recommendation": "建议采取的行动",
+                        "source_documents": ["文档1", "文档2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+        elif language == "العربية":
+            return f"""
+            أنت محلل مالي محترف متخصص في كشف التغيرات في الإفصاح عن المؤشرات الرئيسية. أنت أيضاً محلل صندوق تحوط محترف يعرف جميع أنواع المعرفة المالية.
+
+            نقاط التركيز في الكشف:
+            1. هل توقفت المؤشرات الرئيسية المكشوف عنها سابقاً عن النشر فجأة
+            2. تغيرات في الإفصاح عن المؤشرات التشغيلية الرئيسية، بما في ذلك على سبيل المثال لا الحصر إجمالي قيمة البضائع، المستخدمين النشطين، حجم الطلبات، إلخ
+            3. تغيرات في الإفصاح عن بيانات خطوط الأعمال
+            4. كفاية التفسيرات لتوقف الإفصاح
+
+            يرجى تحليل الوثائق التالية للعثور على إشارات توقف الإفصاح عن المؤشرات:
+
+            محتوى الوثائق:
+            {self._format_documents(documents)}
+
+            يرجى إرجاع نتائج الكشف بصيغة JSON:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "توقف الإفصاح عن المؤشرات الرئيسية",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "عنوان الإشارة",
+                        "description": "وصف مفصل للمؤشرات المتوقف عن الإفصاح عنها",
+                        "evidence": "الأدلة المحددة والجدول الزمني، شرح نصي بحت",
+                        "recommendation": "الإجراء المقترح",
+                        "source_documents": ["الوثيقة1", "الوثيقة2"]
+                    }}
+                ]
+            }}
+            ```
+            
+            Always answer in Arabic.
+            """
+        else:
+            return f"""
+            You are a professional financial analyst specializing in detecting changes in key metrics disclosure.
+
+            Detection Focus:
+            1. Previously disclosed key metrics suddenly stopped being reported
+            2. Changes in disclosure of GMV, active users, order volume, etc.
+            3. Changes in business segment data disclosure
+            4. Adequacy of explanations for discontinued disclosure
+
+            Please analyze the following documents for metrics disclosure cessation signals:
+
+            Document Content:
+            {self._format_documents(documents)}
+
+            Return detection results in JSON format:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "Key Metrics Disclosure Cessation",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "Signal Title",
+                        "description": "Detailed description of discontinued metrics",
+                        "evidence": "Specific evidence and timeline, explain in text",
+                        "recommendation": "Recommended action",
+                        "source_documents": ["Document1", "Document2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+    
+    def _format_documents(self, documents: List) -> str:
+        """格式化文档内容"""
+        formatted = ""
+        for doc in documents:
+            formatted += f"\n=== {doc.title} ({doc.date}) ===\n"
+            formatted += f"{doc.content}\n"
+        return formatted
+
+class EarningsCallAnalysisDetector(ShortDetector):
+    """财报会议记录分析检测器"""
+    
+    def __init__(self):
+        super().__init__(
+            name_zh="财报会议记录分析",
+            name_en="Earnings Call Analysis",
+            description_zh="分析财报会议记录中的管理层回答质量、情绪和模式变化",
+            description_en="Analyzes management response quality, sentiment, and pattern changes in earnings call transcripts",
+            priority=30
+        )
+    
+    def detect(self, documents: List, model_type: str) -> DetectionResult:
+        start_time = time.time()
+        
+        try:
+            # 只分析财报会议记录
+            earnings_docs = [doc for doc in documents if doc.type == 'Earnings Call']
+            if not earnings_docs:
+                return DetectionResult(
+                    detector_name=self.name,
+                    signals=[],
+                    processing_time=time.time() - start_time,
+                    success=True,
+                    analyzed_documents=[]
+                )
+            
+            prompt = self.get_analysis_prompt(earnings_docs)
+            response = self.gemini_service.call_api(prompt, model_type)
+            signals = self.parse_ai_response(response)
+            
+            return DetectionResult(
+                detector_name=self.name,
+                signals=signals,
+                processing_time=time.time() - start_time,
+                success=True,
+                analyzed_documents=[doc.title for doc in earnings_docs]
+            )
+            
+        except Exception as e:
+            logger.error(f"财报会议记录分析失败: {e}")
+            return DetectionResult(
+                detector_name=self.name,
+                signals=[],
+                processing_time=time.time() - start_time,
+                success=False,
+                error_message=self._handle_detection_error(e)
+            )
+    
+    def get_analysis_prompt(self, documents: List) -> str:
+        language = st.session_state.get("selected_language", "中文")
+        
+        if language == "中文":
+            return f"""
+            你是一个专业的财报会议记录分析专家，专门分析管理层的回答质量和模式。你還是專業的Hedge Fund基金經理分析師，熟知各種金融知識
+
+            检测重点：
+            1. 管理层Q&A回答是否在找借口，避免正面回答
+            2. 对具体数字的回答是否变得模糊 (過去都有回答數字，後來改模糊回答)
+            3. Q&A环节问题数量的变化
+            4. Q&A环节不同高管回答质量变化 专业性和透明度变化
+            5 不同管理人員 對不同業務的描述 情绪变化（🔴 🟡 🟢）
+            6. Q&A环节不同分析師的問題 情绪变化（🔴 🟡 🟢）
+            
+            內文都用markdown輸出，可以使用markdown table對比變化
+
+            请仔细分析以下财报会议记录，寻找管理层行为异常的信号：
+
+            文档内容：
+            {self._format_documents(documents)}
+
+            请以JSON格式返回检测结果：
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "财报会议记录异常",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "信号标题",
+                        "description": "详细描述管理层行为异常",
+                        "evidence": "具体证据和模式变化，純文字說明",
+                        "recommendation": "建议采取的行动",
+                        "source_documents": ["文档1", "文档2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+        elif language == "العربية":
+            return f"""
+            أنت خبير متخصص في تحليل مكالمات الأرباح ومتخصص في جودة وأنماط ردود إجابات الإدارة. أنت أيضاً محلل صندوق تحوط محترف يعرف جميع أنواع المعرفة المالية.
+
+            نقاط التركيز في الكشف:
+            1. هل ردود الإدارة في جلسة الأسئلة والأجوبة تختلق الأعذار لتجنب الإجابات المباشرة
+            2. هل أصبحت الردود على الأرقام المحددة غامضة (مثلاً، كانت تعطي أرقاماً دقيقة سابقاً، ولكن تحولت لاحقاً إلى إجابات غامضة)
+            3. تغيرات في عدد الأسئلة المطروحة خلال جلسة الأسئلة والأجوبة
+            4. تغيرات في جودة ردود المسؤولين التنفيذيين المختلفين خلال جلسة الأسئلة والأجوبة - من ناحية المهنية والشفافية
+            5. تحولات عاطفية (🔴 🟡 🟢) في كيفية وصف المديرين المختلفين لأجزاء مختلفة من الأعمال
+            6. تحولات عاطفية (🔴 🟡 🟢) في الأسئلة المطروحة من قبل المحللين المختلفين خلال جلسة الأسئلة والأجوبة
+
+            النص باستخدام تنسيق markdown، يمكن استخدام جدول markdown لمقارنة التغيرات
+
+            يرجى تحليل نصوص مكالمات الأرباح التالية للعثور على شذوذ في سلوك الإدارة:
+
+            محتوى الوثائق:
+            {self._format_documents(documents)}
+
+            يرجى إرجاع نتائج الكشف بصيغة JSON:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "شذوذ في مكالمة الأرباح",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "عنوان الإشارة",
+                        "description": "وصف مفصل لشذوذ سلوك الإدارة",
+                        "evidence": "الأدلة المحددة وتغيرات الأنماط، شرح نصي بحت",
+                        "recommendation": "الإجراء المقترح",
+                        "source_documents": ["الوثيقة1", "الوثيقة2"]
+                    }}
+                ]
+            }}
+            ```
+            
+            Always answer in Arabic.
+            """
+        else:
+            return f"""
+            You are a professional earnings call analysis expert specializing in management response quality and patterns.
+
+            Detection Focus:
+            1. Whether management's Q&A responses are making excuses to avoid giving direct answers
+            2. Whether responses to specific numbers have become vague (e.g., previously gave exact figures, but later shifted to vague answers)
+            3. Changes in the number of questions asked during the Q&A session
+            4. Changes in the quality of responses from different executives during the Q&A — in terms of professionalism and transparency
+            5. Emotional shifts (🔴 🟡 🟢) in how different managers describe different parts of the business
+            6. Emotional shifts (🔴 🟡 🟢) in the questions asked by different analysts during the Q&A session
+
+            內文都用markdown輸出，可以使用markdown table對比變化
+            
+            Please analyze the following earnings call transcripts for management behavior anomalies:
+
+            Document Content:
+            {self._format_documents(documents)}
+
+            Return detection results in JSON format:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "Earnings Call Anomaly",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "Signal Title",
+                        "description": "Detailed description of management behavior anomaly",
+                        "evidence": "Specific evidence and pattern changes, explain in text",
+                        "recommendation": "Recommended action",
+                        "source_documents": ["Document1", "Document2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+    
+    def _format_documents(self, documents: List) -> str:
+        """格式化文档内容"""
+        formatted = ""
+        for doc in documents:
+            formatted += f"\n=== {doc.title} ({doc.date}) ===\n"
+            formatted += f"{doc.content}\n"
+        return formatted
+
+class PeterLynchTurnaroundDetector(ShortDetector):
+    """Peter Lynch反转股检测器"""
+    
+    def __init__(self):
+        super().__init__(
+            name_zh="Peter Lynch反转股检测",
+            name_en="Peter Lynch Turnaround Detection",
+            description_zh="基于Peter Lynch理念检测公司是否有改善计划📈(适合做多)还是业务恶化无改善📉(适合做空)",
+            description_en="Detects turnaround opportunities based on Peter Lynch principles: improvement plans📈(suitable for long) or deterioration without solutions📉(suitable for short)",
+            priority=5  # 高优先级，因为反转股检测对投资决策很重要
+        )
+    
+    def detect(self, documents: List, model_type: str) -> DetectionResult:
+        """检测Peter Lynch反转股信号"""
+        start_time = time.time()
+        
+        try:
+            # 获取当前语言设置
+            language = st.session_state.get("selected_language", "English")
+            
+            # 构建检测提示词
+            prompt = self._build_detection_prompt(documents, language)
+            
+            # 调用AI进行检测
+            response = self.gemini_service.call_api(prompt, model_type)
+            
+            # 解析AI响应
+            signals = self.parse_ai_response(response)
+            
+            processing_time = time.time() - start_time
+            
+            return DetectionResult(
+                detector_name=self.name,
+                success=True,
+                signals=signals,
+                processing_time=processing_time,
+                error_message=None
+            )
+            
+        except Exception as e:
+            processing_time = time.time() - start_time
+            logger.error(f"Peter Lynch反转股检测失败: {e}")
+            
+            return DetectionResult(
+                detector_name=self.name,
+                success=False,
+                signals=[],
+                processing_time=processing_time,
+                error_message=self._handle_detection_error(e)
+            )
+    
+    def get_analysis_prompt(self, documents: List) -> str:
+        """获取分析提示词 - 实现抽象方法"""
+        # 获取当前语言设置
+        language = st.session_state.get("selected_language", "English")
+        return self._build_detection_prompt(documents, language)
+    
+    def _build_detection_prompt(self, documents: List, language: str) -> str:
+        """构建检测提示词"""
+        if language == "中文":
+            return f"""
+            你是一个专业的价值投资分析师，专门基于Peter Lynch的反转股理念进行分析。
+
+            Peter Lynch反转股检测重点：
+
+            📈 **正面转机信号（适合做多）**：
+            1. 管理层改善计划：新管理团队、重组计划、明确的战略转型路径
+            2. 业务改善迹象：收入回升、成本控制改善、运营效率提升
+            3. 产品或服务创新：新产品推出、技术升级、服务改进
+            4. 财务状况修复：现金流改善、债务重组、资产负债表优化
+            5. 市场机会把握：新市场进入、市场份额回升、竞争优势重建
+            6. 估值修复潜力：低估值但有改善计划，业务开始好转
+            7. 催化剂事件：资产剥离、业务重组、合作伙伴关系
+            8. 困境反转：从亏损转盈利、从负现金流转正的具体计划
+
+            📉 **负面恶化信号（适合做空）**：
+            1. 缺乏改善计划：管理层无明确改善策略，或计划不切实际
+            2. 业务持续恶化：收入下滑、利润率压缩、成本失控且无改善
+            3. 产品竞争力丧失：产品老化、技术落后、市场份额流失
+            4. 财务状况恶化：现金流恶化、债务增加、无有效财务计划
+            5. 市场地位下滑：失去竞争优势、客户流失、品牌价值下降
+            6. 估值陷阱：看似便宜但业务基本面持续恶化
+            7. 负面催化剂：监管冲击、诉讼风险、关键客户流失
+            8. 管理层失信：频繁变动、执行力差、承诺无法兑现
+
+            title 正面转机前面放📈 负面恶化前面放📉
+            description中 要寫好是 正面转机还是负面恶化
+            
+            请仔细分析以下文档，寻找Peter Lynch反转股的信号：
+
+            文档内容：
+            {self._format_documents(documents)}
+
+            请以JSON格式返回检测结果：
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "Peter Lynch反转股",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "信号标题",
+                        "description": "详细描述反转股特征和改善计划",
+                        "evidence": "具体证据和改善/恶化迹象，純文字說明",  
+                        "recommendation": "📈做多建议(有改善计划) 或 📉做空建议(无改善计划)",
+                        "source_documents": ["文档1", "文档2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+        elif language == "العربية":
+            return f"""
+            أنت محلل استثمار قيمة محترف متخصص في مبادئ أسهم الانعكاس لبيتر لينش.
+
+            تركيز كشف الانعكاس لبيتر لينش:
+
+            📈 **إشارات الانعكاس الإيجابية (مناسبة للشراء)**:
+            1. خطط تحسين الإدارة: فريق إدارة جديد، خطط إعادة الهيكلة، مسار تحول استراتيجي واضح
+            2. علامات تحسن الأعمال: انتعاش الإيرادات، تحسن السيطرة على التكاليف، مكاسب في الكفاءة التشغيلية
+            3. الابتكار في المنتجات أو الخدمات: إطلاق منتجات جديدة، ترقيات تكنولوجية، تحسينات في الخدمة
+            4. إصلاح الوضع المالي: تحسن التدفق النقدي، إعادة هيكلة الديون، تحسين الميزانية العمومية
+            5. اقتناص الفرص السوقية: دخول أسواق جديدة، استعادة الحصة السوقية، إعادة بناء الميزة التنافسية
+            6. إمكانية انتعاش التقييم: مقوم بأقل من قيمته مع خطط تحسين، الأعمال بدأت تتحسن
+            7. أحداث محفزة: التخلص من الأصول، إعادة هيكلة الأعمال، اتفاقيات الشراكة
+            8. انعكاس الضائقة: خطط محددة للتحول من الخسائر إلى الأرباح، من التدفق النقدي السلبي إلى الإيجابي
+
+            📉 **إشارات التدهور السلبية (مناسبة للبيع على المكشوف)**:
+            1. عدم وجود خطط تحسين: الإدارة ليس لديها استراتيجية تحسين واضحة، أو الخطط غير واقعية
+            2. التدهور المستمر في الأعمال: انخفاض الإيرادات، ضغط الهوامش، تكاليف مفرطة بدون تحسن
+            3. فقدان القدرة التنافسية للمنتج: شيخوخة المنتج، تخلف تكنولوجي، فقدان الحصة السوقية
+            4. تدهور الوضع المالي: تدهور التدفق النقدي، زيادة الديون، لا توجد خطة مالية فعالة
+            5. تراجع الموقف السوقي: فقدان الميزة التنافسية، نزوح العملاء، انحدار قيمة العلامة التجارية
+            6. فخ القيمة: يبدو رخيصاً لكن أساسيات الأعمال تستمر في التدهور
+            7. محفزات سلبية: التأثير التنظيمي، مخاطر التقاضي، فقدان عملاء رئيسيين
+            8. فقدان مصداقية الإدارة: تغيرات متكررة، ضعف في التنفيذ، وعود لم تتحقق
+
+            العنوان: الانعكاس الإيجابي يسبقه 📈 والتدهور السلبي يسبقه 📉
+            في الوصف: يجب أن تكتب بوضوح هل هو انعكاس إيجابي أم تدهور سلبي
+
+            يرجى تحليل الوثائق التالية للعثور على إشارات الانعكاس لبيتر لينش:
+
+            محتوى الوثائق:
+            {self._format_documents(documents)}
+
+            يرجى إرجاع نتائج الكشف بصيغة JSON:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "انعكاس بيتر لينش",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "عنوان الإشارة",
+                        "description": "وصف مفصل لخصائص الانعكاس وخطط التحسين",
+                        "evidence": "الأدلة المحددة ومؤشرات التحسن/التدهور، شرح نصي بحت",
+                        "recommendation": "📈توصية شراء (مع خطط تحسين) أو 📉توصية بيع على المكشوف (بدون خطط تحسين)",
+                        "source_documents": ["الوثيقة1", "الوثيقة2"]
+                    }}
+                ]
+            }}
+            ```
+            
+            Always answer in Arabic.
+            """
+        else:
+            return f"""
+            You are a professional value investment analyst specializing in Peter Lynch's turnaround stock principles.
+
+            Peter Lynch Turnaround Detection Focus:
+
+            📈 **Positive Turnaround Signals (Suitable for Long)**:
+            1. Management improvement plans: New management team, restructuring plans, clear strategic transformation path
+            2. Business improvement signs: Revenue recovery, cost control improvement, operational efficiency gains
+            3. Product or service innovation: New product launches, technology upgrades, service improvements
+            4. Financial condition repair: Cash flow improvement, debt restructuring, balance sheet optimization
+            5. Market opportunity capture: New market entry, market share recovery, competitive advantage rebuilding
+            6. Valuation recovery potential: Undervalued with improvement plans, business starting to improve
+            7. Catalyst events: Asset divestitures, business restructuring, partnership agreements
+            8. Distressed turnaround: Specific plans to turn from losses to profits, negative to positive cash flow
+
+            📉 **Negative Deterioration Signals (Suitable for Short)**:
+            1. Lack of improvement plans: Management has no clear improvement strategy, or plans are unrealistic
+            2. Persistent business deterioration: Revenue decline, margin compression, cost overruns with no improvement
+            3. Product competitiveness loss: Product aging, technology lag, market share loss
+            4. Financial condition deterioration: Cash flow deterioration, debt increase, no effective financial plan
+            5. Market position decline: Loss of competitive advantage, customer attrition, brand value decline
+            6. Value trap: Appears cheap but business fundamentals continue to deteriorate
+            7. Negative catalysts: Regulatory impact, litigation risks, key customer losses
+            8. Management credibility loss: Frequent changes, poor execution, promises not delivered
+
+            Please analyze the following documents for Peter Lynch turnaround signals:
+
+            Document Content:
+            {self._format_documents(documents)}
+
+            Return detection results in JSON format:
+            ```json
+            {{
+                "signals": [
+                    {{
+                        "signal_type": "Peter Lynch Turnaround",
+                        "severity": "High/Medium/Low",
+                        "confidence": 0.85,
+                        "title": "Signal Title",
+                        "description": "Detailed description of turnaround characteristics and improvement plans",
+                        "evidence": "Specific evidence and improvement/deterioration indicators, explain in text",
+                        "recommendation": "📈Long recommendation (with improvement plans) or 📉Short recommendation (without improvement plans)",
+                        "source_documents": ["Document1", "Document2"]
+                    }}
+                ]
+            }}
+            ```
+            """
+    
+    def _format_documents(self, documents: List) -> str:
+        """格式化文档内容"""
+        formatted = ""
+        for doc in documents:
+            formatted += f"\n=== {doc.title} ({doc.date}) ===\n"
+            formatted += f"{doc.content}\n"
+        return formatted
+
+# 做空信号分析器主类
+class ShortSignalAnalyzer:
+    """做空信号分析器"""
+    
+    def __init__(self, gemini_service):
+        self.gemini_service = gemini_service
+        self.detectors = self._initialize_detectors()
+    
+    def _initialize_detectors(self) -> List[ShortDetector]:
+        """初始化所有检测器"""
+        detectors = [
+            PeterLynchTurnaroundDetector(),
+            AccountsReceivableDetector(),
+            MarketPositionDetector(),
+            InconsistencyDetector(),
+            MetricsDisclosureDetector(),
+            EarningsCallAnalysisDetector(),
+        ]
+        
+        # 设置Gemini服务
+        for detector in detectors:
+            detector.set_gemini_service(self.gemini_service)
+        
+        # 按优先级排序
+        detectors.sort(key=lambda x: x.priority)
+        return detectors
+    
+    def get_available_detectors(self) -> List[ShortDetector]:
+        """获取可用的检测器列表"""
+        return self.detectors
+    
+    def analyze_documents(self, documents: List, selected_detector_classes: List[str], model_type: str) -> List[DetectionResult]:
+        """分析文档并返回检测结果"""
+        results = []
+        
+        for detector in self.detectors:
+            if detector.__class__.__name__ in selected_detector_classes:
+                logger.info(f"开始运行检测器: {detector.name}")
+                try:
+                    result = detector.detect(documents, model_type)
+                    results.append(result)
+                    logger.info(f"检测器 {detector.name} 完成，发现 {len(result.signals)} 个信号")
+                    
+                    # 立即更新session_state，让用户实时看到结果
+                    st.session_state.current_scan_results = results.copy()
+                    
+                except Exception as e:
+                    logger.error(f"检测器 {detector.name} 执行失败: {e}")
+                    error_result = DetectionResult(
+                        detector_name=detector.name,
+                        signals=[],
+                        processing_time=0,
+                        success=False,
+                        error_message=handle_gemini_api_error(e)
+                    )
+                    results.append(error_result)
+                    
+                    # 即使失败也要更新session_state
+                    st.session_state.current_scan_results = results.copy()
+        
+        return results
+    
+    def generate_comprehensive_report(self, results: List[DetectionResult], ticker: str, model_type: str) -> str:
+        """生成综合做空信号报告"""
+        language = st.session_state.get("selected_language", "中文")
+        
+        if language == "中文":
+            report_prompt = f"""
+            你是一个专业的做空分析师，请基于以下检测结果生成一份综合的做空信号报告。
+
+            股票代码: {ticker}
+            分析日期: {datetime.now().strftime('%Y-%m-%d')}
+
+            检测结果：
+            {self._format_results(results)}
+
+            请生成一份专业的做空信号报告，包含：
+            1. 执行摘要（总体风险评估）
+            2. 高风险信号汇总
+            3. 各检测器详细发现
+            4. 综合风险评分（1-100分）
+            5. 做空建议和时机
+            6. 风险提示
+
+            报告要求：
+            - 使用专业的金融分析语言
+            - 突出重点风险信号
+            - 提供具体的行动建议
+            - 使用表格和列表增强可读性
+            - 基于证据得出结论
+            - markdown輸出，將所有表示金額的 $ 改為 ＄，以避免 Markdown 被誤判為數學公式。
+            """
+        elif language == "العربية":
+            report_prompt = f"""
+            أنت محلل بيع على المكشوف محترف. يرجى إنتاج تقرير شامل لإشارات البيع على المكشوف بناءً على نتائج الكشف التالية.
+
+            رمز السهم: {ticker}
+            تاريخ التحليل: {datetime.now().strftime('%Y-%m-%d')}
+
+            نتائج الكشف:
+            {self._format_results(results)}
+
+            يرجى إنتاج تقرير إشارات بيع على المكشوف احترافي يتضمن:
+            1. الملخص التنفيذي (تقييم المخاطر الإجمالي)
+            2. ملخص الإشارات عالية المخاطر
+            3. النتائج المفصلة لكل كاشف
+            4. نتيجة المخاطر الشاملة (1-100 نقطة)
+            5. توصية البيع على المكشوف والتوقيت
+            6. تحذيرات المخاطر
+
+            متطلبات التقرير:
+            - استخدم لغة التحليل المالي المهنية
+            - اسلط الضوء على إشارات المخاطر الرئيسية
+            - قدم توصيات عمل محددة
+            - استخدم الجداول والقوائم لتحسين القراءة
+            - بنى الاستنتاجات على الأدلة
+            - عند إخراج markdown، تجنب جميع علامات الدولار $ للعملة كـ ＄ لمنع Markdown من عرضها كصيغ رياضية.
+            
+            Always answer in Arabic.
+            """
+        else:
+            report_prompt = f"""
+            You are a professional short-selling analyst. Please generate a comprehensive short signal report based on the following detection results.
+
+            Stock Symbol: {ticker}
+            Analysis Date: {datetime.now().strftime('%Y-%m-%d')}
+
+            Detection Results:
+            {self._format_results(results)}
+
+            Please generate a professional short signal report including:
+            1. Executive Summary (Overall Risk Assessment)
+            2. High-Risk Signal Summary
+            3. Detailed Findings by Detector
+            4. Comprehensive Risk Score (1-100)
+            5. Short-selling Recommendation and Timing
+            6. Risk Warnings
+
+            Report Requirements:
+            - Use professional financial analysis language
+            - Highlight key risk signals
+            - Provide specific action recommendations
+            - Use tables and lists for readability
+            - Base conclusions on evidence
+            - when markdown output, Escape all dollar signs $ for currency as ＄ to prevent Markdown from rendering them as math.
+            """
+        
+        return self.gemini_service.call_api(report_prompt, model_type)
+    
+    def _format_results(self, results: List[DetectionResult]) -> str:
+        """格式化检测结果"""
+        formatted = ""
+        for result in results:
+            # 转义检测器名称中的美元符号
+            detector_name = self._escape_dollars(result.detector_name)
+            formatted += f"\n=== {detector_name} ===\n"
+            formatted += f"执行状态: {'成功' if result.success else '失败'}\n"
+            formatted += f"处理时间: {result.processing_time:.2f}秒\n"
+            formatted += f"发现信号数: {len(result.signals)}\n"
+            
+            if result.error_message:
+                # 转义错误信息中的美元符号
+                error_message = self._escape_dollars(result.error_message)
+                formatted += f"错误信息: {error_message}\n"
+            
+            for signal in result.signals:
+                # 转义所有信号字段中的美元符号
+                signal_type = self._escape_dollars(signal.signal_type)
+                severity = self._escape_dollars(signal.severity)
+                title = self._escape_dollars(signal.title)
+                description = self._escape_dollars(signal.description)
+                evidence = self._escape_dollars(signal.evidence)
+                logger.info('--------------------------------')
+                logger.info(evidence)
+                recommendation = self._escape_dollars(signal.recommendation)
+                
+                formatted += f"\n- 信号类型: {signal_type}\n"
+                formatted += f"  严重程度: {severity}\n"
+                # formatted += f"  置信度: {signal.confidence:.2f}\n"
+                formatted += f"  标题: {title}\n"
+                formatted += f"  描述: {description}\n"
+                formatted += f"  证据: {evidence}\n"
+                formatted += f"  建议: {recommendation}\n"
+            
+            formatted += "\n"
+        
+        return formatted
+    
+    def _escape_dollars(self, text) -> str:
+        """转义字符串中的美元符号以避免被Markdown解析为数学公式"""
+        if not text:
+            return ""
+        
+        # 如果是字典或列表，转换为字符串
+        if isinstance(text, (dict, list)):
+            text = str(text)
+        
+        # 确保是字符串类型
+        if not isinstance(text, str):
+            text = str(text)
+        
+        # 将美元符号用反引号包裹，使其在Markdown中被渲染为行内代码
+        # 这样可以避免被KaTeX解析为数学公式
+        return text.replace('$', '＄')
+
 # 语言配置
 LANGUAGE_CONFIG = {
     "English": {
-        "title": "📊 Financial Disclosure & Earnings Insights",
-        "sidebar_header": "📋 Configuration",
+        "title": "🎯 Short Signal Scanner",
+        "sidebar_header": "📋 Scanner Configuration",
         "ticker_label": "Ticker",
-        "ticker_placeholder": "e.g., AAPL, 1024 HK",
+        "ticker_placeholder": "e.g., AAPL, 2222",
         "years_label": "Years of Data",
         "data_type_header": "📄 Data Type",
         "sec_reports_us": "Quarterly & Annual (10-K, 10-Q, 20-F, 6-K, 424B4)",
@@ -78,14 +1498,10 @@ LANGUAGE_CONFIG = {
         "sec_others_hk": "Other Announcements",
         "earnings_label": "Earnings Call Transcripts",
         "earnings_caption": "Earnings call transcripts",
+        "detectors_header": "🔍 Detection Modules",
+        "detectors_label": "Select Detectors",
         "model_header": "🤖 AI Model",
         "model_label": "Select Model",
-        "analysis_mode_header": "⚡ Analysis Mode",
-        "analysis_mode_label": "Select Mode",
-        "fast_mode": "Fast Mode",
-        "detailed_mode": "Detailed Mode",
-        "fast_mode_caption": "Analyze all documents together in one pass",
-        "detailed_mode_caption": "Analyze each document separately, then integrate results",
         "api_header": "💳 API Configuration",
         "access_code_label": "Enter Access Code",
         "access_code_placeholder": "Enter access code to enable premium API",
@@ -97,7 +1513,7 @@ LANGUAGE_CONFIG = {
         "language_label": "Select Language",
         "hk_stock_info": "🏢 Hong Kong Stock - Standardized to: {}",
         "us_stock_info": "🇺🇸 US Stock",
-        "chat_placeholder": "Please enter your question...",
+        "scan_button": "🔍 Start Short Signal Scan",
         "status_header": "📋 STATUS",
         "stop_button": "⏹️ Stop Processing",
         "progress_text": "Progress: {}/{} documents",
@@ -105,43 +1521,74 @@ LANGUAGE_CONFIG = {
         "processing_stopped": "Processing has been stopped by user request."
     },
     "中文": {
-        "title": "📊 Financial Disclosure & Earnings Insights",
-        "sidebar_header": "📋 Configuration",
+        "title": "🎯 Short Signal Scanner",
+        "sidebar_header": "📋 扫描器配置",
         "ticker_label": "Ticker",
         "ticker_placeholder": "e.g., AAPL, 1024 HK",
         "years_label": "数据年份",
-        "data_type_header": "📄 Data Type",
-        "sec_reports_us": "Quarterly & Annual (10-K, 10-Q, 20-F, 6-K, 424B4)",
-        "sec_others_us": "Others (8-K, S-8, DEF 14A, F-3)",
-        "sec_reports_hk": "Quarterly & Annual Results",
-        "sec_others_hk": "Other Announcements",
-        "earnings_label": "Earnings Call Transcripts",
-        "earnings_caption": "Earnings call transcripts",
-        "model_header": "🤖 AI Model",
-        "model_label": "Select Model",
-        "analysis_mode_header": "⚡ 分析模式",
-        "analysis_mode_label": "选择模式",
-        "fast_mode": "快速模式",
-        "detailed_mode": "详细模式",
-        "fast_mode_caption": "一次性分析所有文档",
-        "detailed_mode_caption": "逐个分析每份文档，然后整合结果",
-        "api_header": "💳 API Configuration",
-        "access_code_label": "Enter Access Code",
-        "access_code_placeholder": "Enter access code to enable premium API",
-        "premium_enabled": "✅ Premium API Service Enabled",
-        "free_api": "ℹ️ Using Free API Service",
-        "access_code_error": "❌ Invalid Access Code",
-        "premium_success": "🎉 Premium API Service Enabled!",
-        "language_header": "🌐 Language",
-        "language_label": "Select Language",
+        "data_type_header": "📄 数据类型",
+        "sec_reports_us": "季报年报 (10-K, 10-Q, 20-F, 6-K, 424B4)",
+        "sec_others_us": "其他文件 (8-K, S-8, DEF 14A, F-3)",
+        "sec_reports_hk": "季报年报",
+        "sec_others_hk": "其他公告",
+        "earnings_label": "财报会议记录",
+        "earnings_caption": "财报会议记录",
+        "detectors_header": "🔍 检测模块",
+        "detectors_label": "选择检测器",
+        "model_header": "🤖 AI模型",
+        "model_label": "选择模型",
+        "api_header": "💳 API配置",
+        "access_code_label": "输入访问代码",
+        "access_code_placeholder": "输入访问代码以启用高级API",
+        "premium_enabled": "✅ 高级API服务已启用",
+        "free_api": "ℹ️ 使用免费API服务",
+        "access_code_error": "❌ 无效访问代码",
+        "premium_success": "🎉 高级API服务已启用！",
+        "language_header": "🌐 语言",
+        "language_label": "选择语言",
         "hk_stock_info": "🏢 港股 - 已标准化为: {}",
         "us_stock_info": "🇺🇸 美股",
-        "chat_placeholder": "请输入您的问题...",
-        "status_header": "📋 STATUS",
+        "scan_button": "🔍 Start Short Signal Scan",
+        "status_header": "📋 状态",
         "stop_button": "⏹️ 停止处理",
         "progress_text": "进度: {}/{} 个文档",
         "stop_success": "⏹️ 用户已停止处理",
         "processing_stopped": "处理已被用户停止。"
+    },
+    "العربية": {
+        "title": "🎯 ماسح إشارات البيع على المكشوف",
+        "sidebar_header": "📋 إعدادات الماسح",
+        "ticker_label": "رمز السهم",
+        "ticker_placeholder": "مثل: AAPL, 2222",
+        "years_label": "سنوات البيانات",
+        "data_type_header": "📄 نوع البيانات",
+        "sec_reports_us": "التقارير الربعية والسنوية (10-K, 10-Q, 20-F, 6-K, 424B4)",
+        "sec_others_us": "أخرى (8-K, S-8, DEF 14A, F-3)",
+        "sec_reports_hk": "النتائج الربعية والسنوية",
+        "sec_others_hk": "إعلانات أخرى",
+        "earnings_label": "نصوص مكالمات الأرباح",
+        "earnings_caption": "نصوص مكالمات الأرباح",
+        "detectors_header": "🔍 وحدات الكشف",
+        "detectors_label": "اختر أجهزة الكشف",
+        "model_header": "🤖 نموذج الذكاء الاصطناعي",
+        "model_label": "اختر النموذج",
+        "api_header": "💳 إعدادات API",
+        "access_code_label": "أدخل رمز الوصول",
+        "access_code_placeholder": "أدخل رمز الوصول لتفعيل API المتقدم",
+        "premium_enabled": "✅ تم تفعيل خدمة API المتقدمة",
+        "free_api": "ℹ️ استخدام خدمة API المجانية",
+        "access_code_error": "❌ رمز وصول غير صحيح",
+        "premium_success": "🎉 تم تفعيل خدمة API المتقدمة!",
+        "language_header": "🌐 اللغة",
+        "language_label": "اختر اللغة",
+        "hk_stock_info": "🏢 سهم هونغ كونغ - معيار إلى: {}",
+        "us_stock_info": "🇺🇸 سهم أمريكي",
+        "scan_button": "🔍 بدء مسح إشارات البيع على المكشوف",
+        "status_header": "📋 الحالة",
+        "stop_button": "⏹️ إيقاف المعالجة",
+        "progress_text": "التقدم: {}/{} مستند",
+        "stop_success": "⏹️ تم إيقاف المعالجة بواسطة المستخدم",
+        "processing_stopped": "تم إيقاف المعالجة بناءً على طلب المستخدم."
     }
 }
 
@@ -343,6 +1790,37 @@ def clean_hk_ticker(ticker: str) -> str:
     normalized = normalize_hk_ticker(ticker)
     return normalized.replace('.HK', '').replace('.hk', '')
 
+def is_saudi_stock(ticker: str) -> bool:
+    """判断是否为沙特交易所代码"""
+    if not ticker:
+        return False
+    
+    ticker_clean = ticker.upper().replace(' SA', '').replace('.SA', '').replace('-SA', '')
+    
+    # 沙特股票代码通常是4位数字，数字优先识别为沙特
+    if ticker_clean.isdigit():
+        return True
+    
+    # 检查是否包含SA后缀
+    if any(suffix in ticker.upper() for suffix in [' SA', '.SA', '-SA']):
+        return True
+    
+    return False
+
+def normalize_saudi_ticker(ticker: str) -> str:
+    """标准化沙特股票代码为4位数字格式"""
+    if not ticker:
+        return ""
+    
+    # 移除SA后缀
+    ticker_clean = ticker.upper().replace(' SA', '').replace('.SA', '').replace('-SA', '')
+    
+    # 如果是数字，确保是4位数字格式
+    if ticker_clean.isdigit():
+        return ticker_clean.zfill(4)  # 补零到4位
+    
+    return ticker_clean
+
 class RateLimiter:
     """API请求限流器"""
     def __init__(self, max_calls: int = 30, window: int = 60):
@@ -456,203 +1934,141 @@ class SixKProcessor:
     def process_6k_filing(self, ticker: str, cik: str, filing_url: str, document: Document) -> List[Document]:
         """处理6-K文件，下载附件并提取ex99文件"""
         try:
-            logger.info(f"🔍 [6K-DEBUG] 开始处理6-K文件: {ticker}")
-            logger.info(f"🔍 [6K-DEBUG] 文件URL: {filing_url}")
-            logger.info(f"🔍 [6K-DEBUG] CIK: {cik}")
-            
             # 从URL中提取accession number（无破折号格式）
             # URL格式：https://www.sec.gov/Archives/edgar/data/{cik}/{accession_no_no_dashes}/{primary_doc}
             accession_match = re.search(r'/(\d{18})/', filing_url)
             if not accession_match:
-                logger.error(f"❌ [6K-DEBUG] 无法从URL中提取accession number: {filing_url}")
-                return []  # 返回空列表
+                logger.error(f"无法从URL中提取accession number: {filing_url}")
+                return [document]  # 返回原文档
             
             accession_no_no_dashes = accession_match.group(1)
             # 重新构造带破折号的格式用于显示
             accession_no = f"{accession_no_no_dashes[:10]}-{accession_no_no_dashes[10:12]}-{accession_no_no_dashes[12:]}"
             
-            logger.info(f"🔍 [6K-DEBUG] 提取到的accession number: {accession_no}")
-            
             # 创建6-K文件专用目录
             filing_dir = os.path.join(self.temp_dir, f"6K_{ticker}_{accession_no}")
             os.makedirs(filing_dir, exist_ok=True)
-            logger.info(f"🔍 [6K-DEBUG] 创建目录: {filing_dir}")
             
-            logger.info(f"🔍 [6K-DEBUG] 开始下载附件...")
+            logger.info(f"开始处理6-K文件: {ticker} - {accession_no}")
             
             # 下载所有附件
             attachments = self._download_6k_attachments(cik, accession_no_no_dashes, filing_dir)
             
-            logger.info(f"🔍 [6K-DEBUG] 下载附件结果: {len(attachments) if attachments else 0} 个文件")
-            if attachments:
-                logger.info(f"🔍 [6K-DEBUG] 附件列表: {[os.path.basename(f) for f in attachments]}")
-            
             if not attachments:
-                logger.warning(f"⚠️ [6K-DEBUG] 未找到6-K附件: {ticker} - {accession_no}")
-                return []  # 返回空列表而不是原文档
-            
-            logger.info(f"🔍 [6K-DEBUG] 开始处理ex99文件...")
+                logger.warning(f"未找到6-K附件: {ticker} - {accession_no}")
+                return [document]
             
             # 处理ex99文件
             ex99_documents = self._process_ex99_files(attachments, filing_dir, document, ticker)
             
-            logger.info(f"🔍 [6K-DEBUG] ex99处理结果: {len(ex99_documents) if ex99_documents else 0} 个文档")
-            
             if not ex99_documents:
-                logger.info(f"ℹ️ [6K-DEBUG] 未找到ex99文件: {ticker} - {accession_no} (这可能是正常情况)")
-                return []  # 返回空列表而不是原文档
+                logger.info(f"未找到ex99文件: {ticker} - {accession_no}")
+                return [document]
             
-            logger.info(f"✅ [6K-DEBUG] 成功处理6-K文件，生成 {len(ex99_documents)} 个文档")
-            for i, doc in enumerate(ex99_documents):
-                logger.info(f"🔍 [6K-DEBUG] 文档{i+1}: {doc.title}, 内容长度: {len(doc.content) if doc.content else 0}")
-            
+            logger.info(f"成功处理6-K文件，生成 {len(ex99_documents)} 个文档")
             return ex99_documents
             
         except Exception as e:
-            logger.error(f"❌ [6K-DEBUG] 处理6-K文件失败: {str(e)}")
-            import traceback
-            logger.error(f"❌ [6K-DEBUG] 详细错误信息: {traceback.format_exc()}")
-            return []  # 返回空列表而不是原文档
+            logger.error(f"处理6-K文件失败: {e}")
+            return [document]  # 返回原文档
     
     def _download_6k_attachments(self, cik: str, accession_no_no_dashes: str, filing_dir: str) -> List[str]:
         """下载6-K文件的所有附件，只下载pdf/htm/html文件"""
         base_url = f"https://www.sec.gov/Archives/edgar/data/{cik}/{accession_no_no_dashes}/"
         index_url = base_url + "index.json"
         
-        logger.info(f"🔍 [6K-ATTACH] 开始下载附件，index URL: {index_url}")
-        
         try:
             response = httpx.get(index_url, headers=self.headers, timeout=config.REQUEST_TIMEOUT)
             response.raise_for_status()
-            
-            logger.info(f"🔍 [6K-ATTACH] index.json 下载成功，状态码: {response.status_code}")
             
             index_data = response.json()
             directory = index_data.get('directory', {})
             items = directory.get('item', [])
             
-            logger.info(f"🔍 [6K-ATTACH] index.json 解析成功，找到 {len(items)} 个项目")
-            
             if not items:
-                logger.warning(f"⚠️ [6K-ATTACH] 6-K文件无附件列表: {index_url}")
+                logger.warning(f"6-K文件无附件列表: {index_url}")
                 return []
             
             # 筛选只需要的文件类型
             target_files = []
-            logger.info(f"🔍 [6K-ATTACH] 开始筛选目标文件类型...")
-            
-            for i, item in enumerate(items):
+            for item in items:
                 file_name = item.get('name', '')
                 if not file_name:
                     continue
-                
-                logger.info(f"🔍 [6K-ATTACH] 文件{i+1}: {file_name}")
                 
                 # 检查文件扩展名
                 ext = os.path.splitext(file_name)[1].lower()
                 if ext in ['.pdf', '.htm', '.html']:
                     target_files.append(item)
-                    logger.info(f"✅ [6K-ATTACH] 文件{i+1} {file_name} 符合条件 (扩展名: {ext})")
                 else:
-                    logger.info(f"⏭️ [6K-ATTACH] 跳过非目标文件类型: {file_name} (扩展名: {ext})")
+                    logger.info(f"跳过非目标文件类型: {file_name}")
             
             if not target_files:
-                logger.warning(f"⚠️ [6K-ATTACH] 未找到pdf/htm/html文件")
+                logger.warning(f"未找到pdf/htm/html文件")
                 return []
             
             downloaded_files = []
-            logger.info(f"🔍 [6K-ATTACH] 找到 {len(target_files)} 个目标文件，开始下载...")
+            logger.info(f"找到 {len(target_files)} 个目标文件，开始下载...")
             
-            for i, item in enumerate(target_files):
+            for item in target_files:
                 file_name = item.get('name', '')
                 file_url = base_url + file_name
                 file_path = os.path.join(filing_dir, file_name)
-                
-                logger.info(f"🔍 [6K-ATTACH] 下载文件{i+1}: {file_name}")
-                logger.info(f"🔍 [6K-ATTACH] 文件URL: {file_url}")
                 
                 try:
                     file_response = httpx.get(file_url, headers=self.headers, timeout=config.REQUEST_TIMEOUT)
                     file_response.raise_for_status()
                     
-                    logger.info(f"🔍 [6K-ATTACH] 文件{i+1}下载成功，状态码: {file_response.status_code}")
-                    logger.info(f"🔍 [6K-ATTACH] 文件大小: {len(file_response.content)} bytes")
-                    
                     # 判断文件类型并保存
                     content_type = file_response.headers.get('content-type', '').lower()
-                    logger.info(f"🔍 [6K-ATTACH] 文件{i+1}内容类型: {content_type}")
-                    
                     if 'text' in content_type or 'html' in content_type or 'xml' in content_type:
                         with open(file_path, 'w', encoding='utf-8') as f:
                             f.write(file_response.text)
-                        logger.info(f"🔍 [6K-ATTACH] 文件{i+1}保存为文本文件")
                     else:
                         with open(file_path, 'wb') as f:
                             f.write(file_response.content)
-                        logger.info(f"🔍 [6K-ATTACH] 文件{i+1}保存为二进制文件")
                     
                     downloaded_files.append(file_path)
-                    logger.info(f"✅ [6K-ATTACH] 已下载6-K附件: {file_name}")
+                    logger.info(f"已下载6-K附件: {file_name}")
                     
                 except Exception as e:
-                    logger.warning(f"❌ [6K-ATTACH] 下载6-K附件失败 {file_name}: {str(e)}")
-                    import traceback
-                    logger.warning(f"❌ [6K-ATTACH] 详细错误: {traceback.format_exc()}")
+                    logger.warning(f"下载6-K附件失败 {file_name}: {e}")
             
-            logger.info(f"✅ [6K-ATTACH] 成功下载 {len(downloaded_files)} 个6-K目标附件")
+            logger.info(f"成功下载 {len(downloaded_files)} 个6-K目标附件")
             return downloaded_files
             
         except Exception as e:
-            logger.error(f"❌ [6K-ATTACH] 获取6-K附件列表失败: {str(e)}")
-            import traceback
-            logger.error(f"❌ [6K-ATTACH] 详细错误信息: {traceback.format_exc()}")
+            logger.error(f"获取6-K附件列表失败: {e}")
             return []
     
     def _process_ex99_files(self, attachments: List[str], filing_dir: str, original_doc: Document, ticker: str) -> List[Document]:
         """处理ex99文件，按照要求分类处理HTML和PDF"""
-        logger.info(f"🔍 [6K-EX99] 开始处理ex99文件，输入附件数量: {len(attachments)}")
-        logger.info(f"🔍 [6K-EX99] 附件文件列表: {[os.path.basename(f) for f in attachments]}")
-        
         ex99_files = []
         
         # 找到所有包含_ex99的文件
-        logger.info(f"🔍 [6K-EX99] 搜索包含'ex99'的文件...")
-        
-        for i, file_path in enumerate(attachments):
+        for file_path in attachments:
             file_name = os.path.basename(file_path).lower()
-            logger.info(f"🔍 [6K-EX99] 检查文件{i+1}: {file_name}")
-            
             if 'ex99' in file_name:
                 ex99_files.append(file_path)
-                logger.info(f"✅ [6K-EX99] 找到ex99文件: {file_name}")
-            else:
-                logger.info(f"⏭️ [6K-EX99] 非ex99文件: {file_name}")
         
         if not ex99_files:
-            logger.info(f"ℹ️ [6K-EX99] 未找到包含'ex99'的文件")
-            logger.info(f"🔍 [6K-EX99] 完整文件名列表用于调试: {[os.path.basename(f) for f in attachments]}")
+            logger.info("未找到包含_ex99的文件")
             return []
         
-        logger.info(f"✅ [6K-EX99] 找到 {len(ex99_files)} 个ex99文件: {[os.path.basename(f) for f in ex99_files]}")
+        logger.info(f"找到 {len(ex99_files)} 个ex99文件: {[os.path.basename(f) for f in ex99_files]}")
         
         # 分类处理不同类型的文件
         html_files = []
         pdf_files = []
         
-        logger.info(f"🔍 [6K-EX99] 开始按文件类型分类...")
-        
         for file_path in ex99_files:
             ext = os.path.splitext(file_path)[1].lower()
-            file_name = os.path.basename(file_path)
-            
             if ext in ['.html', '.htm']:
                 html_files.append(file_path)
-                logger.info(f"📄 [6K-EX99] HTML文件: {file_name}")
             elif ext == '.pdf':
                 pdf_files.append(file_path)
-                logger.info(f"📄 [6K-EX99] PDF文件: {file_name}")
             else:
-                logger.info(f"⚠️ [6K-EX99] 跳过不支持的文件类型: {file_path} (扩展名: {ext})")
+                logger.info(f"跳过不支持的文件类型: {file_path}")
         
         documents = []
         
@@ -1217,8 +2633,30 @@ class HKStockFilingsDownloader:
             return None
 
 # 装饰器
+def handle_gemini_api_error(e: Exception) -> str:
+    """统一处理Gemini API错误，返回友好的错误信息"""
+    error_str = str(e)
+    
+    if "429" in error_str and "RESOURCE_EXHAUSTED" in error_str:
+        # 提取重试延迟时间
+        import re
+        retry_delay_match = re.search(r"'retryDelay': '(\d+)s'", error_str)
+        if retry_delay_match:
+            delay = retry_delay_match.group(1)
+            return f"🚫 Gemini API 配额已用尽，建议等待 {delay} 秒后重试。如果您有付费账户，请检查配额设置。"
+        else:
+            return "🚫 Gemini API 配额已用尽，请稍后重试。如果您有付费账户，请检查您的配额设置。"
+    elif "PERMISSION_DENIED" in error_str:
+        return "🔑 API密钥权限不足，请检查您的Gemini API密钥设置。"
+    elif "INVALID_ARGUMENT" in error_str:
+        return "📝 请求参数无效，可能是输入内容过长或格式不正确。"
+    elif "UNAVAILABLE" in error_str:
+        return "🌐 Gemini API 服务暂时不可用，请稍后重试。"
+    else:
+        return f"❌ API调用失败: {str(e)}"
+
 def retry_on_failure(max_retries: int = config.MAX_RETRIES, delay: float = config.RETRY_DELAY):
-    """重试装饰器"""
+    """重试装饰器 - 智能处理不同类型的错误"""
     def decorator(func):
         def wrapper(*args, **kwargs):
             last_exception = None
@@ -1227,11 +2665,33 @@ def retry_on_failure(max_retries: int = config.MAX_RETRIES, delay: float = confi
                     return func(*args, **kwargs)
                 except Exception as e:
                     last_exception = e
-                    logger.warning(f"函数 {func.__name__} 第 {attempt + 1} 次尝试失败: {e}")
+                    error_str = str(e)
+                    
+                    # 检查是否是配额限制错误
+                    if "429" in error_str and "RESOURCE_EXHAUSTED" in error_str:
+                        logger.warning(f"🚫 API配额限制: {func.__name__} 第 {attempt + 1} 次尝试失败")
+                        
+                        # 从错误信息中提取重试延迟时间
+                        import re
+                        retry_delay_match = re.search(r"'retryDelay': '(\d+)s'", error_str)
+                        if retry_delay_match:
+                            suggested_delay = int(retry_delay_match.group(1))
+                            logger.info(f"⏳ Google建议等待 {suggested_delay} 秒后重试")
+                            if attempt < max_retries - 1:
+                                time.sleep(suggested_delay + 3)  # 额外等待5秒确保配额恢复
+                        else:
+                            # 如果没有找到建议延迟，使用更长的等待时间
+                            quota_delay = 60 * (attempt + 1)  # 第一次60秒，第二次120秒
+                            logger.info(f"⏳ 配额限制，等待 {quota_delay} 秒后重试")
+                            if attempt < max_retries - 1:
+                                time.sleep(quota_delay)
+                    else:
+                        # 其他类型的错误使用正常的指数退避
+                        logger.warning(f"⚠️ {func.__name__} 第 {attempt + 1} 次尝试失败: {e}")
                     if attempt < max_retries - 1:
                         time.sleep(delay * (2 ** attempt))  # 指数退避
             
-            logger.error(f"函数 {func.__name__} 在 {max_retries} 次尝试后仍然失败")
+            logger.error(f"❌ 函数 {func.__name__} 在 {max_retries} 次尝试后仍然失败")
             raise last_exception
         return wrapper
     return decorator
@@ -1253,44 +2713,6 @@ class SessionManager:
     @staticmethod
     def init_session_state():
         """初始化所有必要的session state变量"""
-        
-        # 添加回退机制：先检查 secrets.toml 文件是否存在，如果存在就使用 st.secrets，否则从环境变量读取
-        def get_secret_value(key: str, default=None):
-            """从 st.secrets 或环境变量中获取密钥值"""
-            import os
-            import json
-            from pathlib import Path
-            
-            # 检查 secrets.toml 文件是否存在
-            secrets_paths = [
-                Path(".streamlit/secrets.toml"),
-                Path("/root/.streamlit/secrets.toml"),
-                Path("/app/.streamlit/secrets.toml")
-            ]
-            
-            secrets_file_exists = any(path.exists() for path in secrets_paths)
-            
-            if secrets_file_exists:
-                try:
-                    return st.secrets[key]
-                except KeyError:
-                    # 如果 secrets.toml 存在但没有该键，回退到环境变量
-                    pass
-            
-            # 直接从环境变量读取
-            env_value = os.environ.get(key, default)
-            if env_value is None:
-                return default
-                
-            # 尝试解析 JSON 格式的环境变量（用于列表类型的密钥）
-            if isinstance(env_value, str) and env_value.startswith('[') and env_value.endswith(']'):
-                try:
-                    return json.loads(env_value)
-                except json.JSONDecodeError:
-                    return env_value
-            
-            return env_value
-        
         defaults = {
             "analyzer_messages": [],
             "analyzer_ticker": "",
@@ -1304,8 +2726,7 @@ class SessionManager:
             "cache": {},
             "use_premium_api": False,
             "premium_access_code": "",
-            "selected_language": "English",
-            "analyzer_analysis_mode": "fast_mode"
+            "selected_language": "English"
         }
         
         for key, default_value in defaults.items():
@@ -1320,6 +2741,7 @@ class SessionManager:
         # Filter the session state dict to only include known fields
         current_status_dict = st.session_state.get("processing_status", {})
         filtered_args = {k: v for k, v in current_status_dict.items() if k in known_fields}
+        
         return ProcessingStatus(**filtered_args)
     
     @staticmethod
@@ -1338,7 +2760,7 @@ class GeminiService:
         """获取下一个API密钥"""
         # 檢查是否使用付費API
         if st.session_state.get("use_premium_api", False):
-            return self._get_secret_value("PREMIUM_API_KEY")
+            return get_secret_value("PREMIUM_API_KEY")
         
         # 使用一般的輪換API
         if hasattr(st.session_state, 'api_key_cycle'):
@@ -1346,45 +2768,9 @@ class GeminiService:
         else:
             # 如果session state未初始化，使用备用方案
             if not hasattr(self, '_api_key_cycle'):
-                api_keys = self._get_secret_value("GOOGLE_API_KEYS", [])
+                api_keys = get_secret_value("GOOGLE_API_KEYS", [])
                 self._api_key_cycle = cycle(api_keys)
             return next(self._api_key_cycle)
-    
-    def _get_secret_value(self, key: str, default=None):
-        """从 st.secrets 或环境变量中获取密钥值"""
-        import os
-        import json
-        from pathlib import Path
-        
-        # 检查 secrets.toml 文件是否存在
-        secrets_paths = [
-            Path(".streamlit/secrets.toml"),
-            Path("/root/.streamlit/secrets.toml"),
-            Path("/app/.streamlit/secrets.toml")
-        ]
-        
-        secrets_file_exists = any(path.exists() for path in secrets_paths)
-        
-        if secrets_file_exists:
-            try:
-                return st.secrets[key]
-            except KeyError:
-                # 如果 secrets.toml 存在但没有该键，回退到环境变量
-                pass
-        
-        # 直接从环境变量读取
-        env_value = os.environ.get(key, default)
-        if env_value is None:
-            return default
-            
-        # 尝试解析 JSON 格式的环境变量（用于列表类型的密钥）
-        if isinstance(env_value, str) and env_value.startswith('[') and env_value.endswith(']'):
-            try:
-                return json.loads(env_value)
-            except json.JSONDecodeError:
-                return env_value
-        
-        return env_value
     
     def init_client(self) -> genai.Client:
         """初始化Gemini客户端"""
@@ -1879,6 +3265,434 @@ class HKStockService:
             logger.error(f"下载港股文件失败: {e}")
             return f"下载港股文件时出错: {e}"
 
+# 沙特交易所服务
+class SaudiExchangeService:
+    """沙特交易所公告服务"""
+    
+    def __init__(self, cache_manager: CacheManager):
+        self.cache_manager = cache_manager
+        self.rate_limiter = RateLimiter(max_calls=30, window=60)
+        self.session = requests.Session()
+        self.base_url = "https://www.saudiexchange.sa"
+        self.announcement_api = "https://www.saudiexchange.sa/wps/portal/saudiexchange/newsandreports/issuer-news/issuer-announcements/!ut/p/z1/lY_NDoIwHMOfhQcwqxD-zOPUODAgTBjiLmYHY0h0ejA-v8Qb-BHsrcmvacsMa5hx9tGe7L29Onvu_N7QIRQEP-bIEVcLEEpJuuLTpU9s1wd4JglqI1TuRyFkDWb-yqMsQqhVkQUptpCgcXl8kRjRb_pILmZRt2A9l0kqAk7REPhwcVDy_uEF_BhZHh27XbRu0CYT4XlP_MzK5g!!/p0/IZ7_5A602H80O0HTC060SG6UT81DI1=CZ6_5A602H80O0HTC060SG6UT81D26=NJgetAnnouncementListData=/"
+        
+        # 设置请求头
+        self.headers = {
+            "accept": "*/*",
+            "accept-language": "en-US,en;q=0.9,zh-TW;q=0.8,zh;q=0.7",
+            "cache-control": "no-cache",
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "pragma": "no-cache",
+            "priority": "u=1, i",
+            "sec-ch-ua": '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"macOS"',
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "x-requested-with": "XMLHttpRequest",
+            "referer": "https://www.saudiexchange.sa/wps/portal/saudiexchange/newsandreports/issuer-news/issuer-announcements?locale=en&page=1",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
+        }
+    
+    def parse_saudi_date(self, date_str: str) -> Optional[datetime.date]:
+        """解析沙特交易所日期格式"""
+        try:
+            # 格式: dd/MM/yyyy HH:mm:ss
+            dt = datetime.strptime(date_str, '%d/%m/%Y %H:%M:%S')
+            return dt.date()
+        except Exception as e:
+            logger.warning(f"解析沙特日期失败: {date_str}, 错误: {e}")
+            return None
+    
+    @retry_on_failure(max_retries=3)
+    def get_saudi_filings(self, symbol: str, years: int = 3, status_callback=None) -> List[Document]:
+        """获取沙特交易所公告列表"""
+        self.rate_limiter.wait_if_needed()
+        
+        cache_key = self.cache_manager.get_cache_key("saudi_filings", symbol, years)
+        cached_result = self.cache_manager.get(cache_key)
+        if cached_result:
+            return cached_result
+        
+        try:
+            # 计算日期范围
+            current_date = datetime.now()
+            cutoff_date = current_date - timedelta(days=years * 365)
+            
+            logger.info(f"获取沙特交易所 {symbol} 公告，日期范围: {cutoff_date.date()} 到 {current_date.date()}")
+            
+            all_documents = []
+            page = 1
+            page_size = 50  # 每页获取更多数据
+            
+            while True:
+                if status_callback:
+                    status_callback(f"正在获取第 {page} 页公告...")
+                
+                # 构建请求数据
+                post_data = {
+                    "annoucmentType": "1_-1",
+                    "symbol": symbol,
+                    "sectorDpId": "",
+                    "searchType": "",
+                    "fromDate": "",
+                    "toDate": "",
+                    "datePeriod": "",
+                    "productType": "",
+                    "advisorsList": "",
+                    "textSearch": "",
+                    "pageNumberDb": str(page),
+                    "pageSize": str(page_size)
+                }
+                
+                logger.info(f"🔍 [SAUDI] 请求第 {page} 页，symbol: {symbol}")
+                
+                response = self.session.post(
+                    self.announcement_api,
+                    data=post_data,
+                    headers=self.headers,
+                    timeout=30
+                )
+                response.raise_for_status()
+                
+                # 解析响应
+                try:
+                    data = response.json()
+                    logger.info(f"🔍 [SAUDI] 第 {page} 页响应成功，数据类型: {type(data)}")
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON解析失败: {e}")
+                    logger.error(f"响应内容: {response.text[:500]}")
+                    break
+                
+                # 检查是否有公告数据
+                announcements = data.get('announcementList', [])
+                total_count = data.get('totalCount', 0)
+                
+                logger.info(f"🔍 [SAUDI] 第 {page} 页找到 {len(announcements)} 个公告，总数: {total_count}")
+                
+                if not announcements:
+                    logger.info(f"第 {page} 页没有公告，停止获取")
+                    break
+                
+                # 处理当前页的公告
+                page_documents = []
+                for announcement in announcements:
+                    try:
+                        # 解析日期
+                        date_str = announcement.get('newsDateStr', '')
+                        filing_date = self.parse_saudi_date(date_str)
+                        
+                        if not filing_date:
+                            logger.warning(f"跳过日期解析失败的公告: {date_str}")
+                            continue
+                        
+                        # 检查日期是否在范围内
+                        if filing_date < cutoff_date.date():
+                            logger.info(f"公告日期 {filing_date} 早于截止日期 {cutoff_date.date()}，停止处理")
+                            # 先将当前页已处理的文档添加到all_documents，然后停止
+                            if page_documents:
+                                logger.info(f"🔍 [SAUDI] 停止前添加当前页文档: {len(page_documents)} 个")
+                                all_documents.extend(page_documents)
+                                logger.info(f"🔍 [SAUDI] 停止前all_documents长度: {len(all_documents)}")
+                            return all_documents
+                        
+                        # 获取公告URL
+                        announcement_url = announcement.get('announcementUrl', '')
+                        if not announcement_url:
+                            logger.warning("公告URL为空，跳过")
+                            continue
+                        
+                        # 构建完整URL
+                        if not announcement_url.startswith('http'):
+                            announcement_url = urljoin(self.base_url, announcement_url)
+                        
+                        # 创建文档对象
+                        raw_title = announcement.get('announcementTitle', '').strip()
+                        if not raw_title:
+                            title = f"{symbol} Announcement"
+                        elif raw_title.startswith(symbol):
+                            title = raw_title  # 如果标题已经包含symbol，直接使用
+                        else:
+                            title = f"{symbol} - {raw_title}"  # 否则添加前缀
+                        
+                        document = Document(
+                            type='Saudi Exchange Filing',
+                            title=title,
+                            date=filing_date,
+                            url=announcement_url,
+                            form_type="Saudi Announcement"
+                        )
+                        
+                        page_documents.append(document)
+                        logger.info(f"✅ [SAUDI] 添加公告: {title}, 日期: {filing_date}")
+                        
+                    except Exception as e:
+                        logger.warning(f"处理公告失败: {e}")
+                        continue
+                
+                logger.info(f"🔍 [SAUDI] 第{page}页处理完成: page_documents长度={len(page_documents)}")
+                all_documents.extend(page_documents)
+                logger.info(f"🔍 [SAUDI] extend后: all_documents长度={len(all_documents)}")
+                
+                # 检查是否需要继续翻页
+                if len(announcements) < page_size:
+                    logger.info(f"第 {page} 页公告数量 {len(announcements)} 小于页面大小 {page_size}，停止翻页")
+                    break
+                
+                page += 1
+                
+                # 防止无限循环
+                if page > 100:
+                    logger.warning("已获取100页，停止翻页")
+                    break
+                
+                # 短暂延迟避免请求过快
+                time.sleep(0.5)
+            
+            # 按日期排序（新到旧）
+            all_documents.sort(key=lambda x: x.date, reverse=True)
+            
+            logger.info(f"✅ [SAUDI] 共获取 {len(all_documents)} 个沙特交易所公告")
+            logger.info(f"🔍 [SAUDI] 返回前调试: all_documents类型={type(all_documents)}, 长度={len(all_documents)}")
+            
+            # 缓存结果
+            self.cache_manager.set(cache_key, all_documents)
+            return all_documents
+            
+        except Exception as e:
+            logger.error(f"获取沙特交易所公告失败: {e}")
+            raise DataRetrievalError(f"获取沙特交易所公告失败: {e}")
+    
+    @retry_on_failure(max_retries=3)
+    def download_saudi_filing(self, filing_url: str) -> str:
+        """下载沙特交易所公告内容，包括PDF附件"""
+        self.rate_limiter.wait_if_needed()
+        
+        try:
+            logger.info(f"🔍 [SAUDI] 开始下载公告内容: {filing_url}")
+            
+            # 首先获取HTML页面
+            response = self.session.get(filing_url, headers=self.headers, timeout=30)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # 提取主要内容
+            content = ""
+            
+            # 使用 newspaper3k 提取文章内容
+            try:
+                article = Article(filing_url)
+                article.download()
+                article.parse()
+                main_content = article.text
+                
+                if main_content and len(main_content.strip()) > 50:
+                    content += "=== 公告主要内容 ===\n"
+                    content += main_content.strip()
+                    content += "\n\n"
+            except Exception as e:
+                logger.warning(f"newspaper3k 提取失败: {e}")
+            
+            # 如果主要内容为空，尝试直接解析HTML
+            if not content:
+                # 移除脚本和样式
+                for script in soup(["script", "style"]):
+                    script.decompose()
+                
+                main_content = soup.get_text(separator='\n', strip=True)
+                if main_content:
+                    content += "=== 公告主要内容 ===\n"
+                    content += main_content
+                    content += "\n\n"
+            
+            # 检查PDF附件
+            pdf_attachments = self._extract_pdf_attachments(soup, filing_url)
+            
+            if pdf_attachments:
+                logger.info(f"🔍 [SAUDI-PDF] 发现 {len(pdf_attachments)} 个PDF附件")
+                
+                for i, pdf_info in enumerate(pdf_attachments):
+                    try:
+                        pdf_content = self._download_and_extract_pdf(pdf_info['url'], pdf_info['filename'])
+                        if pdf_content:
+                            content += f"=== PDF附件 {i+1}: {pdf_info['filename']} ===\n"
+                            content += pdf_content
+                            content += "\n\n"
+                            logger.info(f"✅ [SAUDI-PDF] 成功提取PDF内容: {pdf_info['filename']}")
+                        else:
+                            logger.warning(f"未能提取PDF内容: {pdf_info['filename']}")
+                    except Exception as e:
+                        logger.error(f"处理PDF附件 {pdf_info['filename']} 失败: {e}")
+            
+            # 限制内容长度
+            if len(content) > config.MAX_CONTENT_LENGTH:
+                content = content[:config.MAX_CONTENT_LENGTH] + "\n[内容已截断]"
+            
+            logger.info(f"✅ [SAUDI] 成功提取内容，长度: {len(content)}")
+            return content.strip() if content.strip() else "未能提取到内容"
+            
+        except Exception as e:
+            logger.error(f"下载沙特交易所公告失败: {e}")
+            return f"下载失败: {str(e)}"
+    
+    def _extract_pdf_attachments(self, soup: BeautifulSoup, base_url: str) -> List[Dict]:
+        """从HTML页面提取PDF附件链接"""
+        pdf_attachments = []
+        
+        try:
+            # 查找所有tr元素
+            for tr in soup.find_all('tr'):
+                tds = tr.find_all('td')
+                
+                # 检查是否有至少两个td，且第一个td包含"Attached Documents"
+                if len(tds) >= 2:
+                    first_td = tds[0].get_text(strip=True)
+                    if "Attached Documents" in first_td:
+                        # 检查第二个td中是否有PDF链接
+                        second_td = tds[1]
+                        pdf_links = second_td.find_all('a', href=True)
+                        
+                        for link in pdf_links:
+                            href = link['href']
+                            if href.endswith('.pdf'):
+                                # 构建完整URL
+                                if href.startswith('/'):
+                                    full_url = urljoin(self.base_url, href)
+                                else:
+                                    full_url = urljoin(base_url, href)
+                                
+                                # 提取文件名
+                                filename = href.split('/')[-1]
+                                
+                                pdf_attachments.append({
+                                    'url': full_url,
+                                    'filename': filename,
+                                    'original_href': href
+                                })
+                                
+                                logger.info(f"🔍 [SAUDI-PDF] 发现PDF附件: {filename} -> {full_url}")
+            
+            return pdf_attachments
+            
+        except Exception as e:
+            logger.error(f"提取PDF附件失败: {e}")
+            return []
+    
+    def _download_and_extract_pdf(self, pdf_url: str, filename: str) -> str:
+        """下载PDF文件并提取文本内容"""
+        import tempfile
+        import os
+        import fitz  # PyMuPDF
+        
+        try:
+            logger.info(f"🔍 [SAUDI-PDF] 开始下载PDF: {filename}")
+            
+            # 下载PDF文件
+            response = self.session.get(pdf_url, headers=self.headers, timeout=30)
+            response.raise_for_status()
+            
+            # 保存到临时文件
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
+                temp_file.write(response.content)
+                temp_file_path = temp_file.name
+            
+            try:
+                # 使用PyMuPDF提取文本
+                doc = fitz.open(temp_file_path)
+                text = ""
+                
+                for page_num in range(doc.page_count):
+                    page = doc[page_num]
+                    page_text = page.get_text()
+                    if page_text.strip():
+                        text += f"\n--- 第 {page_num + 1} 页 ---\n"
+                        text += page_text
+                        text += "\n"
+                
+                doc.close()
+                
+                # 清理文本
+                import re
+                text = re.sub(r'\n{3,}', '\n\n', text)
+                
+                logger.info(f"✅ [SAUDI-PDF] PDF文本提取成功: {filename}, 长度: {len(text)}")
+                return text.strip()
+                
+            finally:
+                # 清理临时文件
+                try:
+                    os.unlink(temp_file_path)
+                except:
+                    pass
+            
+        except Exception as e:
+            logger.error(f"下载或提取PDF失败 {filename}: {e}")
+            return ""
+    
+    def download_saudi_filings_batch(self, documents: List[Document], max_workers: int = 3, status_callback=None) -> List[Document]:
+        """批量并发下载沙特交易所公告内容"""
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        
+        def download_single_filing(doc_with_index):
+            index, document = doc_with_index
+            try:
+                content = self.download_saudi_filing(document.url)
+                document.content = content
+                logger.info(f"✅ [SAUDI-BATCH] 完成下载 {index+1}/{len(saudi_docs)}: {document.title[:50]}...")
+                return index, document
+            except Exception as e:
+                logger.error(f"❌ [SAUDI-BATCH] 下载失败 {index+1}/{len(saudi_docs)}: {document.title[:50]}... - {e}")
+                document.content = f"下载失败: {str(e)}"
+                return index, document
+        
+        # 过滤出需要下载内容的沙特文档
+        saudi_docs = [doc for doc in documents if doc.type == 'Saudi Exchange Filing' and not doc.content]
+        
+        if not saudi_docs:
+            logger.info("🔍 [SAUDI-BATCH] 没有需要下载的沙特文档")
+            return documents
+        
+        logger.info(f"🚀 [SAUDI-BATCH] 开始批量下载 {len(saudi_docs)} 个沙特公告，并发数: {max_workers}")
+        
+        # 使用线程池并发下载
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # 提交所有下载任务
+            future_to_index = {
+                executor.submit(download_single_filing, (i, doc)): i 
+                for i, doc in enumerate(saudi_docs)
+            }
+            
+            completed_count = 0
+            results = {}
+            
+            # 初始化状态显示
+            if status_callback:
+                status_callback("🚀 开始批量下载沙特交易所公告...", 0, len(saudi_docs))
+            
+            for future in as_completed(future_to_index):
+                completed_count += 1
+                try:
+                    index, result_doc = future.result()
+                    results[index] = result_doc
+                    logger.info(f"📊 [SAUDI-BATCH] 进度: {completed_count}/{len(saudi_docs)} 完成")
+                    
+                    # 在主线程中更新状态
+                    if status_callback:
+                        progress_percent = (completed_count / len(saudi_docs)) * 100
+                        status_callback(f"📊 下载进度: {completed_count}/{len(saudi_docs)} ({progress_percent:.0f}%)", completed_count, len(saudi_docs))
+                        
+                except Exception as e:
+                    logger.error(f"❌ [SAUDI-BATCH] 任务执行失败: {e}")
+        
+        # 最终状态更新
+        if status_callback:
+            status_callback(f"🎉 批量下载完成! 共 {len(saudi_docs)} 个文档", len(saudi_docs), len(saudi_docs))
+        
+        logger.info(f"🎉 [SAUDI-BATCH] 批量下载完成! 总计: {len(saudi_docs)} 个文档")
+        return documents
+
 # 财报会议记录服务
 class EarningsService:
     """财报会议记录服务"""
@@ -2240,6 +4054,7 @@ class SECEarningsAnalyzer:
         self.cache_manager = CacheManager()
         self.sec_service = SECService(self.cache_manager)
         self.hk_service = HKStockService(self.cache_manager)
+        self.saudi_service = SaudiExchangeService(self.cache_manager)
         self.earnings_service = EarningsService(self.cache_manager)
         self.session_manager = SessionManager()
         self.document_manager = DocumentManager()
@@ -2340,87 +4155,6 @@ class SECEarningsAnalyzer:
             
             return processing_prompt, integration_prompt
     
-    def generate_fast_mode_prompt(self, question: str, ticker: str, model_type: str) -> str:
-        """生成快速模式的分析提示词"""
-        # 获取当前语言设置
-        language = st.session_state.get("selected_language", "English")
-        
-        if language == "English":
-            analysis_prompt = f"""
-            You are a professional financial analyst assistant, specialized in analyzing user questions and generating optimized prompts for fast document analysis.
-
-            User Question: {question}
-            Stock Ticker: {ticker}
-
-            Your Task:
-            Generate a single, comprehensive prompt that can analyze all provided documents at once to answer the user's question.
-
-            Requirements:
-            - The prompt should be optimized for processing multiple documents simultaneously
-            - It should extract and synthesize information from all documents to provide a complete answer
-            - The prompt should be professional and capable of producing structured, readable analysis
-            - The user's original question MUST appear in the generated prompt
-            - Always answer in English
-            - **Must return only JSON format, do not include any other text or explanations.**
-
-            Please return directly in JSON format:
-            ```json
-            {{
-                "fast_mode_prompt": "Comprehensive analysis prompt for all documents"
-            }}
-            ```
-            """
-        else:  # 中文
-            analysis_prompt = f"""
-            你是一个专业的金融分析师助手，专门负责分析用户问题并生成优化的快速文档分析提示词。
-
-            用户问题: {question}
-            股票代码: {ticker}
-
-            你的任务：
-            生成一个综合性的提示词，能够一次性分析所有提供的文档来回答用户的问题。
-
-            要求：
-            - 提示词应该针对同时处理多个文档进行优化
-            - 应该能够从所有文档中提取和综合信息，提供完整的答案
-            - 提示词应该专业，能够产生结构化、易读的分析结果
-            - 用户原始问题必须出现在生成的提示词中
-            - **必须只返回JSON格式，不要包含任何其他文本或解释。**
-
-            请直接返回JSON格式：
-            ```json
-            {{
-                "fast_mode_prompt": "综合分析所有文档的提示词"
-            }}
-            ```
-            """
-        
-        try:
-            result = self.gemini_service.call_api(analysis_prompt, model_type)
-            # 尝试从Markdown代码块中提取JSON
-            match = re.search(r"```json\s*(\{.*?\})\s*```", result, re.DOTALL)
-            if match:
-                json_str = match.group(1)
-            else:
-                json_str = result
-            
-            prompt_data = json.loads(json_str)
-            
-            fast_mode_prompt = prompt_data.get("fast_mode_prompt", "")
-            
-            if not fast_mode_prompt:
-                raise ValueError("生成的快速模式提示词为空")
-            
-            return fast_mode_prompt
-            
-        except (json.JSONDecodeError, ValueError) as e:
-            logger.error(f"解析快速模式prompt JSON失败: {e}. 模型返回: {result}")
-            # 使用默认提示词
-            if language == "English":
-                return f"Please analyze all the provided documents to answer the user's question: '{question}'. Extract relevant information from all documents and provide a comprehensive analysis. Keep answers concise and to the point. Start with conclusions, use appropriate emojis and markdown format. If not found, briefly state 'Not mentioned in documents'. Always answer in English."
-            else:
-                return f"请分析所有提供的文档来回答用户问题：'{question}'。从所有文档中提取相关信息并提供综合分析。只回答重点就好，记得不废话。回答要结论先说，可以适当使用emoji，markdown格式，如果没找到就简短回答，说未提及就好。"
-    
     def process_document(self, document: Document, processing_prompt: str, model_type: str) -> str:
         """处理单个文档"""
         try:
@@ -2432,15 +4166,18 @@ class SECEarningsAnalyzer:
                 if document.type == 'SEC Filing':
                     # 检查是否为6-K文件
                     if hasattr(document, 'form_type') and document.form_type == '6-K':
-                        # 6-K文件应该已经在SixKProcessor中处理过了。如果这里内容仍然为空，说明没有找到ex99附件
-                        logger.info(f"ℹ️ [6K-PROCESS] 6-K文件内容为空: {document.title} (可能没有ex99附件)")
-                        document.content = "6-K文件未包含ex99附件" if language == "中文" else "6-K file contains no ex99 attachments"
+                        # 6-K文件应该已经在SixKProcessor中处理过了
+                        logger.warning(f"6-K文件内容为空，这不应该发生: {document.title}")
+                        document.content = "6-K文件内容处理失败" if language == "中文" else "6-K file content processing failed"
                     else:
                         # 普通SEC文件处理
                         document.content = self.sec_service.download_filing(document.url)
                 elif document.type == 'HK Stock Filing':
                     # 港股文件处理
                     document.content = self.hk_service.download_hk_filing(document.url)
+                elif document.type == 'Saudi Exchange Filing':
+                    # 沙特交易所文件处理
+                    document.content = self.saudi_service.download_saudi_filing(document.url)
                 elif document.type == 'Earnings Call':
                     # 在新的流程中，内容已预先获取
                     logger.warning(f"处理文档时发现财报记录内容为空: {document.title}")
@@ -2478,6 +4215,38 @@ class SECEarningsAnalyzer:
                 Document Content:
                 {document.content}
                 """
+            elif language == "العربية":
+                prompt = f"""
+                أنت محلل وثائق محترف متخصص في استخراج وتحليل المعلومات من الوثائق المالية.
+
+                عنوان الوثيقة: {document.title}
+                تاريخ الوثيقة: {document.date}
+                نوع الوثيقة: {document.type}
+                
+                متطلبات المعالجة: {processing_prompt}
+                اجب أيضاً على المتطلبات المماثلة، لا تفوت شيئاً
+                
+                المتطلبات:
+                - اقرأ محتوى الوثيقة المقدمة بعناية
+                - استخرج المعلومات ذات الصلة وفقاً لمتطلبات المستخدم المحددة  
+                - قدم تحليلاً دقيقاً ومهنياً
+                - تأكد من أن الإجابات مأخوذة من محتوى الوثيقة، لا تتخيل
+                - ليس لدي وقت للقراءة، تأكد من أن الإجابات مباشرة وتركز على النقاط المهمة، لا حاجة لمحادثة مهذبة
+                - إخراج markdown، تجنب جميع علامات الدولار $ للعملة كـ ＄ لمنع Markdown من عرضها كصيغ رياضية
+
+                متطلبات الإجابة:
+                - ابدأ بـ 📍 emoji، متبوعاً بنوع الوثيقة والغرض منها،
+                - السطر الثاني ابدأ بـ 💡 على سطر جديد منفصل، اذكر الاستنتاجات مباشرة، اجب على الاستنتاجات المتعلقة بمتطلبات المعالجة الخاصة بي، كلها في جمل قصيرة
+                - يرجى تقديم نتائج تحليل منظمة، اجب فقط على النقاط الرئيسية، تذكر لا ثرثرة
+                - الجملة الأولى يجب أن تذكر النقاط الرئيسية بدون مجاملات. لا تقل "وفقاً لمحتوى الوثيقة التي قدمتها..." هذه الثرثرة، اذكر النقاط الرئيسية مباشرة
+                - يجب أن تبدأ الإجابة بالاستنتاجات، يمكن استخدام emojis لمساعدة المستخدمين على القراءة، تنسيق markdown
+                - إذا لم تحتو الوثيقة على معلومات متعلقة بسؤالي، فقط قل "غير مذكور في الوثيقة" نقطة، جملة واحدة فقط، لا ثرثرة، ليس لدي وقت للقراءة
+
+                محتوى الوثيقة:
+                {document.content}
+                
+                Always answer in Arabic.
+                """
             else:  # 中文
                 prompt = f"""
                 你是一个专业的文档分析师，专门负责从财务文档中提取和分析信息。
@@ -2495,7 +4264,9 @@ class SECEarningsAnalyzer:
                 - 提供准确、专业的分析
                 - 確保回答都來自文檔內容，不要憑空想像
                 - 我沒時間看 確保回答直接說重點 不用像人一樣還要客套話
-                - markdown輸出，將所有表示金額的 $ 改為 ＄，以避免 Markdown 被誤判為數學公式。
+                - 內文markdown輸出，將所有表示金額的 $ 改為 ＄，以避免 Markdown 被誤判為數學公式。
+
+
                 
                 回答要求：
                 - 開頭以📍这个emoji开頭， 📍後面接這是一份什麼文件，文件目的是什麼，
@@ -2530,15 +4301,18 @@ class SECEarningsAnalyzer:
                 if document.type == 'SEC Filing':
                     # 检查是否为6-K文件
                     if hasattr(document, 'form_type') and document.form_type == '6-K':
-                        # 6-K文件应该已经在SixKProcessor中处理过了。如果这里内容仍然为空，说明没有找到ex99附件
-                        logger.info(f"ℹ️ [6K-PROCESS] 6-K文件内容为空: {document.title} (可能没有ex99附件)")
-                        document.content = "6-K文件未包含ex99附件" if language == "中文" else "6-K file contains no ex99 attachments"
+                        # 6-K文件应该已经在SixKProcessor中处理过了
+                        logger.warning(f"6-K文件内容为空，这不应该发生: {document.title}")
+                        document.content = "6-K文件内容处理失败" if language == "中文" else "6-K file content processing failed"
                     else:
                         # 普通SEC文件处理
                         document.content = self.sec_service.download_filing(document.url)
                 elif document.type == 'HK Stock Filing':
                     # 港股文件处理
                     document.content = self.hk_service.download_hk_filing(document.url)
+                elif document.type == 'Saudi Exchange Filing':
+                    # 沙特交易所文件处理
+                    document.content = self.saudi_service.download_saudi_filing(document.url)
                 elif document.type == 'Earnings Call':
                     # 在新的流程中，内容已预先获取
                     logger.warning(f"处理文档时发现财报记录内容为空: {document.title}")
@@ -2576,6 +4350,39 @@ class SECEarningsAnalyzer:
                 Document Content:
                 {document.content}
                 """
+
+            elif language == "العربية":
+                prompt = f"""
+                أنت محلل وثائق محترف متخصص في استخراج وتحليل المعلومات من الوثائق المالية.
+
+                عنوان الوثيقة: {document.title}
+                تاريخ الوثيقة: {document.date}
+                نوع الوثيقة: {document.type}
+                
+                متطلبات المعالجة: {processing_prompt}
+                اجب أيضاً على المتطلبات المماثلة، لا تفوت شيئاً
+                
+                المتطلبات:
+                - اقرأ محتوى الوثيقة المقدمة بعناية
+                - استخرج المعلومات ذات الصلة وفقاً لمتطلبات المستخدم المحددة  
+                - قدم تحليلاً دقيقاً ومهنياً
+                - تأكد من أن الإجابات مأخوذة من محتوى الوثيقة، لا تتخيل
+                - ليس لدي وقت للقراءة، تأكد من أن الإجابات مباشرة وتركز على النقاط المهمة، لا حاجة لمحادثة مهذبة
+                - إخراج markdown، تجنب جميع علامات الدولار $ للعملة كـ ＄ لمنع Markdown من عرضها كصيغ رياضية
+
+                متطلبات الإجابة:
+                - ابدأ بـ 📍 emoji، متبوعاً بنوع الوثيقة والغرض منها،
+                - السطر الثاني ابدأ بـ 💡 على سطر جديد منفصل، اذكر الاستنتاجات مباشرة، اجب على الاستنتاجات المتعلقة بمتطلبات المعالجة الخاصة بي، كلها في جمل قصيرة
+                - يرجى تقديم نتائج تحليل منظمة، اجب فقط على النقاط الرئيسية، تذكر لا ثرثرة
+                - الجملة الأولى يجب أن تذكر النقاط الرئيسية بدون مجاملات. لا تقل "وفقاً لمحتوى الوثيقة التي قدمتها..." هذه الثرثرة، اذكر النقاط الرئيسية مباشرة
+                - يجب أن تبدأ الإجابة بالاستنتاجات، يمكن استخدام emojis لمساعدة المستخدمين على القراءة، تنسيق markdown
+                - إذا لم تحتو الوثيقة على معلومات متعلقة بسؤالي، فقط قل "غير مذكور في الوثيقة" نقطة، جملة واحدة فقط، لا ثرثرة، ليس لدي وقت للقراءة
+
+                محتوى الوثيقة:
+                {document.content}
+                
+                Always answer in Arabic.
+                """
             else:  # 中文
                 prompt = f"""
                 你是一个专业的文档分析师，专门负责从财务文档中提取和分析信息。
@@ -2608,7 +4415,6 @@ class SECEarningsAnalyzer:
                 文档内容:
                 {document.content}
                 """
-            
             logger.info("================================================")
             logger.info(f"Processing document (streaming): {document.title} in {language}")
             
@@ -2652,6 +4458,7 @@ class SECEarningsAnalyzer:
                 - This is a comprehensive summary, don't repeat detailed content from individual documents
                 - Focus on cross-document trends and correlations
                 - Always answer in English
+                - when markdown output, Escape all dollar signs $ for currency as ＄ to prevent Markdown from rendering them as math.
                 
                 Document Analysis Results:
                 """
@@ -2726,6 +4533,7 @@ class SECEarningsAnalyzer:
                 - This is a comprehensive summary, don't repeat detailed content from individual documents
                 - Focus on cross-document trends and correlations
                 - Always answer in English
+                - when markdown output, Escape all dollar signs $ for currency as ＄ to prevent Markdown from rendering them as math.
                 
                 Document Analysis Results:
                 """
@@ -2750,6 +4558,7 @@ class SECEarningsAnalyzer:
                 - 突出重点信息和关键发现
                 - 这是一个综合总结，不要重复单个文档的详细内容
                 - 重点关注跨文档的趋势和关联性
+                - markdown輸出，將所有表示金額的 $ 改為 ＄，以避免 Markdown 被誤判為數學公式。
                 
                 文档分析结果:
                 """
@@ -2774,177 +4583,6 @@ class SECEarningsAnalyzer:
             def error_generator():
                 yield error_msg
             return error_generator()
-    
-    def process_all_documents_fast(self, documents: List[Document], fast_mode_prompt: str, model_type: str):
-        """快速模式：一次性处理所有文档 - 流式响应版本"""
-        try:
-            # 获取当前语言设置
-            language = st.session_state.get("selected_language", "English")
-            
-            # 预处理6-K文件
-            logger.info(f"🔍 [6K-FAST] 开始预处理文档，总数: {len(documents)}")
-            processed_documents = []
-            
-            for i, document in enumerate(documents):
-                logger.info(f"🔍 [6K-FAST] 处理文档{i+1}: {document.title}, 类型: {document.type}")
-                
-                # 特殊处理6-K文件
-                if hasattr(document, 'form_type') and document.form_type == '6-K':
-                    logger.info(f"🔍 [6K-FAST] 检测到6-K文件，开始处理: {document.title}")
-                    
-                    # 初始化6-K处理器
-                    self.sec_service._init_sixk_processor(self.document_manager.temp_dir)
-                    
-                    # 获取ticker和CIK
-                    ticker = st.session_state.analyzer_ticker
-                    ticker_map = self.sec_service.get_cik_map()
-                    cik = ticker_map.get(ticker.upper(), '')
-                    
-                    logger.info(f"🔍 [6K-FAST] 6-K处理参数: Ticker={ticker}, CIK={cik}")
-                    
-                    # 处理6-K文件
-                    processed_6k_docs = self.sec_service.sixk_processor.process_6k_filing(
-                        ticker, cik, document.url, document
-                    )
-                    
-                    logger.info(f"🔍 [6K-FAST] 6-K处理结果: {len(processed_6k_docs)} 个文档")
-                    
-                    if processed_6k_docs:
-                        processed_documents.extend(processed_6k_docs)
-                        logger.info(f"✅ [6K-FAST] 6-K文件处理成功，添加 {len(processed_6k_docs)} 个文档")
-                    else:
-                        logger.info(f"ℹ️ [6K-FAST] 6-K文件没有ex99附件，跳过")
-                        # 不添加空的6-K文档
-                else:
-                    # 非6-K文件，直接添加
-                    processed_documents.append(document)
-            
-            logger.info(f"🔍 [6K-FAST] 预处理完成，最终文档数: {len(processed_documents)}")
-            
-            # 下载所有文档内容
-            all_content = ""
-            for i, document in enumerate(processed_documents):
-                if not document.content:
-                    if document.type == 'SEC Filing':
-                        document.content = self.sec_service.download_filing(document.url)
-                    elif document.type == 'HK Stock Filing':
-                        document.content = self.hk_service.download_hk_filing(document.url)
-                    elif document.type == 'Earnings Call':
-                        logger.warning(f"处理文档时发现财报记录内容为空: {document.title}")
-                        document.content = "内容未找到" if language == "中文" else "Content not found"
-                
-                # 添加文档分隔符和标题
-                separator = f"\n\n{'='*60}\n"
-                doc_header = f"文档 {i+1}: {document.title}\n日期: {document.date}\n类型: {document.type}\n" if language == "中文" else f"Document {i+1}: {document.title}\nDate: {document.date}\nType: {document.type}\n"
-                separator += doc_header
-                separator += f"{'='*60}\n\n"
-                
-                all_content += separator + (document.content or "")
-            
-            # 限制总内容长度
-            if len(all_content) > config.MAX_CONTENT_LENGTH:
-                all_content = all_content[:config.MAX_CONTENT_LENGTH] + f"\n[内容已截断]" if language == "中文" else f"\n[Content truncated]"
-            
-            # 构建完整的提示词
-            if language == "English":
-                prompt = f"""
-                You are a professional financial analyst, specialized in analyzing multiple financial documents simultaneously.
-
-                Analysis Requirements: {fast_mode_prompt}
-                
-                Requirements:
-                - Analyze all provided documents comprehensively
-                - Extract relevant information according to the user's specific requirements
-                - Provide accurate, professional analysis
-                - Ensure answers come from document content, don't imagine
-                - I don't have time to read, ensure answers are direct and to the point, no need for polite conversation
-                - Always answer in English
-                - when markdown output, Escape all dollar signs $ for currency as ＄ to prevent Markdown from rendering them as math.
-                
-                Answer Requirements:
-                - Start with 📊 emoji, followed by a brief summary of what documents were analyzed
-                - Second line Start with 💡 on next new line row, directly state conclusions related to the user's question
-                - Please provide structured analysis results, only answer key points, remember no nonsense
-                - First sentence should state key points without pleasantries
-                - Answer should start with conclusions, can use emojis to help users read, markdown format
-                - If the documents don't contain information related to the question, just say "Not mentioned in documents" period, one sentence only
-                
-                Table Requirements:
-                - If the content contains numbers for the same indicator at different time points, or question is about guidance, place a pivot table at the very beginning of the answer. Format: pivot table row names are different indicators, column names are the time when indicators were published, cells are the indicator numbers. put both guidance and actual numbers from next quarter report.Then explain below the pivot table after generation.
-                - If the content contains business descriptions for the same indicator at different time points, or question is about guidance, place a pivot table at the very beginning of the answer. Format: pivot table row names are different indicators, column names are the time when indicators were published, cells are the indicator descriptions. put both guidance and actual numbers from next quarter report.Then explain below the pivot table after generation.
-                - table output use markdown format, ensure markdown format is correct, no errors
-                - 如果問guidance，table 格式如下，注意 如果問整理guidance 都是要整理出文件內所有的季度的
-                - - column name 是不同文件的時間，所有有提到的文件都要納入，同一天的統整在一起。
-                - - row name 就是指表 像是 收入 毛利率 或是 DAU MAU 這種指標，分成actual 和 guidance。actual 就是放財報內實際公布的數字，guidance就是放earning call或是證交所公告內給的對未來的guidance數字或是描述
-                example:
-                |              | 2025Q1 (2025/1/20) | 2025Q2 (2025/4/20) | 2025Q3 (2025/7/20) | 8-K (2025/8/20) |
-                |--------------|--------------------|--------------------|--------------------|-----------------|
-                | DAU Actual   | 3亿                | 3.5亿              | 4亿                |                 |
-                | DAU Guidance | 预计Q2達到3.5億    | 预计Q3達到4億      | 预计Q4達到4.5億    | 预计Q4達到6億   |
-                | GMV Actual   | 100亿              | 200亿              | 300亿              |                 |
-                | GMV Guidance | 预计Q2達到200億    | 预计Q3達到250億    | 预计Q4達到300億    | 预计Q4達到500億 |
-                - 如果有其他整理成表格的任務，第一個table 格式也要跟上變一樣的 column name 是不同時間，row name 是不同指標。然後第二個table 才是詳細的表格
-                - 變化這個字眼，如果問的是變化，就是把多個時間點的資料，整理成表格，下面再文字說明，注意是多個時間點的資料，不是只有兩個時間點的資料
-
-                All Document Contents:
-                {all_content}
-                """
-            else:  # 中文
-                prompt = f"""
-                你是一个专业的金融分析师，专门负责同时分析多个金融文档。
-
-                分析要求: {fast_mode_prompt}
-                
-                要求：
-                - 全面分析所有提供的文档
-                - 根据用户的具体要求提取相关信息
-                - 提供准确、专业的分析
-                - 确保回答都来自文档内容，不要凭空想象
-                - 我没时间看，确保回答直接说重点，不用像人一样还要客套话
-                - markdown输出，将所有表示金额的 $ 改为 ＄，以避免 Markdown 被误判为数学公式
-                
-                回答要求：
-                - 开头以📊这个emoji开头，📊后面接简要说明分析了哪些文档
-                - 第二句下一行，开头以💡，记得换行，直接说结论，回答跟用户问题有关的结论，都是简短一句话
-                - 请提供结构化的分析结果，只回答重点就好，记得不废话
-                - 第一句就说重点不用客套，直接说重点
-                - 回答要结论先说，可以使用emoji帮助使用者阅读，markdown格式
-                - 如果文档内没有跟问题有关的信息，就说一句"文档内未提及"句号，一句话就好，不准废话
-                
-                表格要求：
-                - 如果內文有 同指標不同時間點的 數字 或是問guidance，問題適合整理成表格的 回答的最一開始 一定要放上一個pivot table，格式是 pivot table row name 是不同指標 ， column 指標公布的時間，cell 是指標的數字。guidance數字 還有下一季報出的 actual 數字 都要放。然後pivot table 生成完 表格下方解釋一下
-                - 如果內文有 同指標不同時間點的 業務的描述 或是問guidance，問題適合整理成表格的 回答的最一開始 一定要放上一個pivot table，格式是 pivot table row name 是不同指標 ， column 指標公布的時間，cell 是指標的數字。guidance數字 還有下一季報出的 actual 數字 都要放。然後pivot table 生成完 表格下方解釋一下
-                - table 都用markdown格式，要確保markdown格式正確，不要有錯誤
-                - 如果問guidance，table 格式如下，注意 如果問整理guidance 都是要整理出文件內所有的季度的
-                - - column name 是不同文件的時間，所有有提到的文件都要納入，同一天的統整在一起。
-                - - row name 就是指表 像是 收入 毛利率 或是 DAU MAU 這種指標，分成actual 和 guidance。actual 就是放財報內實際公布的數字，guidance就是放earning call或是證交所公告內給的對未來的guidance數字或是描述
-                example:
-                |              | 2025Q1 (2025/1/20) | 2025Q2 (2025/4/20) | 2025Q3 (2025/7/20) | 8-K (2025/8/20) |
-                |--------------|--------------------|--------------------|--------------------|-----------------|
-                | DAU Actual   | 3亿                | 3.5亿              | 4亿                |                 |
-                | DAU Guidance | 预计Q2達到3.5億    | 预计Q3達到4億      | 预计Q4達到4.5億    | 预计Q4達到6億   |
-                | GMV Actual   | 100亿              | 200亿              | 300亿              |                 |
-                | GMV Guidance | 预计Q2達到200億    | 预计Q3達到250億    | 预计Q4達到300億    | 预计Q4達到500億 |
-                - 如果有其他整理成表格的任務，第一個table 格式也要跟上變一樣的 column name 是不同時間，row name 是不同指標。然後第二個table 才是詳細的表格
-                - 變化這個字眼，如果問的是變化，就是把多個時間點的資料，整理成表格，下面再文字說明，注意是多個時間點的資料，不是只有兩個時間點的資料
-                
-                所有文档内容:
-                {all_content}
-                """
-            
-            logger.info("================================================")
-            logger.info(f"Processing all documents in fast mode in {language}")
-            
-            # 返回流式响应生成器
-            return self.gemini_service.call_api_stream(prompt, model_type)
-            
-        except Exception as e:
-            logger.error(f"快速模式处理失败: {e}")
-            error_msg = f"快速模式处理时出错: {e}" if language == "中文" else f"Error in fast mode processing: {e}"
-            # 对于错误，返回一个简单的生成器
-            def error_generator():
-                yield error_msg
-            return error_generator()
 
 # 初始化应用
 @st.cache_resource
@@ -2956,53 +4594,14 @@ def initialize_app():
 def main():
     """主页面函数"""
     # 在应用初始化之前，确保session state已经存在
-    try:
-        SessionManager.init_session_state()
-    except Exception as e:
-        # 静默处理初始化错误
-        logger.warning(f"Session state initialization warning: {e}")
-        # 确保基本的session state存在
-        if "analyzer_messages" not in st.session_state:
-            st.session_state.analyzer_messages = []
-        if "analyzer_ticker" not in st.session_state:
-            st.session_state.analyzer_ticker = ""
+    SessionManager.init_session_state()
     
-    # 定义回退函数用于获取密钥
-    def get_secret_value(key: str, default=None):
-        """从 st.secrets 或环境变量中获取密钥值"""
-        import os
-        import json
-        from pathlib import Path
-        
-        # 检查 secrets.toml 文件是否存在
-        secrets_paths = [
-            Path(".streamlit/secrets.toml"),
-            Path("/root/.streamlit/secrets.toml"),
-            Path("/app/.streamlit/secrets.toml")
-        ]
-        
-        secrets_file_exists = any(path.exists() for path in secrets_paths)
-        
-        if secrets_file_exists:
-            try:
-                return st.secrets[key]
-            except KeyError:
-                # 如果 secrets.toml 存在但没有该键，回退到环境变量
-                pass
-        
-        # 直接从环境变量读取
-        env_value = os.environ.get(key, default)
-        if env_value is None:
-            return default
-            
-        # 尝试解析 JSON 格式的环境变量（用于列表类型的密钥）
-        if isinstance(env_value, str) and env_value.startswith('[') and env_value.endswith(']'):
-            try:
-                return json.loads(env_value)
-            except json.JSONDecodeError:
-                return env_value
-        
-        return env_value
+    # 初始化session state for short scanner
+    if "short_scanner_results" not in st.session_state:
+        st.session_state.short_scanner_results = []
+    # selected_detectors 已被 selected_detector_classes 替代
+    if "current_scan_results" not in st.session_state:
+        st.session_state.current_scan_results = []
     
     # 處理URL參數
     query_params = st.query_params
@@ -3016,6 +4615,15 @@ def main():
 
     # 初始化应用
     analyzer = initialize_app()
+    
+    # 检查是否缺少saudi_service（缓存问题）
+    if not hasattr(analyzer, 'saudi_service'):
+        st.warning("⚠️ 检测到缓存问题，正在清理并重新初始化...")
+        st.cache_resource.clear()
+        st.rerun()
+    
+    # 初始化做空信号分析器
+    short_analyzer = ShortSignalAnalyzer(analyzer.gemini_service)
     
     # 获取当前语言设置
     current_language = st.session_state.get("selected_language", "English")
@@ -3037,7 +4645,10 @@ def main():
         
         # 智能处理ticker格式
         if ticker_input:
-            if is_hk_stock(ticker_input):
+            if is_saudi_stock(ticker_input):
+                ticker = normalize_saudi_ticker(ticker_input)
+                st.info(f"🇸🇦 Saudi Exchange - {ticker}")
+            elif is_hk_stock(ticker_input):
                 ticker = normalize_hk_ticker(ticker_input)
                 st.info(lang_config["hk_stock_info"].format(ticker))
             else:
@@ -3068,7 +4679,17 @@ def main():
         # 数据类型选择 - 根据股票类型显示不同选项
         st.subheader(lang_config["data_type_header"])
         
-        if is_hk_stock(ticker):
+        if is_saudi_stock(ticker):
+            # 沙特交易所选项 - 自动选择所有类型
+            use_sec_reports = True
+            use_sec_others = True
+            use_earnings = False
+            
+            st.info("🇸🇦 Saudi Exchange: All announcement types selected automatically")
+            st.write("✅ Company Announcements")
+            st.write("✅ Financial Reports") 
+            st.write("❌ Earnings Calls (Not available for Saudi stocks)")
+        elif is_hk_stock(ticker):
             # 港股选项
             use_sec_reports = st.checkbox(lang_config["sec_reports_hk"], value=st.session_state.analyzer_use_sec_reports)
             use_sec_others = st.checkbox(lang_config["sec_others_hk"], value=st.session_state.analyzer_use_sec_others)
@@ -3083,6 +4704,53 @@ def main():
             use_earnings = st.checkbox(lang_config["earnings_label"], value=st.session_state.analyzer_use_earnings)
             st.caption(lang_config["earnings_caption"])
         
+        # 检测模块选择
+        st.subheader(lang_config["detectors_header"])
+        
+        available_detectors = short_analyzer.get_available_detectors()
+        detector_options = []
+        detector_class_to_name = {}  # 类名到当前语言名称的映射
+        detector_name_to_class = {}  # 当前语言名称到类名的映射
+        
+        for detector in available_detectors:
+            class_name = detector.__class__.__name__
+            current_name = detector.name
+            detector_options.append(current_name)
+            detector_class_to_name[class_name] = current_name
+            detector_name_to_class[current_name] = class_name
+        
+        # 使用类名作为稳定的标识符来处理语言切换
+        if "selected_detector_classes" not in st.session_state:
+            available_detectors = short_analyzer.get_available_detectors()
+            # 初始化时默认选择除财报会议之外的所有检测器
+            st.session_state.selected_detector_classes = [
+                detector.__class__.__name__ for detector in available_detectors
+                if detector.__class__.__name__ != "EarningsCallAnalysisDetector"
+            ]
+
+        # 根据选中的类名获取当前语言的名称
+        default_selection = [detector_class_to_name[class_name] for class_name in st.session_state.selected_detector_classes if class_name in detector_class_to_name]
+        
+        help_text = "选择要运行的检测器" if current_language == "中文" else "Select detectors to run"
+        selected_detectors = st.multiselect(
+            lang_config["detectors_label"],
+            options=detector_options,
+            default=default_selection,
+            help=help_text
+        )
+        
+        # 更新选中的检测器类名
+        st.session_state.selected_detector_classes = [detector_name_to_class[name] for name in selected_detectors]
+        
+        # 显示检测器描述
+        if selected_detectors:
+            selected_detectors_header = "**选中的检测器：**" if current_language == "中文" else "**Selected Detectors:**"
+            st.markdown(selected_detectors_header)
+            for detector in available_detectors:
+                if detector.__class__.__name__ in st.session_state.selected_detector_classes:
+                    st.markdown(f"• **{detector.name}**")
+                    st.markdown(f"  {detector.description}")
+        
         # 模型选择
         st.subheader(lang_config["model_header"])
         model_type = st.selectbox(
@@ -3091,21 +4759,6 @@ def main():
             index=list(config.MODELS.keys()).index(st.session_state.analyzer_model),
             format_func=lambda x: config.MODELS[x]
         )
-        
-        # 分析模式选择
-        st.subheader(lang_config["analysis_mode_header"])
-        analysis_mode = st.selectbox(
-            lang_config["analysis_mode_label"],
-            options=["fast_mode", "detailed_mode"],
-            index=0 if st.session_state.analyzer_analysis_mode == "fast_mode" else 1,
-            format_func=lambda x: lang_config["fast_mode"] if x == "fast_mode" else lang_config["detailed_mode"]
-        )
-        
-        # 显示模式说明
-        if analysis_mode == "fast_mode":
-            st.caption(lang_config["fast_mode_caption"])
-        else:
-            st.caption(lang_config["detailed_mode_caption"])
         
         # 付費API設置
         st.subheader(lang_config["api_header"])
@@ -3141,13 +4794,20 @@ def main():
         st.subheader(lang_config["language_header"])
         selected_language = st.selectbox(
             lang_config["language_label"],
-            options=["English", "中文"],
-            index=0 if st.session_state.get("selected_language", "English") == "English" else 1
+            options=["English", "中文", "العربية"],
+            index=0 if st.session_state.get("selected_language", "English") == "English" else (1 if st.session_state.get("selected_language", "English") == "中文" else 2)
         )
         
         # 如果语言改变，更新session state并重新运行
         if selected_language != st.session_state.get("selected_language", "English"):
             st.session_state.selected_language = selected_language
+            st.rerun()
+        
+        # 调试工具
+        st.subheader("🔧 调试工具")
+        if st.button("清除应用缓存"):
+            st.cache_resource.clear()
+            st.success("缓存已清除，页面将重新加载...")
             st.rerun()
         
         # 更新session state
@@ -3157,74 +4817,133 @@ def main():
         st.session_state.analyzer_use_sec_others = use_sec_others
         st.session_state.analyzer_use_earnings = use_earnings
         st.session_state.analyzer_model = model_type
-        st.session_state.analyzer_analysis_mode = analysis_mode
+        # selected_detectors 已在上面更新为 selected_detector_classes
     
     # 主内容区域
 
-    
-    # 显示历史对话和处理状态
-    for i, message in enumerate(st.session_state.analyzer_messages):
-        with st.chat_message(message["role"], avatar=message.get("avatar")):
-            st.markdown(message["content"])
-            
-            # 如果消息包含文档文件路径，显示原文预览
-            if message.get("temp_file_path") and os.path.exists(message["temp_file_path"]):
-                file_content = analyzer.document_manager.get_download_content(message["temp_file_path"])
-                if file_content:
-                    # 解码文件内容
-                    content_text = file_content.decode('utf-8')
+    # 显示历史扫描结果
+    if st.session_state.short_scanner_results:
+        history_header = "📊 历史扫描结果" if current_language == "中文" else "📊 Historical Scan Results"
+        st.subheader(history_header)
+        
+        for i, result in enumerate(st.session_state.short_scanner_results):
+            scan_result_label = f"扫描结果 {i+1}: {result['ticker']} ({result['timestamp']})" if current_language == "中文" else f"Scan Result {i+1}: {result['ticker']} ({result['timestamp']})"
+            with st.expander(scan_result_label, expanded=True):
+                st.markdown(result['report'])
+                        
+    # 显示当前扫描的中间结果
+    if st.session_state.current_scan_results:
+        current_results_header = "🔍 当前扫描结果" if current_language == "中文" else "🔍 Current Scan Results"
+        st.subheader(current_results_header)
+        
+        total_signals = 0
+        high_risk_signals = 0
+        
+        for result in st.session_state.current_scan_results:
+            signals_text = "个信号" if current_language == "中文" else "signals"
+            with st.expander(f"📊 {result.detector_name} - {len(result.signals)} {signals_text}", expanded=True):
+                if result.success:
+                    success_text = f"✅ 执行成功 - 用时 {result.processing_time:.2f}秒" if current_language == "中文" else f"✅ Execution successful - {result.processing_time:.2f}s"
+                    st.success(success_text)
                     
-                    # 使用 expander 来显示原文内容
-                    with st.expander("📄 查看原文", expanded=False):
-                        # 添加一些样式来改善显示效果
-                        st.markdown("---")
-                        
-                        # 显示文档信息
-                        st.caption(f"📋 文档：{message.get('document_title', '未知文档')}")
-                        
-                        # 使用可滚动的文本区域显示内容，添加唯一key
-                        st.text_area(
-                            label="原文内容",
-                            value=content_text,
-                            height=400,
-                            disabled=True,
-                            label_visibility="collapsed",
-                            key=f"text_area_{hash(message['temp_file_path'])}"
-                        )
-                        
-                        # 下载按钮
-                        filename = f"{message.get('document_title', 'document')}.txt"
-                        st.download_button(
-                            label="💾 下载原文",
-                            data=file_content,
-                            file_name=filename,
-                            mime="text/plain",
-                            key=f"download_{hash(message['temp_file_path'])}",
-                            help="下载原文到本地文件"
-                        )
+                    if result.signals:
+                        for signal in result.signals:
+                            total_signals += 1
+                            if signal.severity == "High":
+                                high_risk_signals += 1
+                                
+                            # 根据严重程度选择颜色
+                            if signal.severity == "High":
+                                st.error(f"🚨 **{signal.title}**")
+                            elif signal.severity == "Medium":
+                                st.warning(f"⚠️ **{signal.title}**")
+                            else:
+                                st.info(f"💡 **{signal.title}**")
+                            
+                            if current_language == "中文":
+                                # st.markdown(f"**置信度**: {signal.confidence:.1%}")
+                                st.markdown(f"**描述**: {signal.description}")
+                                st.markdown(f"**证据**: {signal.evidence}")
+                                st.markdown(f"**建议**: {signal.recommendation}")
+                                
+                                if signal.source_documents:
+                                    st.markdown(f"**来源文档**: {', '.join(signal.source_documents)}")
+                            else:
+                                # st.markdown(f"**Confidence**: {signal.confidence:.1%}")
+                                st.markdown(f"**Description**: {signal.description}")
+                                st.markdown(f"**Evidence**: {signal.evidence}")
+                                st.markdown(f"**Recommendation**: {signal.recommendation}")
+                                
+                                if signal.source_documents:
+                                    st.markdown(f"**Source Documents**: {', '.join(signal.source_documents)}")
+                            
+                            st.markdown("---")
+                    else:
+                        no_signals_text = "未发现异常信号" if current_language == "中文" else "No anomalous signals detected"
+                        st.info(no_signals_text)
+                else:
+                    error_text = f"❌ 执行失败: {result.error_message}" if current_language == "中文" else f"❌ Execution failed: {result.error_message}"
+                    st.error(error_text)
         
-        # 如果这是最后一条用户消息，并且正在处理，显示状态
-        if (message["role"] == "user" and 
-            i == len(st.session_state.analyzer_messages) - 1 and 
-            analyzer.session_manager.get_processing_status().is_processing):
-            
-            # 這裡不再顯示status，統一在下方處理
-            pass
+        # 显示总结
+        summary_header = "📊 检测总结" if current_language == "中文" else "📊 Detection Summary"
+        st.subheader(summary_header)
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            total_signals_label = "总信号数" if current_language == "中文" else "Total Signals"
+            st.metric(total_signals_label, total_signals)
+        with col2:
+            high_risk_label = "高风险信号" if current_language == "中文" else "High Risk Signals"
+            st.metric(high_risk_label, high_risk_signals)
+        with col3:
+            risk_level_label = "风险等级" if current_language == "中文" else "Risk Level"
+            if current_language == "中文":
+                risk_level_value = "高" if high_risk_signals > 0 else "中" if total_signals > 0 else "低"
+            else:
+                risk_level_value = "High" if high_risk_signals > 0 else "Medium" if total_signals > 0 else "Low"
+            st.metric(risk_level_label, risk_level_value)
+        with col4:
+            clear_button_text = "🗑️ 清理当前结果" if current_language == "中文" else "🗑️ Clear Current Results"
+            clear_help_text = "清理当前扫描结果" if current_language == "中文" else "Clear current scan results"
+            if st.button(clear_button_text, help=clear_help_text):
+                st.session_state.current_scan_results = []
+                st.rerun()
+        
+        st.markdown("---")
     
-    # 主聊天输入
-    if prompt := st.chat_input(lang_config["chat_placeholder"]):
-        # 将用户消息添加到历史记录
-        st.session_state.analyzer_messages.append({"role": "user", "content": prompt})
-        
+    # 扫描控制区域
+    col1, col2 = st.columns([3, 1])
+    
+    with col1:
+        # 显示当前配置
+        if ticker:
+            if current_language == "中文":
+                st.info(f"📊 **目标股票**: {ticker} | **数据年份**: {years}年 | **检测器**: {len(st.session_state.selected_detector_classes)}个")
+            else:
+                years_text = "year" if years == 1 else "years"
+                detectors_text = "detector" if len(st.session_state.selected_detector_classes) == 1 else "detectors"
+                st.info(f"📊 **Target Stock**: {ticker} | **Data Period**: {years} {years_text} | **Detectors**: {len(st.session_state.selected_detector_classes)} {detectors_text}")
+        else:
+            warning_text = "请输入股票代码" if current_language == "中文" else "Please enter stock ticker"
+            st.warning(warning_text)
+    
+    with col2:
+        # 扫描按钮
+        scan_button = st.button(
+            lang_config["scan_button"],
+            disabled=not ticker or not st.session_state.selected_detector_classes,
+            use_container_width=True
+        )
+    
+    # 处理扫描请求
+    if scan_button and ticker and st.session_state.selected_detector_classes:
         # 启动处理流程
         status = analyzer.session_manager.get_processing_status()
         status.is_processing = True
-        status.user_question = prompt
         status.processing_step = 1
-        status.stop_requested = False  # 重置停止请求
+        status.stop_requested = False
         analyzer.session_manager.update_processing_status(status)
         
-        # 关键改动：在这里调用rerun来立即启动处理流程并更新UI
         st.rerun()
 
     # 在每次重新运行脚本时，检查是否需要处理
@@ -3233,7 +4952,6 @@ def main():
         # 如果正在处理，显示status
         current_step = status.current_status_label or (lang_config.get("processing_status", "Processing..."))
         
-        # with st.expander(lang_config["status_header"], expanded=False):
         with st.expander(status.current_status_label, expanded=False):
             st.markdown(f"**{status.current_status_label}**")
             
@@ -3247,14 +4965,6 @@ def main():
                 status.is_processing = False
                 status.current_status_label = lang_config["stop_success"]
                 analyzer.session_manager.update_processing_status(status)
-                
-                # 添加停止消息到聊天历史
-                st.session_state.analyzer_messages.append({
-                    "role": "assistant", 
-                    "content": lang_config["processing_stopped"],
-                    "avatar": "⏹️"
-                })
-                
                 st.rerun()
             
             # 显示文档列表和处理状态
@@ -3279,15 +4989,365 @@ def main():
             if status.error_message:
                 st.error(f"❌ {status.error_message}")
         
-        # 将主处理逻辑移到 st.status 中，以提供实时反馈
-        process_user_question_new(
-            analyzer, ticker, years, 
+        # 运行做空信号扫描流程
+        process_short_signal_scan(
+            analyzer, short_analyzer, ticker, years, 
             st.session_state.analyzer_use_sec_reports,
             st.session_state.analyzer_use_sec_others,
-            use_earnings, model_type, st.session_state.analyzer_analysis_mode
+            use_earnings, st.session_state.selected_detector_classes, model_type
         )
 
-def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years: int, use_sec_reports: bool, use_sec_others: bool, use_earnings: bool, model_type: str, analysis_mode: str = "detailed_mode"):
+def process_short_signal_scan(analyzer: SECEarningsAnalyzer, short_analyzer: ShortSignalAnalyzer, ticker: str, years: int, use_sec_reports: bool, use_sec_others: bool, use_earnings: bool, selected_detector_classes: List[str], model_type: str):
+    """处理做空信号扫描的完整流程"""
+    status = analyzer.session_manager.get_processing_status()
+    language = st.session_state.get("selected_language", "English")
+    
+    # 检查是否已请求停止
+    if status.stop_requested:
+        return
+    
+    try:
+        # 步骤1：获取文档
+        if status.processing_step == 1:
+            # 清理之前的detection_results
+            if 'detection_results' in st.session_state:
+                del st.session_state['detection_results']
+            # 清理之前的中间结果
+            st.session_state.current_scan_results = []
+            # 重置检测器索引
+            st.session_state.current_detector_index = 0
+                
+            if language == "English":
+                status.current_status_label = "📂 Retrieving documents for analysis..."
+                status.add_status_message("🔍 Started document retrieval for short signal analysis")
+            else:
+                status.current_status_label = "📂 正在获取分析文档..."
+                status.add_status_message("🔍 开始为做空信号分析获取文档")
+            
+            analyzer.session_manager.update_processing_status(status)
+            
+            all_docs = []
+
+            # 定义表单组
+            REPORTS_FORMS = ['10-K', '10-Q', '20-F', '6-K', '424B4']
+            OTHER_FORMS = ['8-K', 'S-8', 'DEF 14A', 'F-3']
+            
+            selected_forms = []
+            if use_sec_reports:
+                selected_forms.extend(REPORTS_FORMS)
+            if use_sec_others:
+                selected_forms.extend(OTHER_FORMS)
+
+            # 获取文件 - 根据股票代码类型选择不同的服务
+            if selected_forms:
+                if is_saudi_stock(ticker):
+                    # 沙特交易所文件
+                    status.current_status_label = "🇸🇦 正在连接沙特交易所..." if language == "中文" else "🇸🇦 Connecting to Saudi Exchange..."
+                    status.add_status_message("🇸🇦 正在连接沙特交易所...")
+                    analyzer.session_manager.update_processing_status(status)
+                    
+                    def saudi_status_callback(msg):
+                        status.add_status_message(msg)
+                        analyzer.session_manager.update_processing_status(status)
+                    
+                    saudi_filings = analyzer.saudi_service.get_saudi_filings(ticker, years, status_callback=saudi_status_callback)
+                    all_docs.extend(saudi_filings)
+                    status.add_status_message(f"✅ 成功获取 {len(saudi_filings)} 份沙特交易所公告")
+                elif is_hk_stock(ticker):
+                    # 港股文件
+                    status.current_status_label = "🏢 正在连接港股交易所..." if language == "中文" else "🏢 Connecting to Hong Kong Stock Exchange..."
+                    status.add_status_message("🏢 正在连接港股交易所...")
+                    analyzer.session_manager.update_processing_status(status)
+                    
+                    # 将表单类型转换为港股分类
+                    hk_forms = []
+                    if any(form in REPORTS_FORMS for form in selected_forms):
+                        hk_forms.append('quarterly_annual')
+                    if any(form in OTHER_FORMS for form in selected_forms):
+                        hk_forms.append('others')
+                    
+                    def hk_status_callback(msg):
+                        status.add_status_message(msg)
+                        analyzer.session_manager.update_processing_status(status)
+                    
+                    hk_filings = analyzer.hk_service.get_hk_filings(ticker, years, forms_to_include=hk_forms, status_callback=hk_status_callback)
+                    all_docs.extend(hk_filings)
+                    status.add_status_message(f"✅ 成功获取 {len(hk_filings)} 份港股文件")
+                else:
+                    # 美股SEC文件
+                    status.current_status_label = "🇺🇸 正在连接SEC数据库..." if language == "中文" else "🇺🇸 Connecting to SEC database..."
+                    status.add_status_message("🇺🇸 正在连接SEC数据库...")
+                    analyzer.session_manager.update_processing_status(status)
+                    
+                    def sec_status_callback(msg):
+                        status.add_status_message(msg)
+                        analyzer.session_manager.update_processing_status(status)
+                    
+                    sec_filings = analyzer.sec_service.get_filings(ticker, years, forms_to_include=selected_forms, status_callback=sec_status_callback)
+                    all_docs.extend(sec_filings)
+                    status.add_status_message(f"✅ 成功获取 {len(sec_filings)} 份SEC文件")
+            
+            # 获取财报记录
+            if use_earnings:
+                status.current_status_label = "🎙️ 正在获取财报会议记录..." if language == "中文" else "🎙️ Retrieving earnings call transcripts..."
+                status.add_status_message("🎙️ 正在获取财报会议记录...")
+                analyzer.session_manager.update_processing_status(status)
+                
+                all_earnings_urls = analyzer.earnings_service.get_available_quarters(ticker)
+                
+                # 修正年份计算逻辑
+                current_year = datetime.now().year
+                cutoff_date = datetime(current_year - years + 1, 1, 1).date()
+                
+                filtered_earnings_docs = []
+                
+                # 批量处理财报记录
+                batch_size = 3  # 每批处理3个
+                for batch_start in range(0, len(all_earnings_urls), batch_size):
+                    if status.stop_requested:
+                        break
+                        
+                    batch_end = min(batch_start + batch_size, len(all_earnings_urls))
+                    batch_urls = all_earnings_urls[batch_start:batch_end]
+                    
+                    status.add_status_message(f"📄 处理财报批次 {batch_start//batch_size + 1}/{(len(all_earnings_urls) + batch_size - 1)//batch_size}")
+                    analyzer.session_manager.update_processing_status(status)
+                    
+                    # 批量处理当前批次
+                    batch_results = analyzer.earnings_service.get_earnings_transcript_batch(batch_urls, max_workers=1)
+                    
+                    # 处理批次结果
+                    for url_path, transcript_info in zip(batch_urls, batch_results):
+                        if status.stop_requested:
+                            break
+                            
+                        if transcript_info and transcript_info.get('parsed_successfully'):
+                            real_date = transcript_info.get('date')
+                            if real_date and real_date >= cutoff_date:
+                                doc = Document(
+                                    type='Earnings Call',
+                                    title=f"{transcript_info['ticker']} {transcript_info['year']} Q{transcript_info['quarter']} Earnings Call",
+                                    date=real_date,
+                                    url=url_path,
+                                    content=transcript_info.get('content'),
+                                    year=transcript_info.get('year'),
+                                    quarter=transcript_info.get('quarter')
+                                )
+                                filtered_earnings_docs.append(doc)
+                            else:
+                                status.add_status_message(f"财报日期 {real_date} 早于截止日期，停止获取")
+                                break
+                    
+                    # 如果发现日期过早，停止处理
+                    if batch_results and any(
+                        result and result.get('parsed_successfully') and 
+                        result.get('date') and result.get('date') < cutoff_date 
+                        for result in batch_results
+                    ):
+                        break
+                
+                all_docs.extend(filtered_earnings_docs)
+                status.add_status_message(f"✅ 成功获取 {len(filtered_earnings_docs)} 份财报记录")
+            
+            # 排序并准备文档
+            all_docs.sort(key=lambda x: x.date, reverse=True)
+            status.documents = all_docs
+            status.update_progress(0, len(all_docs), "Downloading Document")
+            status.add_status_message(f"✅ Downloading Document - {len(all_docs)}")
+            status.processing_step = 2
+            analyzer.session_manager.update_processing_status(status)
+            st.rerun()
+
+        # 步骤2：下载文档内容
+        elif status.processing_step == 2:
+            if status.stop_requested:
+                return
+                
+            docs_to_process = status.documents
+            
+            status.current_status_label = "📥 正在下载文档内容..." if language == "中文" else "📥 Downloading document contents..."
+            status.add_status_message("📥 开始下载文档内容...")
+            analyzer.session_manager.update_processing_status(status)
+            
+            # 分离沙特文档和其他文档
+            saudi_docs = [doc for doc in docs_to_process if doc.type == 'Saudi Exchange Filing' and not doc.content]
+            other_docs = [doc for doc in docs_to_process if doc.type != 'Saudi Exchange Filing' and not doc.content]
+            
+            # 先处理沙特文档（批量并发下载）
+            if saudi_docs:
+                saudi_download_placeholder = st.empty()
+                
+                def saudi_status_callback(message, completed, total):
+                    with saudi_download_placeholder.container():
+                        st.info(f"🇸🇦 **沙特交易所下载状态**")
+                        st.progress(completed / total if total > 0 else 0)
+                        st.write(f"{message}")
+                        st.write(f"进度: {completed}/{total}")
+                
+                # 批量下载沙特文档
+                analyzer.saudi_service.download_saudi_filings_batch(
+                    docs_to_process, 
+                    max_workers=5, 
+                    status_callback=saudi_status_callback
+                )
+                
+                # 清除下载状态显示
+                saudi_download_placeholder.empty()
+            
+            # 处理其他文档（逐个下载）
+            for idx, doc in enumerate(other_docs):
+                if status.stop_requested:
+                    break
+                    
+                if not doc.content:
+                    status.add_status_message(f"📥 Downloading {idx+1}/{len(other_docs)}: {doc.title}")
+                    status.update_progress(idx, len(other_docs), f"Downloading {idx+1}/{len(other_docs)}")
+                    analyzer.session_manager.update_processing_status(status)
+                    
+                    if doc.type == 'SEC Filing':
+                        doc.content = analyzer.sec_service.download_filing(doc.url)
+                    elif doc.type == 'HK Stock Filing':
+                        doc.content = analyzer.hk_service.download_hk_filing(doc.url)
+                    # Earnings Call 内容已经预先获取
+            
+            status.add_status_message("✅ 文档内容下载完成")
+            status.processing_step = 3
+            analyzer.session_manager.update_processing_status(status)
+            st.rerun()
+
+        # 步骤3：运行检测器
+        elif status.processing_step == 3:
+            if status.stop_requested:
+                return
+                
+            status.current_status_label = "🔍 正在运行做空信号检测..." if language == "中文" else "🔍 Running short signal detection..."
+            status.add_status_message("🔍 开始运行做空信号检测...")
+            analyzer.session_manager.update_processing_status(status)
+            
+            # 逐个运行检测器，每个完成后立即显示结果
+            if 'current_detector_index' not in st.session_state:
+                st.session_state.current_detector_index = 0
+            
+            available_detectors = [d for d in short_analyzer.detectors if d.__class__.__name__ in selected_detector_classes]
+            
+            if st.session_state.current_detector_index < len(available_detectors):
+                # 运行当前检测器
+                current_detector = available_detectors[st.session_state.current_detector_index]
+                status.current_status_label = f"🔍 正在运行: {current_detector.name}..."
+                status.add_status_message(f"🔍 运行检测器: {current_detector.name}")
+                analyzer.session_manager.update_processing_status(status)
+                
+                try:
+                    result = current_detector.detect(status.documents, model_type)
+                    
+                    # 更新当前扫描结果
+                    if 'current_scan_results' not in st.session_state:
+                        st.session_state.current_scan_results = []
+                    st.session_state.current_scan_results.append(result)
+                    
+                    status.add_status_message(f"✅ {current_detector.name} 完成，发现 {len(result.signals)} 个信号")
+                    
+                except Exception as e:
+                    logger.error(f"检测器 {current_detector.name} 执行失败: {e}")
+                    error_result = DetectionResult(
+                        detector_name=current_detector.name,
+                        signals=[],
+                        processing_time=0,
+                        success=False,
+                        error_message=handle_gemini_api_error(e)
+                    )
+                    
+                    if 'current_scan_results' not in st.session_state:
+                        st.session_state.current_scan_results = []
+                    st.session_state.current_scan_results.append(error_result)
+                    
+                    status.add_status_message(f"❌ {current_detector.name} 执行失败: {e}")
+                
+                # 移动到下一个检测器
+                st.session_state.current_detector_index += 1
+                analyzer.session_manager.update_processing_status(status)
+                st.rerun()
+            else:
+                # 所有检测器完成
+                detection_results = st.session_state.current_scan_results
+                status.add_status_message("✅ 所有检测器执行完成")
+                
+                # 单独保存detection_results到session_state，因为它包含复杂对象
+                st.session_state.detection_results = detection_results
+                
+                # 进入下一步
+                status.processing_step = 4
+                analyzer.session_manager.update_processing_status(status)
+                st.rerun()
+
+        # 步骤4：生成综合报告
+        elif status.processing_step == 4:
+            if status.stop_requested:
+                return
+                
+            status.current_status_label = "📝 正在生成综合报告..." if language == "中文" else "📝 Generating comprehensive report..."
+            status.add_status_message("📝 开始生成综合报告...")
+            analyzer.session_manager.update_processing_status(status)
+            
+            # 从session_state获取detection_results
+            detection_results = st.session_state.get('detection_results', [])
+            
+            # 检查是否有检测结果
+            if not detection_results:
+                st.error("❌ 检测结果丢失，请重新运行扫描")
+                logger.error("Detection results not found in session state")
+                return
+            
+            # 生成综合报告
+            comprehensive_report = short_analyzer.generate_comprehensive_report(
+                detection_results, 
+                ticker, 
+                model_type
+            )
+            
+            # 显示综合报告
+            st.subheader("📊 综合做空信号报告")
+            st.markdown(comprehensive_report)
+            
+            # 保存扫描结果到历史记录
+            scan_result = {
+                'ticker': ticker,
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'report': comprehensive_report,
+                'signals_count': sum(len(r.signals) for r in detection_results),
+                'high_risk_count': sum(len([s for s in r.signals if s.severity == "High"]) for r in detection_results)
+            }
+            
+            st.session_state.short_scanner_results.append(scan_result)
+            
+            # 完成处理
+            status.current_status_label = "✅ 扫描完成！" if language == "中文" else "✅ Scan completed!"
+            status.add_status_message("✅ 做空信号扫描完成")
+            status.progress_percentage = 100.0
+            analyzer.session_manager.update_processing_status(status)
+            
+            # 短暂显示完成状态
+            time.sleep(0.1)
+            
+            # 不要立即清理扫描结果，让用户可以查看详细信息
+            # st.session_state.current_scan_results = []  # 注释掉这行
+            
+            # 重置状态
+            status = ProcessingStatus()
+            analyzer.session_manager.update_processing_status(status)
+            st.rerun()
+
+    except Exception as e:
+        logger.error(f"做空信号扫描出错: {e}", exc_info=True)
+        error_msg = f"扫描过程中出现错误: {e}" if language == "中文" else f"Error during scan: {e}"
+        st.error(error_msg)
+        # 重置状态
+        status = ProcessingStatus()
+        analyzer.session_manager.update_processing_status(status)
+        st.rerun()
+
+
+def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years: int, use_sec_reports: bool, use_sec_others: bool, use_earnings: bool, model_type: str):
     """处理用户问题的完整流程 - 新版，带实时状态更新和并行处理"""
     status = analyzer.session_manager.get_processing_status()
     language = st.session_state.get("selected_language", "English")
@@ -3326,7 +5386,7 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
             
             # 创建AI分析状态显示
             ai_analysis_placeholder = st.empty()
-            with ai_analysis_placeholder.status("🤖 AI正在分析您的问题...", expanded=True) as ai_analysis_status:
+            with ai_analysis_placeholder.status("🤖 AI is analyzing your question...", expanded=False) as ai_analysis_status:
                 if language == "English":
                     ai_analysis_status.write("🔍 Parsing question intent...")
                     ai_analysis_status.write(f"📝 Question: {status.user_question}")
@@ -3334,29 +5394,23 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                     ai_analysis_status.write("🧠 Calling AI model to generate analysis prompts...")
                     ai_analysis_status.write("⏳ Waiting for AI response...")
                 else:
-                    ai_analysis_status.write("🔍 正在解析问题意图...")
-                    ai_analysis_status.write(f"📝 问题: {status.user_question}")
-                    ai_analysis_status.write(f"📊 股票: {ticker}")
-                    ai_analysis_status.write("🧠 正在调用AI模型生成分析提示词...")
-                    ai_analysis_status.write("⏳ 等待AI响应中...")
+                    ai_analysis_status.write("🔍 Parsing question intent...")
+                    ai_analysis_status.write(f"📝 Question: {status.user_question}")
+                    ai_analysis_status.write(f"📊 Stock: {ticker}")
+                    ai_analysis_status.write("🧠 Calling AI model to generate analysis prompts...")
+                    ai_analysis_status.write("⏳ Waiting for AI response...")
                 
-                # 根据分析模式选择不同的处理逻辑
-                if analysis_mode == "fast_mode":
-                    # 快速模式：生成快速模式提示词
-                    fast_mode_prompt = analyzer.generate_fast_mode_prompt(status.user_question, ticker, model_type)
-                    status.processing_prompt = fast_mode_prompt
-                    status.integration_prompt = ""  # 快速模式不需要integration prompt
-                else:
-                    # 详细模式：生成详细分析提示词
-                    processing_prompt, integration_prompt = analyzer.analyze_question(status.user_question, ticker, model_type)
-                    status.processing_prompt = processing_prompt
-                    status.integration_prompt = integration_prompt
+                # 执行实际的AI分析
+                processing_prompt, integration_prompt = analyzer.analyze_question(status.user_question, ticker, model_type)
                 
                 ai_analysis_status.write("✅ AI分析完成！")
                 ai_analysis_status.update(label="✅ 问题分析完成", state="complete")
             
             # 清除AI分析状态显示
             ai_analysis_placeholder.empty()
+            
+            status.processing_prompt = processing_prompt
+            status.integration_prompt = integration_prompt
             
             success_msg = "✅ User question analysis completed" if language == "English" else "✅ 用戶問題分析完成"
             status.add_status_message(success_msg)
@@ -3545,14 +5599,8 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                 status.documents = all_docs
                 status.update_progress(0, len(all_docs), "Document list ready")
                 status.add_status_message(f"✅ Document list ready, total {len(all_docs)} documents")
-                
-                # 根据分析模式选择不同的处理步骤
-                if analysis_mode == "fast_mode":
-                    status.processing_step = 5  # 跳转到快速模式处理
-                else:
-                    status.processing_step = 3  # 详细模式：逐个处理文档
+                status.processing_step = 3
                 analyzer.session_manager.update_processing_status(status)
-            
             else:
                 # 中文版本的消息
                 status.current_status_label = "📂 正在检索和筛选文档..."
@@ -3650,7 +5698,7 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                         earnings_status.write("🔄 开始批量处理...")
                         
                         # 分批处理以避免过多并发请求
-                        batch_size = 2  # 每批处理2个
+                        batch_size = 6  # 每批处理6个
                         for batch_start in range(0, len(all_earnings_urls), batch_size):
                             if status.stop_requested:
                                 break
@@ -3727,14 +5775,9 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                 
                 all_docs.sort(key=lambda x: x.date, reverse=True)
                 status.documents = all_docs
-                status.update_progress(0, len(all_docs), "文档列表准备就绪")
-                status.add_status_message(f"✅ 文档列表准备就绪，共 {len(all_docs)} 份")
-                
-                # 根据分析模式选择不同的处理步骤
-                if analysis_mode == "fast_mode":
-                    status.processing_step = 5  # 跳转到快速模式处理
-                else:
-                    status.processing_step = 3  # 详细模式：逐个处理文档
+                status.update_progress(0, len(all_docs), "Document list ready")
+                status.add_status_message(f"✅ Document list ready, {len(all_docs)} documents")
+                status.processing_step = 3
                 analyzer.session_manager.update_processing_status(status)
 
             st.rerun()
@@ -3758,7 +5801,7 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                 analyzing_msg = f"正在分析: {current_doc.title}" if language == "中文" else f"Analyzing: {current_doc.title}"
                 status.add_status_message(analyzing_msg)
                 
-                progress_label = f"📖 分析文档中... {status.completed_documents + 1}/{len(docs_to_process)}" if language == "中文" else f"📖 Analyzing document {status.completed_documents + 1}/{len(docs_to_process)}"
+                progress_label = f"📖 分析文档中... {status.completed_documents + 1}/{len(docs_to_process)}" if language == "中文" else f"📖 Analyzing document... {status.completed_documents + 1}/{len(docs_to_process)}"
                 status.update_progress(status.completed_documents, len(docs_to_process), progress_label)
                 analyzer.session_manager.update_processing_status(status)
                 
@@ -3778,26 +5821,14 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                         ticker_map = analyzer.sec_service.get_cik_map()
                         cik = ticker_map.get(ticker.upper(), '')
                         
-                        logger.info(f"🔍 [6K-MAIN] 准备处理6-K文件: {current_doc.title}")
-                        logger.info(f"🔍 [6K-MAIN] Ticker: {ticker}, CIK: {cik}")
-                        logger.info(f"🔍 [6K-MAIN] 6-K URL: {current_doc.url}")
-                        
                         downloading_msg = f"正在下载和处理6-K附件..." if language == "中文" else f"Downloading and processing 6-K attachments..."
                         status.add_status_message(downloading_msg)
                         analyzer.session_manager.update_processing_status(status)
                         
                         # 处理6-K文件
-                        logger.info(f"🔍 [6K-MAIN] 开始调用SixKProcessor.process_6k_filing...")
                         processed_docs = analyzer.sec_service.sixk_processor.process_6k_filing(
                             ticker, cik, current_doc.url, current_doc
                         )
-                        logger.info(f"🔍 [6K-MAIN] SixKProcessor.process_6k_filing返回结果: {len(processed_docs)} 个文档")
-                        
-                        if processed_docs:
-                            for i, doc in enumerate(processed_docs):
-                                logger.info(f"🔍 [6K-MAIN] 返回文档{i+1}: {doc.title}, 内容长度: {len(doc.content) if doc.content else 0}")
-                        else:
-                            logger.info(f"ℹ️ [6K-MAIN] SixKProcessor没有返回任何文档，这意味着没有找到ex99附件")
                         
                         completed_msg = f"6-K处理完成，生成了 {len(processed_docs)} 个分析文档" if language == "中文" else f"6-K processing completed, generated {len(processed_docs)} analysis documents"
                         status.add_status_message(completed_msg)
@@ -3891,7 +5922,7 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
                         # 普通文档处理
                         # 创建AI分析状态显示
                         ai_status_placeholder = st.empty()
-                        with ai_status_placeholder.status("🤖 AI正在分析文档内容...", expanded=True) as ai_status:
+                        with ai_status_placeholder.status("🤖 AI正在分析文档内容...", expanded=False) as ai_status:
                             # 显示详细的AI分析步骤
                             ai_status.write("📄 正在准备文档内容...")
                             
@@ -4045,67 +6076,6 @@ def process_user_question_new(analyzer: SECEarningsAnalyzer, ticker: str, years:
             status = ProcessingStatus()
             analyzer.session_manager.update_processing_status(status)
 
-            st.rerun()
-        
-        # 步骤5：快速模式处理
-        elif status.processing_step == 5:
-            if status.stop_requested:
-                return
-                
-            generating_msg = "⚡ 正在快速分析所有文档..." if language == "中文" else "⚡ Fast analyzing all documents..."
-            status.current_status_label = generating_msg
-            status.add_status_message(generating_msg)
-            analyzer.session_manager.update_processing_status(status)
-            
-            # 生成快速模式提示词
-            fast_mode_prompt = analyzer.generate_fast_mode_prompt(status.user_question, ticker, model_type)
-            
-            # 创建AI分析状态显示
-            ai_status_placeholder = st.empty()
-            with ai_status_placeholder.status("⚡ 快速模式AI分析中...", expanded=True) as ai_status:
-                ai_status.write(f"📊 正在同时分析 {len(status.documents)} 个文档")
-                ai_status.write("🧠 正在调用AI模型进行综合分析...")
-                ai_status.write("⏳ 开始流式响应...")
-                
-                # 执行快速模式分析
-                fast_stream = analyzer.process_all_documents_fast(status.documents, fast_mode_prompt, model_type)
-                
-                ai_status.write("✅ 快速分析开始！")
-                ai_status.update(label="✅ 快速分析开始", state="complete")
-            
-            # 清除AI状态显示
-            ai_status_placeholder.empty()
-            
-            # 显示快速分析结果
-            st.markdown("### ⚡ 快速分析结果" if language == "中文" else "### ⚡ Fast Analysis Results")
-            
-            # 使用流式响应显示结果
-            final_result = st.write_stream(fast_stream)
-            
-            # 将结果添加到聊天历史中
-            result_content = f"### ⚡ {'快速分析结果' if language == '中文' else 'Fast Analysis Results'}\n\n{final_result}"
-            st.session_state.analyzer_messages.append({
-                "role": "assistant",
-                "content": result_content,
-                "avatar": "⚡"
-            })
-            
-            # 完成处理
-            completed_msg = "快速分析完成！" if language == "中文" else "Fast analysis completed!"
-            status.add_status_message(completed_msg)
-            
-            processing_completed_msg = "✅ 处理完成！" if language == "中文" else "✅ Processing completed!"
-            status.current_status_label = processing_completed_msg
-            status.progress_percentage = 100.0
-            analyzer.session_manager.update_processing_status(status)
-            
-            # 短暂显示完成状态
-            time.sleep(0.1)
-            
-            # 重置状态
-            status = ProcessingStatus()
-            analyzer.session_manager.update_processing_status(status)
-            
             st.rerun()
 
     except Exception as e:

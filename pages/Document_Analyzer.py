@@ -18,11 +18,15 @@ import re
 from streamlit_pdf_viewer import pdf_viewer
 import threading
 # 页面配置
-st.set_page_config(
-    page_title="Document Reader & Analyzer",
-    page_icon="📚",
-    layout="wide"
-)
+try:
+    st.set_page_config(
+        page_title="Document Reader & Analyzer",
+        page_icon="📚",
+        layout="wide"
+)   
+except Exception:
+    # 静默处理页面配置错误
+    pass
 
 # 初始化 Gemini 客户端
 css = '''
@@ -35,10 +39,47 @@ css = '''
 '''
 st.markdown(css, unsafe_allow_html=True)
 
+def get_secret_value(key: str, default=None):
+    """从 st.secrets 或环境变量中获取密钥值"""
+    import os
+    import json
+    from pathlib import Path
+    
+    # 检查 secrets.toml 文件是否存在
+    secrets_paths = [
+        Path(".streamlit/secrets.toml"),
+        Path("/root/.streamlit/secrets.toml"),
+        Path("/app/.streamlit/secrets.toml")
+    ]
+    
+    secrets_file_exists = any(path.exists() for path in secrets_paths)
+    
+    if secrets_file_exists:
+        try:
+            return st.secrets[key]
+        except KeyError:
+            # 如果 secrets.toml 存在但没有该键，回退到环境变量
+            pass
+    
+    # 直接从环境变量读取
+    env_value = os.environ.get(key, default)
+    if env_value is None:
+        return default
+        
+    # 尝试解析 JSON 格式的环境变量（用于列表类型的密钥）
+    if isinstance(env_value, str) and env_value.startswith('[') and env_value.endswith(']'):
+        try:
+            return json.loads(env_value)
+        except json.JSONDecodeError:
+            return env_value
+    
+    return env_value
+
 def get_next_api_key():
     """获取下一个API密钥"""
     if "api_key_cycle" not in st.session_state:
-        st.session_state.api_key_cycle = cycle(st.secrets["GOOGLE_API_KEYS"])
+        api_keys = get_secret_value("GOOGLE_API_KEYS", [])
+        st.session_state.api_key_cycle = cycle(api_keys)
     return next(st.session_state.api_key_cycle)
 
 

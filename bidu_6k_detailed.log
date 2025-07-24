@@ -1,0 +1,130 @@
+2025-07-20 23:29:27,148 - __main__ - INFO - [test_bidu_6k_detailed.py:305] - ========== BIDU 6-K 详细测试开始 ==========
+2025-07-20 23:29:27,148 - __main__ - INFO - [test_bidu_6k_detailed.py:59] - ========== 开始测试单个6-K文件处理 ==========
+2025-07-20 23:29:27,149 - __main__ - INFO - [test_bidu_6k_detailed.py:69] - 测试参数:
+2025-07-20 23:29:27,149 - __main__ - INFO - [test_bidu_6k_detailed.py:70] -   Ticker: BIDU
+2025-07-20 23:29:27,149 - __main__ - INFO - [test_bidu_6k_detailed.py:71] -   CIK: 0001329099
+2025-07-20 23:29:27,149 - __main__ - INFO - [test_bidu_6k_detailed.py:72] -   Accession: 000119312524280645
+2025-07-20 23:29:27,149 - __main__ - INFO - [test_bidu_6k_detailed.py:73] -   Primary Doc: d924386d6k.htm
+2025-07-20 23:29:27,150 - __main__ - INFO - [test_bidu_6k_detailed.py:77] - 临时目录: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_single_test_ncsicdqs
+2025-07-20 23:29:27,150 - __main__ - INFO - [test_bidu_6k_detailed.py:82] - CIK清理: 0001329099 -> 1329099
+2025-07-20 23:29:27,150 - __main__ - INFO - [test_bidu_6k_detailed.py:89] - 构建的URL:
+2025-07-20 23:29:27,150 - __main__ - INFO - [test_bidu_6k_detailed.py:90] -   Base URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312524280645/
+2025-07-20 23:29:27,150 - __main__ - INFO - [test_bidu_6k_detailed.py:91] -   Index URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312524280645/index.json
+2025-07-20 23:29:27,150 - __main__ - INFO - [test_bidu_6k_detailed.py:92] -   Filing URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312524280645/d924386d6k.htm
+2025-07-20 23:29:27,150 - __main__ - INFO - [test_bidu_6k_detailed.py:95] - ========== 测试 index.json 获取 ==========
+2025-07-20 23:29:27,758 - httpcore.connection - DEBUG - [_trace.py:47] - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 23:29:27,775 - httpcore.connection - DEBUG - [_trace.py:47] - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x106b8ef90>
+2025-07-20 23:29:27,775 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 23:29:27,775 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.complete
+2025-07-20 23:29:27,776 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 23:29:27,776 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.complete
+2025-07-20 23:29:27,776 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 23:29:27,776 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 23:29:27,776 - httpcore.proxy - DEBUG - [_trace.py:47] - start_tls.started ssl_context=<ssl.SSLContext object at 0x106bfc7a0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 23:29:28,364 - httpcore.proxy - DEBUG - [_trace.py:47] - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x106af3750>
+2025-07-20 23:29:28,365 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 23:29:28,365 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.complete
+2025-07-20 23:29:28,366 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.started request=<Request [b'GET']>
+2025-07-20 23:29:28,366 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.complete
+2025-07-20 23:29:28,366 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 23:29:28,710 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 404, b'Not Found', [(b'Content-Type', b'text/html; charset=ISO-8859-1'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'0'), (b'Date', b'Sun, 20 Jul 2025 15:29:29 GMT'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 23:29:28,713 - httpx - INFO - [_client.py:1025] - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312524280645/index.json "HTTP/1.1 404 Not Found"
+2025-07-20 23:29:28,713 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 23:29:28,713 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_body.complete
+2025-07-20 23:29:28,714 - httpcore.http11 - DEBUG - [_trace.py:47] - response_closed.started
+2025-07-20 23:29:28,714 - httpcore.http11 - DEBUG - [_trace.py:47] - response_closed.complete
+2025-07-20 23:29:28,721 - __main__ - INFO - [test_bidu_6k_detailed.py:100] - Index响应状态码: 404
+2025-07-20 23:29:28,721 - __main__ - INFO - [test_bidu_6k_detailed.py:101] - Index响应头: {'content-type': 'text/html; charset=ISO-8859-1', 'x-content-type-options': 'nosniff', 'x-frame-options': 'SAMEORIGIN', 'x-xss-protection': '1; mode=block', 'content-length': '0', 'date': 'Sun, 20 Jul 2025 15:29:29 GMT', 'connection': 'keep-alive', 'strict-transport-security': 'max-age=31536000 ; includeSubDomains ; preload'}
+2025-07-20 23:29:28,721 - __main__ - ERROR - [test_bidu_6k_detailed.py:186] - 获取index.json失败，状态码: 404
+2025-07-20 23:29:28,722 - __main__ - ERROR - [test_bidu_6k_detailed.py:187] - 响应内容: 
+2025-07-20 23:29:28,722 - __main__ - INFO - [test_bidu_6k_detailed.py:193] - ========== 测试主6-K文件下载 ==========
+2025-07-20 23:29:28,761 - httpcore.connection - DEBUG - [_trace.py:47] - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 23:29:28,762 - httpcore.connection - DEBUG - [_trace.py:47] - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x106c28910>
+2025-07-20 23:29:28,762 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 23:29:28,762 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.complete
+2025-07-20 23:29:28,762 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 23:29:28,762 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.complete
+2025-07-20 23:29:28,762 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 23:29:28,762 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 23:29:28,762 - httpcore.proxy - DEBUG - [_trace.py:47] - start_tls.started ssl_context=<ssl.SSLContext object at 0x106bfc9e0> server_hostname='www.sec.gov' timeout=30
+2025-07-20 23:29:29,242 - httpcore.proxy - DEBUG - [_trace.py:47] - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x106baf100>
+2025-07-20 23:29:29,243 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 23:29:29,243 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.complete
+2025-07-20 23:29:29,243 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.started request=<Request [b'GET']>
+2025-07-20 23:29:29,243 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.complete
+2025-07-20 23:29:29,244 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 23:29:29,558 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 404, b'Not Found', [(b'Content-Encoding', b'gzip'), (b'Content-Type', b'application/xml'), (b'x-amz-id-2', b'dh+/gjvp+9pTdOZc7KR+tiX+5bIIqT1uVILIZLuzR2BWPvDGWVvYOTfRpIpvvDpxxB0h043WK3w='), (b'x-amz-request-id', b'J0YT3FGPXSWEEJZJ'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'284'), (b'Date', b'Sun, 20 Jul 2025 15:29:30 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 23:29:29,560 - httpx - INFO - [_client.py:1025] - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312524280645/d924386d6k.htm "HTTP/1.1 404 Not Found"
+2025-07-20 23:29:29,560 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 23:29:29,560 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_body.complete
+2025-07-20 23:29:29,560 - httpcore.http11 - DEBUG - [_trace.py:47] - response_closed.started
+2025-07-20 23:29:29,561 - httpcore.http11 - DEBUG - [_trace.py:47] - response_closed.complete
+2025-07-20 23:29:29,566 - __main__ - INFO - [test_bidu_6k_detailed.py:196] - 主文件响应状态码: 404
+2025-07-20 23:29:29,566 - __main__ - INFO - [test_bidu_6k_detailed.py:197] - 主文件Content-Type: application/xml
+2025-07-20 23:29:29,567 - __main__ - INFO - [test_bidu_6k_detailed.py:198] - 主文件大小: 323 bytes
+2025-07-20 23:29:29,567 - __main__ - ERROR - [test_bidu_6k_detailed.py:204] - 主文件下载失败: <?xml version="1.0" encoding="UTF-8"?>
+<Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message><Key>edgar/data/1329099/000119312524280645/d924386d6k.htm</Key><RequestId>J0YT3FGPXSWEEJZJ</RequestId><HostId>dh+/gjvp+9pTdOZc7KR+tiX+5bIIqT1uVILIZLuzR2BWPvDGWVvYOTfRpIpvvDpxxB0h043WK3w=</HostId></Error>
+2025-07-20 23:29:29,567 - __main__ - INFO - [test_bidu_6k_detailed.py:210] - 临时文件保存在: /var/folders/w8/7yr2wn8n3fj3x97p8qp4qvn40000gn/T/bidu_6k_single_test_ncsicdqs
+2025-07-20 23:29:29,567 - __main__ - INFO - [test_bidu_6k_detailed.py:211] - ========== 单个6-K文件测试结束 ==========
+2025-07-20 23:29:29,567 - __main__ - INFO - [test_bidu_6k_detailed.py:310] - 
+================================================================================
+
+2025-07-20 23:29:29,567 - __main__ - INFO - [test_bidu_6k_detailed.py:215] - ========== 测试最近的6-K文件列表 ==========
+2025-07-20 23:29:29,567 - __main__ - INFO - [test_bidu_6k_detailed.py:223] - SEC API URL: https://data.sec.gov/submissions/CIK0001329099.json
+2025-07-20 23:29:29,607 - httpcore.connection - DEBUG - [_trace.py:47] - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 23:29:29,607 - httpcore.connection - DEBUG - [_trace.py:47] - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x106bae650>
+2025-07-20 23:29:29,607 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 23:29:29,608 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.complete
+2025-07-20 23:29:29,608 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 23:29:29,608 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.complete
+2025-07-20 23:29:29,608 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 23:29:29,608 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 23:29:29,608 - httpcore.proxy - DEBUG - [_trace.py:47] - start_tls.started ssl_context=<ssl.SSLContext object at 0x106bfcc20> server_hostname='data.sec.gov' timeout=30
+2025-07-20 23:29:30,274 - httpcore.proxy - DEBUG - [_trace.py:47] - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x106c0d010>
+2025-07-20 23:29:30,275 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 23:29:30,275 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.complete
+2025-07-20 23:29:30,276 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.started request=<Request [b'GET']>
+2025-07-20 23:29:30,276 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.complete
+2025-07-20 23:29:30,276 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 23:29:31,236 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json'), (b'x-amzn-RequestId', b'a8494814-6f77-4c1d-a88a-fae6ccb83325'), (b'Access-Control-Allow-Origin', b'*'), (b'x-amz-apigw-id', b'OA62RH_bIAMEp1A='), (b'X-Amzn-Trace-Id', b'Root=1-687d0b5a-5c2bdfbd35521b836bf09018'), (b'Vary', b'Accept-Encoding'), (b'Content-Encoding', b'gzip'), (b'Expires', b'Sun, 20 Jul 2025 15:29:31 GMT'), (b'Cache-Control', b'max-age=0, no-cache, no-store'), (b'Pragma', b'no-cache'), (b'Date', b'Sun, 20 Jul 2025 15:29:31 GMT'), (b'Content-Length', b'17643'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000 ; preload')])
+2025-07-20 23:29:31,237 - httpx - INFO - [_client.py:1025] - HTTP Request: GET https://data.sec.gov/submissions/CIK0001329099.json "HTTP/1.1 200 OK"
+2025-07-20 23:29:31,237 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 23:29:31,238 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_body.complete
+2025-07-20 23:29:31,239 - httpcore.http11 - DEBUG - [_trace.py:47] - response_closed.started
+2025-07-20 23:29:31,239 - httpcore.http11 - DEBUG - [_trace.py:47] - response_closed.complete
+2025-07-20 23:29:31,244 - __main__ - INFO - [test_bidu_6k_detailed.py:226] - API响应状态码: 200
+2025-07-20 23:29:31,245 - __main__ - INFO - [test_bidu_6k_detailed.py:236] - 总文件数: 524
+2025-07-20 23:29:31,253 - __main__ - INFO - [test_bidu_6k_detailed.py:258] - 找到最近 5 个6-K文件:
+2025-07-20 23:29:31,253 - __main__ - INFO - [test_bidu_6k_detailed.py:260] -   1. 2025-07-01 - 0001193125-25-153388 - d53884d6k.htm
+2025-07-20 23:29:31,253 - __main__ - INFO - [test_bidu_6k_detailed.py:260] -   2. 2025-05-21 - 0001193125-25-123961 - d58002d6k.htm
+2025-07-20 23:29:31,253 - __main__ - INFO - [test_bidu_6k_detailed.py:260] -   3. 2025-05-08 - 0001193125-25-115412 - d945299d6k.htm
+2025-07-20 23:29:31,253 - __main__ - INFO - [test_bidu_6k_detailed.py:260] -   4. 2025-04-22 - 0001193125-25-087790 - d914205d6k.htm
+2025-07-20 23:29:31,253 - __main__ - INFO - [test_bidu_6k_detailed.py:260] -   5. 2025-03-28 - 0001193125-25-066370 - d924431d6k.htm
+2025-07-20 23:29:31,253 - __main__ - INFO - [test_bidu_6k_detailed.py:264] - ========== 测试第一个6-K文件 ==========
+2025-07-20 23:29:31,253 - __main__ - INFO - [test_bidu_6k_detailed.py:273] - 测试URL: https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/index.json
+2025-07-20 23:29:31,292 - httpcore.connection - DEBUG - [_trace.py:47] - connect_tcp.started host='127.0.0.1' port=7897 local_address=None timeout=30 socket_options=None
+2025-07-20 23:29:31,293 - httpcore.connection - DEBUG - [_trace.py:47] - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x107150270>
+2025-07-20 23:29:31,293 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.started request=<Request [b'CONNECT']>
+2025-07-20 23:29:31,293 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.complete
+2025-07-20 23:29:31,293 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.started request=<Request [b'CONNECT']>
+2025-07-20 23:29:31,293 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.complete
+2025-07-20 23:29:31,293 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.started request=<Request [b'CONNECT']>
+2025-07-20 23:29:31,295 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'Connection established', [])
+2025-07-20 23:29:31,295 - httpcore.proxy - DEBUG - [_trace.py:47] - start_tls.started ssl_context=<ssl.SSLContext object at 0x106bfcf80> server_hostname='www.sec.gov' timeout=30
+2025-07-20 23:29:31,889 - httpcore.proxy - DEBUG - [_trace.py:47] - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1071508d0>
+2025-07-20 23:29:31,890 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.started request=<Request [b'GET']>
+2025-07-20 23:29:31,890 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_headers.complete
+2025-07-20 23:29:31,890 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.started request=<Request [b'GET']>
+2025-07-20 23:29:31,890 - httpcore.http11 - DEBUG - [_trace.py:47] - send_request_body.complete
+2025-07-20 23:29:31,890 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.started request=<Request [b'GET']>
+2025-07-20 23:29:32,011 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Encoding', b'gzip'), (b'Content-Type', b'text/html'), (b'X-Content-Type-Options', b'nosniff'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-XSS-Protection', b'1; mode=block'), (b'Content-Length', b'230'), (b'Date', b'Sun, 20 Jul 2025 15:29:32 GMT'), (b'Connection', b'keep-alive'), (b'Vary', b'Accept-Encoding'), (b'Strict-Transport-Security', b'max-age=31536000 ; includeSubDomains ; preload')])
+2025-07-20 23:29:32,012 - httpx - INFO - [_client.py:1025] - HTTP Request: GET https://www.sec.gov/Archives/edgar/data/1329099/000119312525153388/index.json "HTTP/1.1 200 OK"
+2025-07-20 23:29:32,012 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_body.started request=<Request [b'GET']>
+2025-07-20 23:29:32,013 - httpcore.http11 - DEBUG - [_trace.py:47] - receive_response_body.complete
+2025-07-20 23:29:32,013 - httpcore.http11 - DEBUG - [_trace.py:47] - response_closed.started
+2025-07-20 23:29:32,013 - httpcore.http11 - DEBUG - [_trace.py:47] - response_closed.complete
+2025-07-20 23:29:32,019 - __main__ - INFO - [test_bidu_6k_detailed.py:276] - 测试响应状态码: 200
+2025-07-20 23:29:32,020 - __main__ - INFO - [test_bidu_6k_detailed.py:282] - 文件数量: 5
+2025-07-20 23:29:32,020 - __main__ - INFO - [test_bidu_6k_detailed.py:289] -   ex99文件: d53884dex991.htm
+2025-07-20 23:29:32,020 - __main__ - INFO - [test_bidu_6k_detailed.py:291] - ex99文件数量: 1
+2025-07-20 23:29:32,020 - __main__ - INFO - [test_bidu_6k_detailed.py:315] - ========== BIDU 6-K 详细测试结束 ==========

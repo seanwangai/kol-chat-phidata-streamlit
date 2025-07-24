@@ -5,6 +5,42 @@ import requests
 import zipfile
 import os
 
+def get_secret_value(key: str, default=None):
+    """从 st.secrets 或环境变量中获取密钥值"""
+    import os
+    import json
+    from pathlib import Path
+    
+    # 检查 secrets.toml 文件是否存在
+    secrets_paths = [
+        Path(".streamlit/secrets.toml"),
+        Path("/root/.streamlit/secrets.toml"),
+        Path("/app/.streamlit/secrets.toml")
+    ]
+    
+    secrets_file_exists = any(path.exists() for path in secrets_paths)
+    
+    if secrets_file_exists:
+        try:
+            return st.secrets[key]
+        except KeyError:
+            # 如果 secrets.toml 存在但没有该键，回退到环境变量
+            pass
+    
+    # 直接从环境变量读取
+    env_value = os.environ.get(key, default)
+    if env_value is None:
+        return default
+        
+    # 尝试解析 JSON 格式的环境变量（用于列表类型的密钥）
+    if isinstance(env_value, str) and env_value.startswith('[') and env_value.endswith(']'):
+        try:
+            return json.loads(env_value)
+        except json.JSONDecodeError:
+            return env_value
+    
+    return env_value
+
 # --- 新增：在腳本最上方初始化頁面模式 ---
 if 'current_page_mode' not in st.session_state:
     st.session_state.current_page_mode = st.query_params.get("page", None) # 使用 st.query_params
@@ -26,14 +62,14 @@ def initialize_dropbox():
         dropbox_url_key = "DROPBOX_DATA_URL"
         target_dir = Path("data")
 
-    if dropbox_url_key in st.secrets:
+    if get_secret_value(dropbox_url_key):
         try:
             # 创建目标目录
             target_dir.mkdir(parents=True, exist_ok=True)
             print(f"创建数据目录: {target_dir}")
 
             # 修改URL为直接下载链接
-            url = st.secrets[dropbox_url_key]
+            url = get_secret_value(dropbox_url_key)
             url = url.split('&dl=')[0] + '&dl=1'
             print(f"使用下载链接: {url}")
 
@@ -100,11 +136,15 @@ def initialize_dropbox():
 
 
 # 页面配置
-st.set_page_config(
-    page_title="Investment Titans Chat",
-    page_icon="📈",
-    layout="wide"
-)
+try:
+    st.set_page_config(
+        page_title="Investment Titans Chat",
+        page_icon="📈",
+        layout="wide"
+    )
+except Exception:
+    # 静默处理页面配置错误
+    pass
 
 # 初始化所有会话状态（只在这里初始化一次）
 if "messages" not in st.session_state:
